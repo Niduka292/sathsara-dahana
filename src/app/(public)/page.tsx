@@ -1,11 +1,13 @@
-import React from 'react'
+import Hero from "../../components/sections/hero/Hero";
+import Timeline from "../../components/sections/timeline/Timeline";
+import Memories from "../../components/sections/memories/Memories";
 
-const page = () => {
+export default function Home() {
   return (
-    <div>
-      
-    </div>
-  )
+    <>
+      <Hero />
+      <Timeline />
+      <Memories />
+    </>
+  );
 }
-
-export default page
