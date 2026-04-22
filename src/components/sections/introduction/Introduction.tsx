@@ -15,9 +15,9 @@ export default function Introduction() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-          
+
           {/* Left Side: Text */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -28,11 +28,11 @@ export default function Introduction() {
               <div className="h-[1px] w-12 bg-blue-500/50" />
               <span className="text-[10px] uppercase tracking-[0.3em] text-blue-400 font-cinzel">The Legacy</span>
             </div>
-            
+
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase mb-8 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-300">
               The Grand Extravaganza
             </h2>
-            
+
             <div className="space-y-6 text-blue-100/70 font-light leading-relaxed text-sm md:text-base text-justify">
               <p>
                 “Sisi Arundathee” is one of the most iconic cultural showcases organized by the Student Council of the Faculty of Applied Sciences at the University of Sri Jayewardenepura. Recognized as a vibrant celebration of creativity, the event has historically served as a platform where undergraduate students step beyond the boundaries of science to express their artistic talents through music, dance, and stage performances.
@@ -51,25 +51,28 @@ export default function Introduction() {
 
           {/* Right Side: Portal Animation */}
           <div className="flex-1 flex justify-center lg:justify-end items-center relative order-1 lg:order-2 h-[400px] md:h-[500px] w-full lg:pr-[10%]">
-            
+
             {/* 500px Master Wrapper to guarantee perfect 1:1 pixel sync for the center transition */}
             <div className="relative w-[500px] h-[500px]">
-              
-              {/* The Stationary Logo Container (Clipped exactly at the portal's center) */}
+
+              {/* The Stationary Logo Container (Clipped near the portal's right edge) */}
               <motion.div
                 className="absolute inset-0 flex items-center justify-center z-10"
                 animate={{
-                  // Right inset goes from 0 to 500, exactly matching the portal's 500px travel
                   clipPath: [
-                    "inset(-100px 0px -100px -100px)", 
-                    "inset(-100px 500px -100px -100px)", 
-                    "inset(-100px 0px -100px -100px)"
+                    "inset(0px -80px 0px -80px)",  // t=0.00  visible
+                    "inset(0px 100px 0px -150px)",  // t=0.13  hide begins
+                    "inset(0px 400px 0px -80px)",  // t=0.40  fully hidden
+                    "inset(0px 400px 0px -80px)",  // t=0.68  still hidden (extended hold)
+                    "inset(0px 80px 0px -120px)",  // t=0.82  reveal ENDS (portal clears right edge)
+                    "inset(0px -80px 0px -80px)",  // t=1.00  visible
                   ]
                 }}
                 transition={{
                   duration: 6,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: "easeInOut",
+                  times: [0, 0.13, 0.40, 0.68, 0.82, 1.0]
                 }}
               >
                 <div className="relative w-48 h-48 md:w-64 md:h-64">
@@ -84,15 +87,15 @@ export default function Introduction() {
 
               {/* The Moving Portal */}
               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                <motion.div 
+                <motion.div
                   className="relative w-[180px] h-[350px] md:w-[220px] md:h-[450px] rounded-[100%]"
-                  animate={{ 
+                  animate={{
                     x: [250, -250, 250], // Portal center travels from right edge (+250) to left edge (-250)
                   }}
-                  transition={{ 
-                    duration: 6, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut"
                   }}
                   style={{
                     background: "radial-gradient(ellipse at center, rgba(147,197,253,0.4) 0%, rgba(59,130,246,0.7) 50%, rgba(37,99,235,0.9) 100%)",
@@ -102,7 +105,7 @@ export default function Introduction() {
                   }}
                 >
                   {/* Inner energetic pulse */}
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 rounded-[100%]"
                     animate={{ opacity: [0.4, 0.8, 0.4] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}

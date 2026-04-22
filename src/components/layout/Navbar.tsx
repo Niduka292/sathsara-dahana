@@ -11,16 +11,15 @@ export default function Navbar() {
           className="text-white text-xl md:text-2xl font-cinzel tracking-widest hover:text-blue-200 transition-colors cursor-pointer"
           whileHover={{ scale: 1.05 }}
         >
-          <Link href="/">( S A )</Link>
+          <Link href="/">Sisi Arundathee</Link>
         </motion.div>
       </div>
 
       <div className="hidden lg:flex gap-12 text-[11px] font-medium uppercase tracking-[0.3em] font-cinzel text-white/80">
-        <Link href="#acts" className="hover:text-blue-300 transition-colors">THE ACTS</Link>
-        <Link href="#artists" className="hover:text-blue-300 transition-colors">ARTISTS</Link>
-        <Link href="#countdown" className="hover:text-blue-300 transition-colors">COUNTDOWN</Link>
+        <Link href="#introduction" className="hover:text-blue-300 transition-colors">ABOUT</Link>
+        <Link href="#timeline" className="hover:text-blue-300 transition-colors">TIMELINE</Link>
+        <Link href="#memories" className="hover:text-blue-300 transition-colors">GALLERY</Link>
         <Link href="#venue" className="hover:text-blue-300 transition-colors">VENUE</Link>
-        <Link href="#tickets" className="hover:text-blue-300 transition-colors">TICKETS</Link>
       </div>
     </nav>
   );
