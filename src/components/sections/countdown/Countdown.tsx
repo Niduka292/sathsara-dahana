@@ -39,29 +39,36 @@ export default function Countdown() {
   if (!isMounted) return null;
 
   return (
-    <section className="relative w-full py-24 bg-[#000511] overflow-hidden z-20">
+    <section className="relative w-full py-32 bg-[#000511] overflow-hidden z-20 border-y border-white/5">
       {/* Decorative background elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/5 rounded-full blur-[100px]" />
-        <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-blue-500/10 to-transparent" />
-        <div className="absolute top-0 right-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-blue-500/10 to-transparent" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-blue-500/20 to-transparent" />
+        <div className="absolute top-0 right-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-blue-500/20 to-transparent" />
+        
+        {/* Pulsing Core */}
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-400/10 rounded-full blur-[80px]"
+        />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1.2 }}
           className="flex flex-col items-center"
         >
-          <div className="flex items-center gap-4 mb-12">
-            <div className="h-[1px] w-8 md:w-16 bg-blue-500/30" />
-            <span className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-blue-400/80 font-cinzel">The Portal Opens In</span>
-            <div className="h-[1px] w-8 md:w-16 bg-blue-500/30" />
+          <div className="flex items-center gap-8 mb-16">
+            <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent to-blue-500/50" />
+            <span className="text-[11px] md:text-xs uppercase tracking-[0.6em] text-blue-400 font-bold font-cinzel">The Portal Opens In</span>
+            <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent to-blue-500/50" />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 w-full max-w-5xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 w-full max-w-6xl">
             <CountdownItem label="Days" value={timeLeft.days} />
             <CountdownItem label="Hours" value={timeLeft.hours} />
             <CountdownItem label="Minutes" value={timeLeft.minutes} />
@@ -71,14 +78,14 @@ export default function Countdown() {
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="mt-16 flex flex-col items-center gap-2"
+            transition={{ delay: 0.8, duration: 1 }}
+            className="mt-20 flex flex-col items-center gap-4 px-8 py-4 border border-blue-500/10 rounded-full bg-blue-500/5 backdrop-blur-sm"
           >
-            <div className="text-[10px] uppercase tracking-[0.2em] text-blue-300/40 font-cinzel">
-              Current Target
+            <div className="text-[10px] uppercase tracking-[0.4em] text-blue-300/40 font-bold font-cinzel">
+              Celestial Event
             </div>
-            <div className="text-sm md:text-base text-blue-200/60 font-cinzel tracking-widest">
-              JUNE 15, 2026 • 07:00 PM
+            <div className="text-sm md:text-base text-blue-100/60 font-cinzel tracking-[0.3em] font-medium">
+              JUNE 15, 2026 • 07:00 PM • COLOMBO
             </div>
           </motion.div>
         </motion.div>

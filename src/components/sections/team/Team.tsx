@@ -83,7 +83,7 @@ export default function Team() {
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZyBmaWxsPSIjMWQ0ZWQ4IiBmaWxsLW9wYWNpdHk9IjAuNCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI4MCIgcj0iMS41IiAvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjMyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAigcj0iMS41IiAvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjkwIiByPSIwLjUiIC8+PC9nPjwvc3ZnPg==')] opacity-20" />
       </div>
 
-      <div className="text-center mb-24 relative z-10">
+      <div className="text-center mb-16 md:mb-24 relative z-10 px-4">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -98,26 +98,26 @@ export default function Team() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
-          className="text-blue-200/60 font-serif italic text-lg max-w-2xl mx-auto px-4"
+          className="text-blue-200/60 font-serif italic text-base md:text-lg max-w-2xl mx-auto"
         >
           Orbiting the core of innovation and artistic excellence
         </motion.p>
       </div>
 
       {/* 3D Perspective Marquee Container */}
-      <div className="relative w-full overflow-hidden py-20 px-4">
+      <div className="relative w-full overflow-hidden py-10 md:py-20 px-4">
         <div className="flex animate-team-orbit whitespace-nowrap hover:[animation-play-state:paused] transition-all transform-gpu">
           {doubledMembers.map((member, index) => (
             <div
               key={`${member.id}-${index}`}
-              className="inline-block mx-8 min-w-[340px] max-w-[340px] perspective-[1000px] transform-gpu"
+              className="inline-block mx-4 md:mx-8 min-w-[280px] max-w-[280px] md:min-w-[340px] md:max-w-[340px] perspective-[1000px] transform-gpu"
             >
               <div className="group relative transition-all duration-500 hover:scale-105">
                 {/* 3D Card Content */}
                 <div className="relative flex flex-col h-full bg-gradient-to-br from-white/[0.05] to-white/[0.01] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-cyan-500/50 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                   
                   {/* Image Container with inner glow */}
-                  <div className="relative h-[380px] w-full overflow-hidden">
+                  <div className="relative h-[300px] md:h-[380px] w-full overflow-hidden">
                     <img
                       src={member.image}
                       alt={member.name}
@@ -129,15 +129,15 @@ export default function Team() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-8 flex flex-col items-center text-center whitespace-normal relative z-10">
+                  <div className="p-6 md:p-8 flex flex-col items-center text-center whitespace-normal relative z-10">
                     <div className="w-12 h-[1px] bg-cyan-500/50 mb-4 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                    <h3 className="text-2xl font-bold font-cinzel text-white mb-2 tracking-wide group-hover:text-cyan-400 transition-colors">
+                    <h3 className="text-xl md:text-2xl font-bold font-cinzel text-white mb-2 tracking-wide group-hover:text-cyan-400 transition-colors">
                       {member.name}
                     </h3>
-                    <p className="text-cyan-500/80 font-medium text-xs tracking-[0.3em] uppercase mb-4">
+                    <p className="text-cyan-500/80 font-medium text-[10px] md:text-xs tracking-[0.3em] uppercase mb-4">
                       {member.role}
                     </p>
-                    <p className="text-blue-200/40 text-sm leading-relaxed italic group-hover:text-blue-100/60 transition-colors">
+                    <p className="text-blue-200/40 text-xs md:text-sm leading-relaxed italic group-hover:text-blue-100/60 transition-colors">
                       "{member.description}"
                     </p>
                   </div>
@@ -151,8 +151,8 @@ export default function Team() {
         </div>
 
         {/* Cinematic Depth Masks */}
-        <div className="absolute inset-y-0 left-0 w-[25%] bg-gradient-to-r from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-[25%] bg-gradient-to-l from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-[10%] md:w-[25%] bg-gradient-to-r from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-[10%] md:w-[25%] bg-gradient-to-l from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`

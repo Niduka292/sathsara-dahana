@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { ReactNode, useRef } from "react";
 
 interface TimelineEvent {
   id: string;
@@ -59,7 +59,6 @@ const events: TimelineEvent[] = [
     description:
       "The fusion of ancient rhythms with synthetic beats, creating a bridge between the analog past and the boundless future.",
     icon: <span className="text-xl">🎹</span>,
-    blur: true,
   },
   {
     id: "act-5",
@@ -68,13 +67,24 @@ const events: TimelineEvent[] = [
     description:
       "What lies beyond the known spectrum of sound? A glimpse into the melodies that have yet to be written in the stars.",
     icon: <span className="text-xl">✨</span>,
-    blur: true,
   },
 ];
 
 export default function Timeline() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end end"]
+  });
+
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   return (
-    <section id="timeline" className="relative w-full py-32 bg-[#000511] overflow-hidden">
+    <section id="timeline" ref={containerRef} className="relative w-full py-40 bg-[#000511] overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-blue-300 rounded-full blur-[1px]" />
@@ -84,14 +94,34 @@ export default function Timeline() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="relative max-w-4xl mx-auto">
-          {/* Central Line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-blue-500/20 -translate-x-1/2" />
-          
-          {/* Subtle line glow */}
-          <div className="absolute left-1/2 top-[20%] bottom-[20%] w-[1px] bg-blue-400/30 -translate-x-1/2 blur-[2px]" />
+        <div className="text-center mb-32">
+          <motion.span 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-blue-400 text-[11px] font-bold tracking-[0.5em] uppercase mb-4 block font-cinzel"
+          >
+            Chronological Odyssey
+          </motion.span>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+          >
+            The Path of Sound
+          </motion.h2>
+        </div>
 
-          <div className="flex flex-col gap-24">
+        <div className="relative max-w-5xl mx-auto">
+          {/* Central Line Background */}
+          <div className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[2px] bg-blue-500/10 md:-translate-x-1/2" />
+          
+          {/* Active Scroll Progress Line */}
+          <motion.div 
+            style={{ scaleY }}
+            className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-600 via-blue-400 to-cyan-300 md:-translate-x-1/2 origin-top z-20"
+          />
+
+          <div className="flex flex-col gap-32 md:gap-40">
             {events.map((event, index) => {
               const isEven = index % 2 === 0;
 
@@ -101,55 +131,60 @@ export default function Timeline() {
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className={`relative flex items-center w-full ${
-                    event.blur ? "opacity-30 blur-[4px] select-none" : ""
-                  }`}
+                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative flex items-center w-full group"
                 >
-                  {/* Left Content */}
-                  <div className={`w-1/2 pr-12 md:pr-16 flex flex-col ${isEven ? "items-end text-right" : "items-end opacity-0 pointer-events-none"}`}>
-                    {isEven && (
-                      <>
-                        <span className="text-blue-300/80 text-[10px] md:text-xs font-medium tracking-[0.4em] uppercase mb-4 font-cinzel">
-                          {event.label}
-                        </span>
-                        <h3 className="text-2xl md:text-4xl font-bold mb-4 font-cinzel text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                          {event.title}
-                        </h3>
-                        <p className="text-blue-200/60 text-sm md:text-base leading-relaxed italic font-serif max-w-sm">
-                          {event.description}
-                        </p>
-                      </>
-                    )}
+                  {/* Left Content (Desktop only) */}
+                  <div className={`hidden md:flex w-1/2 pr-20 flex-col ${isEven ? "items-end text-right" : "opacity-0 pointer-events-none"}`}>
+                    <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors">
+                      {event.label}
+                    </span>
+                    <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors">
+                      {event.title}
+                    </h3>
+                    <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors">
+                      {event.description}
+                    </p>
                   </div>
 
-                  {/* Center Icon */}
-                  <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border border-blue-500/30 bg-[#000511] flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.15)] z-10 relative">
-                      {event.icon}
+                  {/* Center/Left Icon */}
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center z-30">
+                    <motion.div 
+                      whileHover={{ scale: 1.2, rotate: 360 }}
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-blue-400/30 bg-[#000511] flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)] relative group-hover:border-blue-400 transition-all duration-500"
+                    >
+                      <div className="relative z-10 scale-125 md:scale-150">{event.icon}</div>
+                      <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                       {/* Decorative outer rings */}
-                      <div className="absolute inset-[-8px] border border-blue-500/10 rounded-full" />
-                      {/* Very faint empty circle decoration randomly placed near line (from design) */}
-                      {index === 0 && (
-                        <div className="absolute -bottom-24 right-8 w-6 h-6 rounded-full border border-blue-500/20" />
-                      )}
-                    </div>
+                      <div className="absolute inset-[-8px] md:inset-[-12px] border border-blue-500/10 rounded-full animate-pulse" />
+                    </motion.div>
                   </div>
 
                   {/* Right Content */}
-                  <div className={`w-1/2 pl-12 md:pl-16 flex flex-col ${!isEven ? "items-start text-left" : "items-start opacity-0 pointer-events-none"}`}>
-                    {!isEven && (
-                      <>
-                        <span className="text-blue-300/80 text-[10px] md:text-xs font-medium tracking-[0.4em] uppercase mb-4 font-cinzel">
+                  <div className={`w-full md:w-1/2 pl-20 md:pl-20 flex flex-col ${!isEven ? "md:items-start md:text-left" : "md:items-start md:opacity-0 md:pointer-events-none"}`}>
+                    <div className="md:hidden flex flex-col items-start text-left">
+                       <span className="text-blue-400/60 text-[10px] font-bold tracking-[0.4em] uppercase mb-3 font-cinzel">
                           {event.label}
                         </span>
-                        <h3 className="text-2xl md:text-4xl font-bold mb-4 font-cinzel text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                        <h3 className="text-2xl font-bold mb-4 font-cinzel text-white leading-tight">
                           {event.title}
                         </h3>
-                        <p className="text-blue-200/60 text-sm md:text-base leading-relaxed italic font-serif max-w-sm">
+                        <p className="text-blue-100/50 text-sm leading-relaxed italic font-serif">
                           {event.description}
                         </p>
-                      </>
+                    </div>
+                    {!isEven && (
+                      <div className="hidden md:flex flex-col items-start text-left">
+                        <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors">
+                          {event.label}
+                        </span>
+                        <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors">
+                          {event.title}
+                        </h3>
+                        <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors">
+                          {event.description}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </motion.div>
