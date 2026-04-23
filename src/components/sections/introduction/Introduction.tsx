@@ -6,7 +6,7 @@ import SisiLogo from "../../../../assets/sisi-logo-no-bg.png";
 
 export default function Introduction() {
   return (
-    <section className="relative w-full min-h-screen py-24 bg-[#000511] overflow-hidden flex items-center z-10">
+    <section id="introduction" className="relative w-full min-h-screen py-24 bg-[#000511] overflow-hidden flex items-center z-10">
       {/* Background Subtle Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[100px]" />

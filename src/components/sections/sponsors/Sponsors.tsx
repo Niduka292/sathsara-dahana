@@ -27,7 +27,7 @@ export default function Sponsors() {
   const doubledSponsors = [...sponsors, ...sponsors];
 
   return (
-    <section className="relative w-full py-24 bg-[#000511] overflow-hidden border-t border-white/5">
+    <section id="sponsors" className="relative w-full py-24 bg-[#000511] overflow-hidden border-t border-white/5">
       <div className="text-center mb-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold font-cinzel text-white/80 tracking-widest mb-2">
           Our Partners

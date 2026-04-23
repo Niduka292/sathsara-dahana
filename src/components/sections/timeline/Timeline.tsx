@@ -74,7 +74,7 @@ const events: TimelineEvent[] = [
 
 export default function Timeline() {
   return (
-    <section className="relative w-full py-32 bg-[#000511] overflow-hidden">
+    <section id="timeline" className="relative w-full py-32 bg-[#000511] overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-blue-300 rounded-full blur-[1px]" />

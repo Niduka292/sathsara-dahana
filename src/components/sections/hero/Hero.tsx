@@ -3,10 +3,27 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import SisiLogo from "../../../../assets/sisi-logo-no-bg.png";
+import FuzzyText from '../../../../components/FuzzyText';
+import Prism from '../../../../components/Prism';
+
 
 export default function Hero() {
   return (
     <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden py-32 bg-[#000511]">
+      <div className="absolute inset-0 z-0 pointer-events-none 
+                opacity-80 blur-[70px] saturate-150 mix-blend-screen">
+        <Prism
+          animationType="rotate"
+          timeScale={0.5}
+          height={1.8}
+          baseWidth={3.0}
+          scale={3.6}
+          hueShift={0}
+          colorFrequency={1.5}
+          noise={0.05}
+          glow={1.5}
+        />
+      </div> 
       {/* Background Orbits & Stars */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-blue-500/10" />
@@ -58,7 +75,10 @@ export default function Hero() {
             transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
             className="text-6xl md:text-8xl lg:text-[9rem] font-bold leading-none tracking-tight uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-300 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)]"
           >
-            Sisi Arundathee
+            <FuzzyText>
+              Sisi Arundathee
+            </FuzzyText>
+
           </motion.h1>
 
           <motion.p
@@ -119,6 +139,7 @@ export default function Hero() {
         </div>
         <span className="text-[9px] uppercase tracking-[0.4em] font-cinzel text-blue-300/80">Scroll</span>
       </motion.div>
-    </section>
+
+    </section >
   );
 }
