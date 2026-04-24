@@ -87,7 +87,7 @@ export default function Team() {
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4 }}
           viewport={{ once: true }}
           className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] mb-4"
         >
@@ -96,7 +96,7 @@ export default function Team() {
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           viewport={{ once: true }}
           className="text-blue-200/60 font-serif italic text-base md:text-lg max-w-2xl mx-auto"
         >
@@ -112,16 +112,16 @@ export default function Team() {
               key={`${member.id}-${index}`}
               className="inline-block mx-4 md:mx-6 min-w-[220px] max-w-[220px] md:min-w-[280px] md:max-w-[280px] perspective-[1000px] transform-gpu"
             >
-              <div className="group relative transition-all duration-400 ease-[0.16,1,0.3,1] hover:scale-105">
+              <div className="group relative transition-all duration-200 ease-[0.16,1,0.3,1] hover:scale-105">
                 {/* 3D Card Content */}
-                <div className="relative flex flex-col h-full bg-gradient-to-br from-white/[0.05] to-white/[0.01] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-cyan-500/50 transition-all duration-400 ease-[0.16,1,0.3,1] group-hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                <div className="relative flex flex-col h-full bg-gradient-to-br from-white/[0.05] to-white/[0.01] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-cyan-500/50 transition-all duration-200 ease-[0.16,1,0.3,1] group-hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                   
                   {/* Image Container with inner glow */}
                   <div className="relative h-[240px] md:h-[320px] w-full overflow-hidden transform-gpu">
                     <img
                       src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:scale-110 filter brightness-90 group-hover:brightness-100"
+                      className="w-full h-full object-cover transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:scale-110 filter brightness-90 group-hover:brightness-100"
                     />
                     {/* Artistic Overlays */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#000511] via-transparent to-transparent opacity-90" />
@@ -130,14 +130,14 @@ export default function Team() {
 
                   {/* Content */}
                   <div className="p-4 md:p-6 flex flex-col items-center text-center whitespace-normal relative z-10">
-                    <div className="w-12 h-[1px] bg-cyan-500/50 mb-3 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-400 ease-[0.16,1,0.3,1]" />
-                    <h3 className="text-lg md:text-xl font-bold font-cinzel text-white mb-1 tracking-wide group-hover:text-cyan-400 transition-colors duration-300">
+                    <div className="w-12 h-[1px] bg-cyan-500/50 mb-3 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200 ease-[0.16,1,0.3,1]" />
+                    <h3 className="text-lg md:text-xl font-bold font-cinzel text-white mb-1 tracking-wide group-hover:text-cyan-400 transition-colors duration-200">
                       {member.name}
                     </h3>
                     <p className="text-cyan-500/80 font-medium text-[9px] md:text-[10px] tracking-[0.3em] uppercase mb-3">
                       {member.role}
                     </p>
-                    <p className="text-blue-200/40 text-[10px] md:text-xs leading-relaxed italic group-hover:text-blue-100/60 transition-colors duration-300 line-clamp-2">
+                    <p className="text-blue-200/40 text-[10px] md:text-xs leading-relaxed italic group-hover:text-blue-100/60 transition-colors duration-200 line-clamp-2">
                       "{member.description}"
                     </p>
                   </div>
@@ -165,12 +165,12 @@ export default function Team() {
           }
         }
         .animate-team-orbit {
-          animation: team-orbit 60s linear infinite;
+          animation: team-orbit 15s linear infinite;
         }
         
         /* Perspective Curve Simulation */
         .animate-team-orbit > div {
-          transition: transform 0.5s ease-out;
+          transition: transform 0.3s ease-out;
         }
       `}</style>
     </section>

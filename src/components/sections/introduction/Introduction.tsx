@@ -74,8 +74,8 @@ export default function Introduction() {
             </div>
           </motion.div>
 
-          {/* Right Side: Portal Animation */}
-          <div className="flex-1 flex justify-center lg:justify-end items-center relative order-1 lg:order-2 h-[350px] md:h-[500px] w-full lg:pr-[10%] transform-gpu">
+          {/* Right Side: Portal Animation - Hidden on mobile */}
+          <div className="hidden lg:flex flex-1 justify-end items-center relative order-1 lg:order-2 h-[500px] w-full lg:pr-[10%] transform-gpu">
 
             {/* Master Wrapper to guarantee perfect 1:1 pixel sync for the center transition */}
             <div className="relative w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] aspect-square">
