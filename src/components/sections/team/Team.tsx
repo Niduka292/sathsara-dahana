@@ -84,7 +84,7 @@ export default function Team() {
       </div>
 
       <div className="text-center mb-16 md:mb-24 relative z-10 px-4">
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -93,7 +93,7 @@ export default function Team() {
         >
           The Visionaries
         </motion.h2>
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
@@ -115,7 +115,7 @@ export default function Team() {
               <div className="group relative transition-all duration-200 ease-[0.16,1,0.3,1] hover:scale-105">
                 {/* 3D Card Content */}
                 <div className="relative flex flex-col h-full bg-gradient-to-br from-white/[0.05] to-white/[0.01] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-cyan-500/50 transition-all duration-200 ease-[0.16,1,0.3,1] group-hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-                  
+
                   {/* Image Container with inner glow */}
                   <div className="relative h-[240px] md:h-[320px] w-full overflow-hidden transform-gpu">
                     <img
@@ -161,11 +161,11 @@ export default function Team() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(-250%);
           }
         }
         .animate-team-orbit {
-          animation: team-orbit 15s linear infinite;
+          animation: team-orbit 20s linear infinite;
         }
         
         /* Perspective Curve Simulation */
