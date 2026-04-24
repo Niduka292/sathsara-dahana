@@ -78,15 +78,15 @@ export default function Timeline() {
   });
 
   const scaleY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
+    stiffness: 70,
+    damping: 35,
+    restDelta: 0.0001
   });
 
   return (
     <section id="timeline" ref={containerRef} className="relative w-full py-40 bg-[#000511] overflow-hidden">
       {/* Background elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none transform-gpu">
         <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-blue-300 rounded-full blur-[1px]" />
         <div className="absolute top-[40%] right-[15%] w-[2px] h-[2px] bg-white rounded-full" />
         <div className="absolute top-[60%] left-[20%] w-[2px] h-[2px] bg-white rounded-full" />
@@ -98,6 +98,7 @@ export default function Timeline() {
           <motion.span 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-blue-400 text-[11px] font-bold tracking-[0.5em] uppercase mb-4 block font-cinzel"
           >
             Chronological Odyssey
@@ -105,7 +106,8 @@ export default function Timeline() {
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] transform-gpu"
           >
             The Path of Sound
           </motion.h2>
@@ -118,7 +120,7 @@ export default function Timeline() {
           {/* Active Scroll Progress Line */}
           <motion.div 
             style={{ scaleY }}
-            className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-600 via-blue-400 to-cyan-300 md:-translate-x-1/2 origin-top z-20"
+            className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-600 via-blue-400 to-cyan-300 md:-translate-x-1/2 origin-top z-20 transform-gpu"
           />
 
           <div className="flex flex-col gap-32 md:gap-40">
@@ -131,30 +133,31 @@ export default function Timeline() {
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative flex items-center w-full group"
+                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative flex items-center w-full group transform-gpu"
                 >
                   {/* Left Content (Desktop only) */}
                   <div className={`hidden md:flex w-1/2 pr-20 flex-col ${isEven ? "items-end text-right" : "opacity-0 pointer-events-none"}`}>
-                    <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors">
+                    <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                       {event.label}
                     </span>
-                    <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors">
+                    <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                       {event.title}
                     </h3>
-                    <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors">
+                    <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                       {event.description}
                     </p>
                   </div>
 
                   {/* Center/Left Icon */}
-                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center z-30">
+                  <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center z-30 transform-gpu">
                     <motion.div 
-                      whileHover={{ scale: 1.2, rotate: 360 }}
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-blue-400/30 bg-[#000511] flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)] relative group-hover:border-blue-400 transition-all duration-500"
+                      whileHover={{ scale: 1.15, rotate: 10 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-blue-400/30 bg-[#000511] flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)] relative group-hover:border-blue-400 transition-all duration-700 ease-[0.16,1,0.3,1]"
                     >
-                      <div className="relative z-10 scale-125 md:scale-150">{event.icon}</div>
-                      <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative z-10 scale-125 md:scale-150 transform-gpu">{event.icon}</div>
+                      <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[0.16,1,0.3,1]" />
                       {/* Decorative outer rings */}
                       <div className="absolute inset-[-8px] md:inset-[-12px] border border-blue-500/10 rounded-full animate-pulse" />
                     </motion.div>
@@ -175,13 +178,13 @@ export default function Timeline() {
                     </div>
                     {!isEven && (
                       <div className="hidden md:flex flex-col items-start text-left">
-                        <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors">
+                        <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                           {event.label}
                         </span>
-                        <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors">
+                        <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                           {event.title}
                         </h3>
-                        <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors">
+                        <p className="text-blue-100/50 text-sm md:text-base leading-relaxed italic font-serif max-w-sm group-hover:text-blue-100/80 transition-colors duration-700 ease-[0.16,1,0.3,1]">
                           {event.description}
                         </p>
                       </div>

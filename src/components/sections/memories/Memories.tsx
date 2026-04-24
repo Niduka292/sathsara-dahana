@@ -118,7 +118,7 @@ export default function Memories() {
       </div>
 
       <div
-        className="relative w-full max-w-6xl mx-auto h-[400px] md:h-[500px] flex items-center justify-center"
+        className="relative w-full max-w-6xl mx-auto h-[350px] md:h-[450px] flex items-center justify-center"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -138,7 +138,7 @@ export default function Memories() {
         </button>
 
         {/* Carousel Cards */}
-        <div className="relative w-[260px] h-[380px] md:w-[400px] md:h-[550px] flex justify-center items-center perspective-[1000px]">
+        <div className="relative w-[220px] h-[320px] md:w-[320px] md:h-[440px] flex justify-center items-center perspective-[1000px]">
           <AnimatePresence initial={false}>
             {memories.map((memory, index) => {
               const styles = getPositionStyles(index);
@@ -146,7 +146,7 @@ export default function Memories() {
               return (
                 <motion.div
                   key={memory.id}
-                  className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden border-2 cursor-pointer shadow-2xl"
+                  className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden border-2 cursor-pointer shadow-2xl transform-gpu"
                   initial={false}
                   animate={{
                     x: styles.x,
@@ -160,8 +160,8 @@ export default function Memories() {
                       : "0 0 20px rgba(0, 0, 0, 0.8)",
                   }}
                   transition={{
-                    duration: 0.6,
-                    ease: [0.32, 0.72, 0, 1],
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
                   }}
                   onClick={() => setCurrentIndex(index)}
                 >

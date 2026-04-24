@@ -21,8 +21,8 @@ export default function Introduction() {
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className="flex-1 text-left order-2 lg:order-1"
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="flex-1 text-left order-2 lg:order-1 transform-gpu"
           >
             <div className="flex items-center gap-6 mb-8">
               <div className="h-[1px] w-16 bg-gradient-to-r from-blue-500 to-transparent" />
@@ -37,7 +37,7 @@ export default function Introduction() {
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
                 className="first-letter:text-5xl first-letter:font-cinzel first-letter:mr-3 first-letter:float-left first-letter:text-blue-400"
               >
@@ -47,7 +47,7 @@ export default function Introduction() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
                 Originating as an annual tradition, “Sisi Arundathee” has been described as a grand cultural extravaganza that brings together a diverse range of performances—from traditional Sri Lankan and South Asian dance forms to contemporary Western music and choreography. The event not only highlights the multifaceted talents of students but also reinforces the idea that scientific minds can equally thrive in artistic expression.
@@ -56,9 +56,9 @@ export default function Introduction() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1 }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
-                className="p-8 border-l-2 border-blue-500/30 bg-blue-500/5 backdrop-blur-sm rounded-r-2xl italic font-serif text-blue-200/80"
+                className="p-8 border-l-2 border-blue-500/30 bg-blue-500/5 backdrop-blur-sm rounded-r-2xl italic font-serif text-blue-200/80 transform-gpu"
               >
                 "Proceeds from the event have previously been directed toward community development initiatives, reflecting the faculty’s commitment to using student-driven creativity for meaningful societal impact."
               </motion.div>
@@ -66,7 +66,7 @@ export default function Introduction() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
+                transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
                 With a legacy spanning many years, the event has been a hallmark of student life. After its most recent edition in 2019, “Sisi Arundathee” has remained discontinued, marking a pause in what was once a highly anticipated annual tradition. Its absence has been strongly felt, further emphasizing its cultural and emotional significance within the university community.
@@ -75,7 +75,7 @@ export default function Introduction() {
           </motion.div>
 
           {/* Right Side: Portal Animation */}
-          <div className="flex-1 flex justify-center lg:justify-end items-center relative order-1 lg:order-2 h-[350px] md:h-[500px] w-full lg:pr-[10%]">
+          <div className="flex-1 flex justify-center lg:justify-end items-center relative order-1 lg:order-2 h-[350px] md:h-[500px] w-full lg:pr-[10%] transform-gpu">
 
             {/* Master Wrapper to guarantee perfect 1:1 pixel sync for the center transition */}
             <div className="relative w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] aspect-square">
@@ -94,7 +94,7 @@ export default function Introduction() {
                   ]
                 }}
                 transition={{
-                  duration: 6,
+                  duration: 8,
                   repeat: Infinity,
                   ease: "easeInOut",
                   times: [0, 0.13, 0.40, 0.68, 0.82, 1.0]
@@ -118,7 +118,7 @@ export default function Introduction() {
                     x: ["110%", "-110%", "110%"], // Portal center travels using percentages for responsiveness
                   }}
                   transition={{
-                    duration: 6,
+                    duration: 8,
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
@@ -133,7 +133,7 @@ export default function Introduction() {
                   <motion.div
                     className="absolute inset-0 rounded-[100%]"
                     animate={{ opacity: [0.4, 0.8, 0.4] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     style={{
                       boxShadow: "inset 0 0 100px rgba(255,255,255,0.7)"
                     }}

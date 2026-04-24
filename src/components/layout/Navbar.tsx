@@ -60,16 +60,17 @@ export default function Navbar() {
     w-[92%] md:w-[98%] max-w-6xl
     px-6 md:px-10 py-4
     flex justify-between items-center 
-    rounded-full transition-all duration-500
+    rounded-full transition-all duration-700 ease-[0.16,1,0.3,1]
     ${scrolled ? "bg-black/40 border-white/20 py-3" : "bg-white/5 border-white/10"}
     backdrop-blur-2xl
-    border 
+    border transform-gpu
     shadow-[0_0_40px_rgba(59,130,246,0.12)]`}>
 
         {/* Left Logo */}
         <motion.div
-          className="text-white text-lg md:text-xl font-cinzel tracking-widest cursor-pointer"
+          className="text-white text-lg md:text-xl font-cinzel tracking-widest cursor-pointer transform-gpu"
           whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
         >
           <Link href="/">Sisi <span className="text-blue-400">Arundathee</span></Link>
         </motion.div>
@@ -80,10 +81,10 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className={`transition-all duration-300 relative group ${activeSection === link.id ? "text-blue-400" : "text-white/70 hover:text-white"}`}
+              className={`transition-all duration-500 ease-[0.16,1,0.3,1] relative group ${activeSection === link.id ? "text-blue-400" : "text-white/70 hover:text-white"}`}
             >
               {link.name}
-              <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-300 ${activeSection === link.id ? "w-full" : "w-0 group-hover:w-full"}`} />
+              <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-500 ease-[0.16,1,0.3,1] ${activeSection === link.id ? "w-full" : "w-0 group-hover:w-full"}`} />
             </Link>
           ))}
         </div>
@@ -91,11 +92,11 @@ export default function Navbar() {
         {/* Right Glow Accent / Mobile Toggle */}
         <div className="flex items-center gap-4">
           <div className="hidden md:block w-10 h-10 rounded-full 
-      bg-blue-500/20 blur-md animate-pulse" />
+      bg-blue-500/20 blur-md animate-pulse transform-gpu" />
           
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="lg:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors duration-500 ease-[0.16,1,0.3,1]"
             aria-label="Toggle Menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -107,24 +108,25 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[90] bg-[#000511]/95 backdrop-blur-xl lg:hidden flex flex-col items-center justify-center"
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[90] bg-[#000511]/90 lg:hidden flex flex-col items-center justify-center transform-gpu"
           >
             <div className="flex flex-col gap-8 text-center">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.name}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 + 0.2 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ delay: i * 0.08 + 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <Link
                     href={link.href}
                     onClick={closeMenu}
-                    className="text-2xl font-cinzel tracking-[0.3em] text-white/80 hover:text-blue-400 transition-colors block py-2"
+                    className="text-2xl font-cinzel tracking-[0.3em] text-white/80 hover:text-blue-400 transition-colors duration-500 block py-2"
                   >
                     {link.name}
                   </Link>
