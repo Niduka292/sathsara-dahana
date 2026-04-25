@@ -87,7 +87,7 @@ export default function Team() {
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           viewport={{ once: true }}
           className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] mb-4"
         >
@@ -96,7 +96,7 @@ export default function Team() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 , delay: 0.1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           viewport={{ once: true }}
           className="text-blue-200/60 font-serif italic text-base md:text-lg max-w-2xl mx-auto"
         >
@@ -165,7 +165,7 @@ export default function Team() {
           }
         }
         .animate-team-orbit {
-          animation: team-orbit 30s linear infinite;
+          animation: team-orbit 20s linear infinite;
         }
         
         /* Perspective Curve Simulation */
