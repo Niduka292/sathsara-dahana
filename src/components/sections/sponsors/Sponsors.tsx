@@ -46,7 +46,7 @@ export default function Sponsors() {
               {/* Logo/Image Container */}
               <div className="relative w-20 h-20 mb-6 group-hover:scale-110 transition-transform duration-700 ease-[0.16,1,0.3,1] transform-gpu">
                 {/* Glow Effect behind logo */}
-                <div 
+                <div
                   className="absolute inset-0 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"
                   style={{ backgroundColor: sponsor.color }}
                 />
@@ -55,10 +55,10 @@ export default function Sponsors() {
                     src={logo.src}
                     alt={sponsor.name}
                     className="w-full h-full object-contain filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-[0.16,1,0.3,1]"
-                    style={{ 
+                    style={{
                       filter: `grayscale(1) brightness(1.5) drop-shadow(0 0 5px ${sponsor.color}44)`,
                       // We use hue-rotate to make the same logo look like different brandings
-                      rotate: `${index * 45}deg` 
+                      rotate: `${index * 45}deg`
                     }}
                   />
                 </div>
@@ -68,7 +68,7 @@ export default function Sponsors() {
                 <span className="text-xl font-cinzel font-bold text-white/70 group-hover:text-white transition-colors duration-500">
                   {sponsor.name}
                 </span>
-                <span 
+                <span
                   className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 transition-colors duration-500"
                   style={{ color: sponsor.color }}
                 >
@@ -80,8 +80,8 @@ export default function Sponsors() {
         </div>
 
         {/* Gradient Overlays for smooth fading at edges */}
-        <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-48 bg-gradient-to-l from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-16 sm:w-48 bg-gradient-to-r from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-16 sm:w-48 bg-gradient-to-l from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`
