@@ -22,7 +22,7 @@ export default function Introduction() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 text-left order-2 lg:order-1 transform-gpu"
+            className="flex-1 text-left order-2 lg:order-1 transform-gpu ml-15"
           >
             <div className="flex items-center gap-6 mb-8">
               <div className="h-[1px] w-16 bg-gradient-to-r from-blue-500 to-transparent" />
@@ -101,7 +101,7 @@ export default function Introduction() {
                   duration: 8,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  times: [0, 0.03, 0.38, 0.66, 0.95, 1.0]
+                  times: [0, 0.032, 0.38, 0.66, 0.95, 1.0]
                 }}
               >
                 {/*
