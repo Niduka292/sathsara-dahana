@@ -101,7 +101,7 @@ export default function Introduction() {
                   duration: 8,
                   repeat: Infinity,
                   ease: "easeInOut",
-                  times: [0, 0.069, 0.40, 0.68, 0.89, 1.0]
+                  times: [0, 0.03, 0.38, 0.66, 0.95, 1.0]
                 }}
               >
                 {/*
