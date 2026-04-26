@@ -77,7 +77,7 @@ export default function Team() {
   const doubledMembers = [...teamMembers, ...teamMembers];
 
   return (
-    <section className="relative w-full py-40 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
+    <section id='team' className="relative w-full py-40 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
       {/* Background Starfield effect */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZyBmaWxsPSIjMWQ0ZWQ4IiBmaWxsLW9wYWNpdHk9IjAuNCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI4MCIgcj0iMS41IiAvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjMyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAigcj0iMS41IiAvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjkwIiByPSIwLjUiIC8+PC9nPjwvc3ZnPg==')] opacity-20" />
