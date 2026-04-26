@@ -84,7 +84,7 @@ export default function Timeline() {
   });
 
   return (
-    <section id="timeline" ref={containerRef} className="relative w-full py-40 bg-[#000511] overflow-hidden">
+    <section id="timeline" ref={containerRef} className="relative w-full py-40 bg-transparent overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 pointer-events-none transform-gpu">
         <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-blue-300 rounded-full blur-[1px]" />
@@ -154,7 +154,7 @@ export default function Timeline() {
                     <motion.div 
                       whileHover={{ scale: 1.15, rotate: 10 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-blue-400/30 bg-[#000511] flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)] relative group-hover:border-blue-400 transition-all duration-700 ease-[0.16,1,0.3,1]"
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-blue-400/30 bg-transparent flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)] relative group-hover:border-blue-400 transition-all duration-700 ease-[0.16,1,0.3,1]"
                     >
                       <div className="relative z-10 scale-125 md:scale-150 transform-gpu">{event.icon}</div>
                       <div className="absolute inset-0 rounded-full bg-blue-500/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-[0.16,1,0.3,1]" />

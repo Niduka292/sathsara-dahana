@@ -112,7 +112,7 @@ export default function Navbar() {
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[90] bg-[#000511]/90 lg:hidden flex flex-col items-center justify-center transform-gpu"
+            className="fixed inset-0 z-[90] bg-[#02040d]/90 lg:hidden flex flex-col items-center justify-center transform-gpu"
           >
             <div className="flex flex-col gap-8 text-center">
               {navLinks.map((link, i) => (

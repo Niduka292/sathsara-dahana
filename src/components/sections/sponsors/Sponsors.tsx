@@ -27,7 +27,7 @@ export default function Sponsors() {
   const doubledSponsors = [...sponsors, ...sponsors];
 
   return (
-    <section id="sponsors" className="relative w-full py-24 bg-[#000511] overflow-hidden border-t border-white/5">
+    <section id="sponsors" className="relative w-full py-24 bg-transparent overflow-hidden border-t border-white/5">
       <div className="text-center mb-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold font-cinzel text-white/80 tracking-widest mb-2">
           Our Partners
@@ -80,8 +80,8 @@ export default function Sponsors() {
         </div>
 
         {/* Gradient Overlays for smooth fading at edges */}
-        <div className="absolute inset-y-0 left-0 w-16 sm:w-48 bg-gradient-to-r from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-16 sm:w-48 bg-gradient-to-l from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-16 sm:w-48 bg-gradient-to-r from-[#02040d] via-[#02040d]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-16 sm:w-48 bg-gradient-to-l from-[#02040d] via-[#02040d]/80 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`

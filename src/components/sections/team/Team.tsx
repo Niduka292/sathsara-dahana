@@ -77,7 +77,7 @@ export default function Team() {
   const doubledMembers = [...teamMembers, ...teamMembers];
 
   return (
-    <section className="relative w-full py-40 bg-[#000511] overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
+    <section className="relative w-full py-40 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
       {/* Background Starfield effect */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZyBmaWxsPSIjMWQ0ZWQ4IiBmaWxsLW9wYWNpdHk9IjAuNCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI4MCIgcj0iMS41IiAvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjMyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAigcj0iMS41IiAvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjkwIiByPSIwLjUiIC8+PC9nPjwvc3ZnPg==')] opacity-20" />
@@ -151,8 +151,8 @@ export default function Team() {
         </div>
 
         {/* Cinematic Depth Masks */}
-        <div className="absolute inset-y-0 left-0 w-[10%] md:w-[25%] bg-gradient-to-r from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-[10%] md:w-[25%] bg-gradient-to-l from-[#000511] via-[#000511]/90 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-[10%] md:w-[25%] bg-gradient-to-r from-[#02040d] via-[#02040d]/90 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-[10%] md:w-[25%] bg-gradient-to-l from-[#02040d] via-[#02040d]/90 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`
@@ -165,12 +165,12 @@ export default function Team() {
           }
         }
         .animate-team-orbit {
-          animation: team-orbit 30s linear infinite;
+          animation: team-orbit 25s linear infinite;
         }
         
         /* Perspective Curve Simulation */
         .animate-team-orbit > div {
-          transition: transform 0.3s ease-out;
+          transition: transform 10s ease-out;
         }
       `}</style>
     </section>

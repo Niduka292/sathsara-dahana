@@ -39,7 +39,7 @@ export default function Countdown() {
   if (!isMounted) return null;
 
   return (
-    <section className="relative w-full py-32 bg-[#000511] overflow-hidden z-20 border-y border-white/5">
+    <section className="relative w-full py-32 bg-transparent overflow-hidden z-20 border-y border-white/5">
       {/* Decorative background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />

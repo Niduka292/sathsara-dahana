@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-[#000511] pt-32 pb-12 overflow-hidden border-t border-white/5">
+    <footer className="relative bg-[#02040d] pt-32 pb-12 overflow-hidden border-t border-white/5">
       {/* Background Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/10 rounded-full blur-[120px] -z-10" />
 

@@ -6,7 +6,7 @@ import SisiLogo from "../../../../assets/sisi-logo-no-bg.png";
 
 export default function Introduction() {
   return (
-    <section id="introduction" className="relative w-full min-h-screen py-32 bg-[#000511] overflow-hidden flex items-center z-10">
+    <section id="introduction" className="relative w-full min-h-screen py-32 bg-transparent overflow-hidden flex items-center z-10">
       {/* Background Subtle Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[120px]" />
@@ -30,11 +30,11 @@ export default function Introduction() {
             </div>
 
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold uppercase mb-12 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400 leading-tight">
-              A Grand <br/>Extravaganza
+              A Grand <br />Extravaganza
             </h2>
 
             <div className="space-y-8 text-blue-100/70 font-light leading-relaxed text-base md:text-lg text-justify">
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -43,7 +43,7 @@ export default function Introduction() {
               >
                 "Sisi Arundathee" is one of the most iconic cultural showcases organized by the Student Council of the Faculty of Applied Sciences at the University of Sri Jayewardenepura. Recognized as a vibrant celebration of creativity, the event has historically served as a platform where undergraduate students step beyond the boundaries of science to express their artistic talents through music, dance, and stage performances.
               </motion.p>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -53,7 +53,7 @@ export default function Introduction() {
                 Originating as an annual tradition, "Sisi Arundathee" has been described as a grand cultural extravaganza that brings together a diverse range of performances—from traditional Sri Lankan and South Asian dance forms to contemporary Western music and choreography. The event not only highlights the multifaceted talents of students but also reinforces the idea that scientific minds can equally thrive in artistic expression.
               </motion.p>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}

@@ -102,7 +102,7 @@ export default function Memories() {
   };
 
   return (
-    <section id="memories" className="relative w-full py-20 md:py-32 bg-[#000511] overflow-hidden flex flex-col items-center justify-center min-h-[600px] md:min-h-[800px]">
+    <section id="memories" className="relative w-full py-20 md:py-32 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[600px] md:min-h-[800px]">
       {/* Background Starfield effect */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-50">
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZyBmaWxsPSIjMWQ0ZWQ4IiBmaWxsLW9wYWNpdHk9IjAuNCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI4MCIgcj0iMS41IiAvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjMyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAigcj0iMS41IiAvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjkwIiByPSIwLjUiIC8+PC9nPjwvc3ZnPg==')] opacity-30" />
@@ -125,14 +125,14 @@ export default function Memories() {
         {/* Navigation Buttons */}
         <button
           onClick={handlePrev}
-          className="absolute left-2 md:left-12 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full border border-cyan-500/30 bg-[#000511]/80 backdrop-blur-sm flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+          className="absolute left-2 md:left-12 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full border border-cyan-500/30 bg-transparent backdrop-blur-sm flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)]"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
 
         <button
           onClick={handleNext}
-          className="absolute right-2 md:right-12 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full border border-cyan-500/30 bg-[#000511]/80 backdrop-blur-sm flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+          className="absolute right-2 md:right-12 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full border border-cyan-500/30 bg-transparent backdrop-blur-sm flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)]"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
         </button>
