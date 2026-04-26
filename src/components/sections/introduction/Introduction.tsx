@@ -22,7 +22,7 @@ export default function Introduction() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 text-left order-2 lg:order-1 transform-gpu ml-15"
+            className="flex-1 text-left order-2 lg:order-1 transform-gpu lg:ml-15"
           >
             <div className="flex items-center gap-6 mb-8">
               <div className="h-[1px] w-16 bg-gradient-to-r from-blue-500 to-transparent" />
@@ -75,7 +75,7 @@ export default function Introduction() {
           </motion.div>
 
           {/* Right Side: Portal Animation - Hidden on mobile */}
-          <div className="hidden lg:flex flex-1 justify-end items-center relative order-1 lg:order-2 h-[500px] w-full lg:pr-[10%] transform-gpu">
+          <div className="hidden xl:flex flex-1 justify-end items-center relative order-1 xl:order-2 h-[500px] w-full xl:pr-[10%] transform-gpu">
 
             {/* Master Wrapper */}
             <div className="relative w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] aspect-square">
