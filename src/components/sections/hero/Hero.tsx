@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import SisiLogo from "../../../../assets/sisi-logo-no-bg.png";
+import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
 import FuzzyText from '../../../../components/FuzzyText';
 import VortexBackground from "../../ui/VortexBackground";
 import "../../../styles/animations.css";
@@ -39,7 +39,7 @@ export default function Hero() {
             className="mb-8 relative w-32 h-20 md:w-48 md:h-32 group transform-gpu animate-vortex-pulse"
           >
             <Image
-              src={SisiLogo}
+              src={DahanaLogo}
               alt="Sample Event Image"
               fill
               className="object-contain opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000 ease-[0.16,1,0.3,1]"
@@ -63,7 +63,7 @@ export default function Hero() {
             className="text-6xl md:text-8xl lg:text-[9.5rem] font-bold leading-none tracking-tighter uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white/90 via-white/80 to-blue-200/50 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)] transform-gpu"
           >
             <FuzzyText>
-              Sisi Arundathee
+              Sathsara Dahana
             </FuzzyText>
 
           </motion.h1>
@@ -90,7 +90,7 @@ export default function Hero() {
             </div>
             <div className="flex flex-col items-center gap-4 text-2xl md:text-4xl tracking-[0.4em] font-cinzel text-white/80 font-bold">
               <div>
-                6 <span className="text-blue-400/60">•</span> JUNE <span className="text-blue-400/60">•</span> 2026
+                6 <span className="text-blue-400/60">•</span> SEPTEMBER <span className="text-blue-400/60">•</span> 2026
               </div>
               <div>7:00 PM</div>
             </div>

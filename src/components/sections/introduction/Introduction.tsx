@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import SisiLogo from "../../../../assets/sisi-logo-no-bg.png";
+import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
 
 export default function Introduction() {
   return (
@@ -122,8 +122,8 @@ export default function Introduction() {
                 >
                   <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64">
                     <Image
-                      src={SisiLogo}
-                      alt="Sisi Arundathee Logo"
+                      src={DahanaLogo}
+                      alt="Sathsara Dahana Logo"
                       fill
                       className="object-contain drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]"
                     />

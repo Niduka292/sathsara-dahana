@@ -72,7 +72,7 @@ export default function Navbar() {
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
         >
-          <Link href="/">Sisi <span className="text-blue-400">Arundathee</span></Link>
+          <Link href="/">Sathsara <span className="text-blue-400">Dahana</span></Link>
         </motion.div>
 
         {/* Center Links (Desktop) */}
