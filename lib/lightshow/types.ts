@@ -59,18 +59,18 @@ export const DESIGN_PALETTES: Record<LightshowDesign, DesignPalette> = {
   },
 };
 
-export type OperatorDesignLabel = "Radial Pulse" | "Molten Grid" | "Particle Storm";
+export type OperatorDesignLabel = "Supernova" | "Hex Bloom" | "Plasma Veins";
 
 export const OPERATOR_DESIGN_TO_STATE: Record<OperatorDesignLabel, LightshowDesign> = {
-  "Radial Pulse": "radial",
-  "Molten Grid": "grid",
-  "Particle Storm": "storm",
+  "Supernova": "radial",
+  "Hex Bloom": "grid",
+  "Plasma Veins": "storm",
 };
 
 export const STATE_DESIGN_TO_OPERATOR: Record<LightshowDesign, OperatorDesignLabel> = {
-  radial: "Radial Pulse",
-  grid: "Molten Grid",
-  storm: "Particle Storm",
+  radial: "Supernova",
+  grid: "Hex Bloom",
+  storm: "Plasma Veins",
 };
 
 export function normalizeDesign(value: unknown): LightshowDesign {

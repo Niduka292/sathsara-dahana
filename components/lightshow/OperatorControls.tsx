@@ -23,7 +23,7 @@ interface OperatorControlsProps {
   onEmergencyStop: () => void;
 }
 
-const DESIGN_OPTIONS: OperatorDesignLabel[] = ["Radial Pulse", "Molten Grid", "Particle Storm"];
+const DESIGN_OPTIONS: OperatorDesignLabel[] = ["Supernova", "Hex Bloom", "Plasma Veins"];
 
 function ControlButton({
   children,
