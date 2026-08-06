@@ -6,7 +6,12 @@ import ShowBackground from "@/components/lightshow/ShowBackground";
 import { applyDesignCssVariables } from "@/lib/lightshow/design";
 import { useSmoothedLightshowState } from "@/hooks/useSmoothedLightshowState";
 import { mapAudioToVisualEnergy } from "@/lib/lightshow/visualEnergy";
-import { DESIGN_PALETTES, STATE_DESIGN_TO_OPERATOR, type LightshowState } from "@/lib/lightshow/types";
+import { useBpmBeat } from "@/hooks/Usebpmbeat";
+import {
+  DESIGN_PALETTES,
+  STATE_DESIGN_TO_OPERATOR,
+  type LightshowState,
+} from "@/lib/lightshow/types";
 
 interface AudienceExperienceProps {
   state: LightshowState;
@@ -14,6 +19,13 @@ interface AudienceExperienceProps {
   showDesignLabel?: boolean;
   preview?: boolean;
   smooth?: boolean;
+  // BPM & manual mode — forwarded from operator / parent page state
+  bpm?: number;          // 60–180, defaults to 120
+  manualMode?: boolean;
+  manualEnergy?: number; // 0–100
+  // Pitch — supplied by BeatDetector when available
+  pitchClass?: number;   // 0–11; -1 = none
+  pitchHeight?: number;  // 0–1
 }
 
 export default function AudienceExperience({
@@ -22,15 +34,46 @@ export default function AudienceExperience({
   showDesignLabel = true,
   preview = false,
   smooth = true,
+  bpm = 120,
+  manualMode = false,
+  manualEnergy = 50,
+  pitchClass = -1,
+  pitchHeight = 0.5,
 }: AudienceExperienceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const smoothed = useSmoothedLightshowState(state);
+  const smoothed  = useSmoothedLightshowState(state);
   const liveState = smooth ? smoothed : state;
 
-  const visualEnergy = mapAudioToVisualEnergy(liveState.energy, liveState.bassEnergy);
-  const rawVisualEnergy = mapAudioToVisualEnergy(state.energy, state.bassEnergy);
+  // ── BPM beat signal ──────────────────────────────────────────────────────
+  // In manual mode the BPM hook fires a timed amplitude spike on every beat.
+  // The spike value replaces the static manualEnergy so every design pulses
+  // to the tempo set on the operator controller.
+  const beatEnergy = useBpmBeat({
+    bpm,
+    energy: manualEnergy / 100,   // normalise 0–100 → 0–1
+    active: liveState.active,
+    manualMode,
+  });
 
+  // ── Energy routing ───────────────────────────────────────────────────────
+  // When in manual mode: use beat-driven energy for both visual channels.
+  // When in live audio mode: use the normal audio-derived energy.
+  const baseEnergy = manualMode
+    ? beatEnergy * 100                       // beatEnergy is 0–1; state energy is 0–100
+    : liveState.energy;
+
+  const baseBass = manualMode
+    ? beatEnergy * 80                        // bass slightly lower than full energy
+    : liveState.bassEnergy;
+
+  const visualEnergy    = mapAudioToVisualEnergy(baseEnergy,       baseBass);
+  const rawVisualEnergy = mapAudioToVisualEnergy(state.energy,     state.bassEnergy);
+
+  // Raw values for MusicalVisual's internal smoothing
+  const rawBassEnergy = manualMode ? beatEnergy * 80 : state.bassEnergy;
+
+  // ── Design CSS variables ─────────────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
@@ -66,8 +109,10 @@ export default function AudienceExperience({
             design={liveState.design}
             energy={visualEnergy}
             rawEnergy={rawVisualEnergy}
-            bassEnergy={liveState.bassEnergy}
-            rawBassEnergy={state.bassEnergy}
+            bassEnergy={baseBass}
+            rawBassEnergy={rawBassEnergy}
+            pitchClass={pitchClass}
+            pitchHeight={pitchHeight}
             active={liveState.active}
             reducedMotion={reducedMotion}
           />
@@ -85,7 +130,9 @@ export default function AudienceExperience({
         </div>
       )}
 
-      {!liveState.active && <div className="absolute inset-0 bg-black" aria-hidden="true" />}
+      {!liveState.active && (
+        <div className="absolute inset-0 bg-black" aria-hidden="true" />
+      )}
     </div>
   );
 }
