@@ -49,8 +49,8 @@
 }
 
 body {
-  background-color: #000511;
-  color: white;
+  background-color: #02040d;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Smooth scrolling */
@@ -59,7 +59,7 @@ html {
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #02040d;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -94,7 +94,7 @@ html {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: #02040d;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -131,10 +131,45 @@ html {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-transparent text-white/80 selection:bg-blue-500/30 selection:text-white;
+    overflow-x: hidden;
   }
+
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
   }
+}
+
+/* Custom Cinematic Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #02040d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  border: 2px solid #02040d;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.4);
+}
+
+
+/* Utilities */
+.text-glow {
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.bg-mesh {
+  background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0, transparent 50%),
+    radial-gradient(at 50% 0%, rgba(147, 197, 253, 0.05) 0, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.1) 0, transparent 50%);
 }

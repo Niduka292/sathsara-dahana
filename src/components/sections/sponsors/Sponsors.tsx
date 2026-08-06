@@ -27,7 +27,7 @@ export default function Sponsors() {
   const doubledSponsors = [...sponsors, ...sponsors];
 
   return (
-    <section id="sponsors" className="relative w-full py-24 bg-[#000511] overflow-hidden border-t border-white/5">
+    <section id="sponsors" className="relative w-full py-24 bg-transparent overflow-hidden border-t border-white/5">
       <div className="text-center mb-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold font-cinzel text-white/80 tracking-widest mb-2">
           Our Partners
@@ -35,41 +35,41 @@ export default function Sponsors() {
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mx-auto" />
       </div>
 
-      <div className="relative flex overflow-x-hidden">
+      <div className="relative flex overflow-x-hidden transform-gpu">
         {/* Infinite Scroll Container */}
-        <div className="flex animate-marquee whitespace-nowrap py-4">
+        <div className="flex animate-marquee whitespace-nowrap py-4 will-change-transform">
           {doubledSponsors.map((sponsor, index) => (
             <div
               key={`${sponsor.id}-${index}`}
-              className="inline-flex flex-col items-center justify-center mx-6 px-12 py-10 min-w-[280px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all duration-500 group cursor-pointer"
+              className="inline-flex flex-col items-center justify-center mx-6 px-12 py-10 min-w-[280px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all duration-700 ease-[0.16,1,0.3,1] group cursor-pointer transform-gpu"
             >
               {/* Logo/Image Container */}
-              <div className="relative w-20 h-20 mb-6 group-hover:scale-110 transition-transform duration-500">
+              <div className="relative w-20 h-20 mb-6 group-hover:scale-110 transition-transform duration-700 ease-[0.16,1,0.3,1] transform-gpu">
                 {/* Glow Effect behind logo */}
-                <div 
-                  className="absolute inset-0 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity"
+                <div
+                  className="absolute inset-0 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"
                   style={{ backgroundColor: sponsor.color }}
                 />
-                <div className="relative w-full h-full bg-[#000a1f] rounded-full border border-white/10 flex items-center justify-center overflow-hidden p-3">
+                <div className="relative w-full h-full bg-[#000a1f] rounded-full border border-white/10 flex items-center justify-center overflow-hidden p-3 transform-gpu">
                   <img
                     src={logo.src}
                     alt={sponsor.name}
-                    className="w-full h-full object-contain filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                    style={{ 
+                    className="w-full h-full object-contain filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-[0.16,1,0.3,1]"
+                    style={{
                       filter: `grayscale(1) brightness(1.5) drop-shadow(0 0 5px ${sponsor.color}44)`,
                       // We use hue-rotate to make the same logo look like different brandings
-                      rotate: `${index * 45}deg` 
+                      rotate: `${index * 45}deg`
                     }}
                   />
                 </div>
               </div>
 
               <div className="flex flex-col items-center">
-                <span className="text-xl font-cinzel font-bold text-white/70 group-hover:text-white transition-colors">
+                <span className="text-xl font-cinzel font-bold text-white/70 group-hover:text-white transition-colors duration-500">
                   {sponsor.name}
                 </span>
-                <span 
-                  className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2"
+                <span
+                  className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 transition-colors duration-500"
                   style={{ color: sponsor.color }}
                 >
                   {sponsor.tier} Partner
@@ -80,8 +80,8 @@ export default function Sponsors() {
         </div>
 
         {/* Gradient Overlays for smooth fading at edges */}
-        <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-48 bg-gradient-to-l from-[#000511] via-[#000511]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-16 sm:w-48 bg-gradient-to-r from-[#02040d] via-[#02040d]/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-16 sm:w-48 bg-gradient-to-l from-[#02040d] via-[#02040d]/80 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`

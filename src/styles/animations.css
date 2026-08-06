@@ -1,0 +1,18 @@
+@keyframes vortex-pulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 rgba(165, 243, 252, 0));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.2) drop-shadow(0 0 20px rgba(165, 243, 252, 0.4));
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 rgba(165, 243, 252, 0));
+  }
+}
+
+.animate-vortex-pulse {
+  animation: vortex-pulse 4s ease-in-out infinite;
+}

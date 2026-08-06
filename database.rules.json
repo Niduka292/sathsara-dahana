@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "lightshow": {
+      "state": {
+        ".read": true,
+        ".write": true
+      },
+      "sessions": {
+        ".read": true,
+        "$sessionId": {
+          ".write": true
+        }
+      },
+      "meta": {
+        ".read": true,
+        "audienceCount": {
+          ".write": true
+        }
+      }
+    }
+  }
+}
