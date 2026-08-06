@@ -19,7 +19,7 @@ interface AudienceExperienceProps {
   showDesignLabel?: boolean;
   preview?: boolean;
   smooth?: boolean;
-  // BPM & manual mode — forwarded from operator / parent page state
+  // BPM & manual mode — forwarded from operator
   bpm?: number;          // 60–180, defaults to 120
   manualMode?: boolean;
   manualEnergy?: number; // 0–100
