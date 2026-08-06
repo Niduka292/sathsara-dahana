@@ -6,7 +6,7 @@ import ShowBackground from "@/components/lightshow/ShowBackground";
 import { applyDesignCssVariables } from "@/lib/lightshow/design";
 import { useSmoothedLightshowState } from "@/hooks/useSmoothedLightshowState";
 import { mapAudioToVisualEnergy } from "@/lib/lightshow/visualEnergy";
-import { useBpmBeat } from "@/hooks/Usebpmbeat";
+import { useBpmBeat } from "@/hooks/usebpmbeat";
 import {
   DESIGN_PALETTES,
   STATE_DESIGN_TO_OPERATOR,
