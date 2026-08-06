@@ -20,64 +20,21 @@ interface TeamMember {
 }
 
 const teamMembers: TeamMember[] = [
-  {
-    id: "1",
-    name: "Arun De Silva",
-    role: "Visionary Lead",
-    image: team1.src,
-    description: "Leading the journey with passion.",
-  },
-  {
-    id: "2",
-    name: "Sisi Kumara",
-    role: "Creative Director",
-    image: team2.src,
-    description: "Architect of visual experiences.",
-  },
-  {
-    id: "3",
-    name: "Niduka Perera",
-    role: "Tech Architect",
-    image: team3.src,
-    description: "Building digital universes.",
-  },
-  {
-    id: "4",
-    name: "Kasun Jay",
-    role: "UX Strategist",
-    image: sisi1.src,
-    description: "Designing seamless interactions.",
-  },
-  {
-    id: "5",
-    name: "Dilini Rose",
-    role: "Visual Artist",
-    image: sisi2.src,
-    description: "Creating digital masterpieces.",
-  },
-  {
-    id: "6",
-    name: "Malith K",
-    role: "Backend Lead",
-    image: sisi3.src,
-    description: "Optimizing the core systems.",
-  },
-  { id: "7", name: "Sara W", role: "Comm Lead", image: sisi4.src, description: "Voice of the vision." },
-  {
-    id: "8",
-    name: "Ruwan P",
-    role: "Operations",
-    image: sisi5.src,
-    description: "Managing the flow of energy.",
-  },
+  { id: "1", name: "Arun De Silva",  role: "Visionary Lead",     image: team1.src, description: "Leading the journey with passion."     },
+  { id: "2", name: "Sisi Kumara",   role: "Creative Director",  image: team2.src, description: "Architect of visual experiences."       },
+  { id: "3", name: "Niduka Perera", role: "Tech Architect",     image: team3.src, description: "Building digital universes."             },
+  { id: "4", name: "Kasun Jay",     role: "UX Strategist",      image: sisi1.src, description: "Designing seamless interactions."       },
+  { id: "5", name: "Dilini Rose",   role: "Visual Artist",      image: sisi2.src, description: "Creating digital masterpieces."         },
+  { id: "6", name: "Malith K",      role: "Backend Lead",       image: sisi3.src, description: "Optimizing the core systems."           },
+  { id: "7", name: "Sara W",        role: "Comm Lead",          image: sisi4.src, description: "Voice of the vision."                   },
+  { id: "8", name: "Ruwan P",       role: "Operations",         image: sisi5.src, description: "Managing the flow of energy."           },
 ];
 
 export default function Team() {
-  // Double the team members for seamless infinite scroll
   const doubledMembers = [...teamMembers, ...teamMembers];
 
   return (
-    <section id='team' className="relative w-full py-40 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
+    <section id="team" className="relative w-full py-40 bg-transparent overflow-hidden flex flex-col items-center justify-center min-h-[900px] perspective-[2000px]">
       {/* Background Starfield effect */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZyBmaWxsPSIjMWQ0ZWQ4IiBmaWxsLW9wYWNpdHk9IjAuNCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIzODAiIGN5PSI4MCIgcj0iMS41IiAvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjMyMCIgcj0iMSIgLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIyNTAigcj0iMS41IiAvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjkwIiByPSIwLjUiIC8+PC9nPjwvc3ZnPg==')] opacity-20" />
@@ -96,7 +53,7 @@ export default function Team() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 , delay: 0.1 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
           viewport={{ once: true }}
           className="text-blue-200/60 font-serif italic text-base md:text-lg max-w-2xl mx-auto"
         >
@@ -113,17 +70,16 @@ export default function Team() {
               className="inline-block mx-4 md:mx-6 min-w-[220px] max-w-[220px] md:min-w-[280px] md:max-w-[280px] perspective-[1000px] transform-gpu"
             >
               <div className="group relative transition-all duration-200 ease-[0.16,1,0.3,1] hover:scale-105">
-                {/* 3D Card Content */}
                 <div className="relative flex flex-col h-full bg-gradient-to-br from-white/[0.05] to-white/[0.01] backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group-hover:border-cyan-500/50 transition-all duration-200 ease-[0.16,1,0.3,1] group-hover:shadow-[0_0_30px_rgba(6,182,212,0.2)]">
 
-                  {/* Image Container with inner glow */}
+                  {/* Image Container */}
                   <div className="relative h-[240px] md:h-[320px] w-full overflow-hidden transform-gpu">
-                    <img
+                    <Image
                       src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:scale-110 filter brightness-90 group-hover:brightness-100"
+                      fill
+                      className="object-cover transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:scale-110 filter brightness-90 group-hover:brightness-100"
                     />
-                    {/* Artistic Overlays */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#000511] via-transparent to-transparent opacity-90" />
                     <div className="absolute inset-0 border-[1px] border-white/5 m-2 rounded-xl pointer-events-none" />
                   </div>
@@ -137,12 +93,13 @@ export default function Team() {
                     <p className="text-cyan-500/80 font-medium text-[9px] md:text-[10px] tracking-[0.3em] uppercase mb-3">
                       {member.role}
                     </p>
+                    {/* eslint-disable-next-line react/no-unescaped-entities */}
                     <p className="text-blue-200/40 text-[10px] md:text-xs leading-relaxed italic group-hover:text-blue-100/60 transition-colors duration-200 line-clamp-2">
-                      "{member.description}"
+                      {member.description}
                     </p>
                   </div>
 
-                  {/* Decorative Scanline Effect */}
+                  {/* Scanline Effect */}
                   <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] pointer-events-none opacity-20" />
                 </div>
               </div>
@@ -150,25 +107,19 @@ export default function Team() {
           ))}
         </div>
 
-        {/* Cinematic Depth Masks */}
+        {/* Depth Masks */}
         <div className="absolute inset-y-0 left-0 w-[10%] md:w-[25%] bg-gradient-to-r from-[#02040d] via-[#02040d]/90 to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-[10%] md:w-[25%] bg-gradient-to-l from-[#02040d] via-[#02040d]/90 to-transparent z-10 pointer-events-none" />
       </div>
 
       <style jsx global>{`
         @keyframes team-orbit {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-250%);
-          }
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-250%); }
         }
         .animate-team-orbit {
           animation: team-orbit 25s linear infinite;
         }
-        
-        /* Perspective Curve Simulation */
         .animate-team-orbit > div {
           transition: transform 10s ease-out;
         }
