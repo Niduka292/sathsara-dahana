@@ -110,7 +110,7 @@ export default function BeatDetector({
 
   // Smoothed pitch state lives in a ref so it doesn't trigger re-renders
   const pitchRef = useRef({ pitchClass: -1, pitchHeight: 0.5 });
-  const freqDataRef = useRef<Uint8Array | null>(null);
+  const freqDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
 
   // ── Pitch polling loop ──────────────────────────────────────────────────────
   // We poll the analyser at ~30 fps independently of the energy callbacks to
@@ -120,7 +120,7 @@ export default function BeatDetector({
 
     const fftSize = analyserNode.fftSize;
     const binCount = analyserNode.frequencyBinCount;
-    freqDataRef.current = new Uint8Array(binCount);
+    freqDataRef.current = new Uint8Array(binCount) as Uint8Array<ArrayBuffer>;
 
     let rafId: number;
     let lastDispatch = 0;
