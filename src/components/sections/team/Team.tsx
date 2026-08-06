@@ -91,7 +91,7 @@ export default function Team() {
           viewport={{ once: true }}
           className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] mb-4"
         >
-          The Visionaries
+          {`The Visionaries`}
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -100,7 +100,7 @@ export default function Team() {
           viewport={{ once: true }}
           className="text-blue-200/60 font-serif italic text-base md:text-lg max-w-2xl mx-auto"
         >
-          Orbiting the core of innovation and artistic excellence
+          {`Orbiting the core of innovation and artistic excellence`}
         </motion.p>
       </div>
 

@@ -69,9 +69,9 @@ function clamp(v: number, lo: number, hi: number) { return v < lo ? lo : v > hi 
 // ─────────────────────────────────────────────────────────────────────────────
 
 function novaColor(pitchH: number, intensity: number, alpha: number): string {
-  const pH = clamp(Number.isFinite(pitchH)   ? pitchH   : 0.5, 0, 1);
-  const iv = clamp(Number.isFinite(intensity) ? intensity : 0,   0, 1);
-  const al = clamp(Number.isFinite(alpha)     ? alpha     : 0,   0, 1);
+  const pH = clamp(Number.isFinite(pitchH) ? pitchH : 0.5, 0, 1);
+  const iv = clamp(Number.isFinite(intensity) ? intensity : 0, 0, 1);
+  const al = clamp(Number.isFinite(alpha) ? alpha : 0, 0, 1);
   let r: number, g: number, b: number;
   if (pH < 0.5) {
     const t = pH / 0.5;
@@ -97,7 +97,7 @@ const hexColorTable: string[][] = (() => {
     const energy = ei / HEX_STEPS;
     const row: string[] = [];
     for (let di = 0; di <= HEX_STEPS; di++) {
-      const dist  = di / HEX_STEPS;
+      const dist = di / HEX_STEPS;
       const bloom = clamp(energy - dist * 0.85, 0, 1);
       let r: number, g: number, b: number;
       if (bloom < 0.4) {
@@ -119,7 +119,7 @@ const hexColorTable: string[][] = (() => {
 
 function hexColor(dist: number, energy: number): string {
   const ei = Math.round(clamp(energy, 0, 1) * HEX_STEPS);
-  const di = Math.round(clamp(dist,   0, 1) * HEX_STEPS);
+  const di = Math.round(clamp(dist, 0, 1) * HEX_STEPS);
   return hexColorTable[ei][di];
 }
 
@@ -144,7 +144,7 @@ const veinColorTable: string[][] = (() => {
         g = Math.round(lerp(200, 255, t));
         b = 255;
       }
-      row.push(`rgb(${clamp(r,0,255)},${clamp(g,0,255)},${clamp(b,0,255)})`);
+      row.push(`rgb(${clamp(r, 0, 255)},${clamp(g, 0, 255)},${clamp(b, 0, 255)})`);
     }
     table.push(row);
   }
@@ -152,7 +152,7 @@ const veinColorTable: string[][] = (() => {
 })();
 
 function veinColor(charge: number, pitchHeight: number): string {
-  const ci = Math.round(clamp(charge,      0, 1) * VEIN_STEPS);
+  const ci = Math.round(clamp(charge, 0, 1) * VEIN_STEPS);
   const pi = Math.round(clamp(pitchHeight, 0, 1) * VEIN_STEPS);
   return veinColorTable[ci][pi];
 }
@@ -165,14 +165,14 @@ const HEX_SIZE_DIV = 11;
 
 function buildHexGrid(width: number, height: number): HexCell[] {
   const cells: HexCell[] = [];
-  const size  = Math.min(width, height) / HEX_SIZE_DIV;
+  const size = Math.min(width, height) / HEX_SIZE_DIV;
   const cellW = size * 2;
   const cellH = Math.sqrt(3) * size;
-  const cols  = Math.ceil(width  / (cellW * 0.75)) + 2;
-  const rows  = Math.ceil(height / cellH) + 2;
-  const ox    = width  / 2;
-  const oy    = height / 2;
-  const maxD  = Math.sqrt(ox * ox + oy * oy);
+  const cols = Math.ceil(width / (cellW * 0.75)) + 2;
+  const rows = Math.ceil(height / cellH) + 2;
+  const ox = width / 2;
+  const oy = height / 2;
+  const maxD = Math.sqrt(ox * ox + oy * oy);
   for (let col = -2; col < cols; col++) {
     for (let row = -2; row < rows; row++) {
       const cx = col * cellW * 0.75 + size;
@@ -185,18 +185,18 @@ function buildHexGrid(width: number, height: number): HexCell[] {
   return cells;
 }
 
-const ROOT_ARMS  = 8;
+const ROOT_ARMS = 8;
 const CHARGE_DROP = 0.10;
 
 function buildVeinSegments(width: number, height: number, seed: number): VeinSegment[] {
   const segs: VeinSegment[] = [];
   let rng = seed;
   const rand = () => { rng = (rng * 16807) % 2147483647; return (rng - 1) / 2147483646; };
-  const cx        = width  / 2;
-  const cy        = height / 2;
+  const cx = width / 2;
+  const cy = height / 2;
   const STEP_BASE = Math.min(width, height) * 0.072;
-  const SPREAD    = Math.PI / 6;
-  const MAX_SEGS  = 300;
+  const SPREAD = Math.PI / 6;
+  const MAX_SEGS = 300;
 
   // Build queue carries: x, y, depth, armIndex, angle, parentSegIdx (-1 = none)
   type QNode = { x: number; y: number; depth: number; armIndex: number; angle: number; parentSegIdx: number };
@@ -214,15 +214,15 @@ function buildVeinSegments(width: number, height: number, seed: number): VeinSeg
         ? (b / ROOT_ARMS) * Math.PI * 2
         : node.angle + (rand() - 0.5) * SPREAD * 2;
 
-      const step  = STEP_BASE * (1 - node.depth * 0.06) * (0.85 + rand() * 0.3);
-      const nx    = node.x + Math.cos(angle) * step;
-      const ny    = node.y + Math.sin(angle) * step;
-      const armIndex   = node.depth === 0 ? b : node.armIndex;
+      const step = STEP_BASE * (1 - node.depth * 0.06) * (0.85 + rand() * 0.3);
+      const nx = node.x + Math.cos(angle) * step;
+      const ny = node.y + Math.sin(angle) * step;
+      const armIndex = node.depth === 0 ? b : node.armIndex;
       const segIdx = segs.length;
 
       segs.push({
         x1: node.x, y1: node.y,
-        x2: nx,     y2: ny,
+        x2: nx, y2: ny,
         depth: node.depth + 1,
         armIndex,
         parentIdx: node.parentSegIdx,
@@ -257,7 +257,7 @@ export default function MusicalVisual({
   pitchClass, pitchHeight, active, reducedMotion,
 }: MusicalVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const propsRef  = useRef({ design, energy, rawEnergy, bassEnergy, rawBassEnergy, pitchClass, pitchHeight, active, reducedMotion });
+  const propsRef = useRef({ design, energy, rawEnergy, bassEnergy, rawBassEnergy, pitchClass, pitchHeight, active, reducedMotion });
   propsRef.current = { design, energy, rawEnergy, bassEnergy, rawBassEnergy, pitchClass, pitchHeight, active, reducedMotion };
 
   useEffect(() => {
@@ -268,22 +268,22 @@ export default function MusicalVisual({
     if (!ctx) return;
 
     // ── geometry ─────────────────────────────────────────────────────────────
-    let hexCells: HexCell[]     = [];
+    let hexCells: HexCell[] = [];
     let veinSegs: VeinSegment[] = [];
     // root-arm segment indices (depth === 1) — computed after build
     let rootSegIndices: number[] = [];
     // per-frame charge array, allocated once
     let segCharge = new Float32Array(0);
-    let hexR      = 0;
+    let hexR = 0;
 
     const rebuildGeometry = () => {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
-      hexCells       = buildHexGrid(w, h);
-      veinSegs       = buildVeinSegments(w, h, 42);
+      hexCells = buildHexGrid(w, h);
+      veinSegs = buildVeinSegments(w, h, 42);
       rootSegIndices = veinSegs.map((s, i) => s.depth === 1 ? i : -1).filter(i => i >= 0);
-      segCharge      = new Float32Array(veinSegs.length);
-      hexR           = Math.min(w, h) / HEX_SIZE_DIV;
+      segCharge = new Float32Array(veinSegs.length);
+      hexR = Math.min(w, h) / HEX_SIZE_DIV;
     };
 
     const resize = () => {
@@ -291,9 +291,9 @@ export default function MusicalVisual({
       if (!parent) return;
       // DPR capped at 1.5 for mobile fps headroom
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width  = parent.clientWidth  * dpr;
+      canvas.width = parent.clientWidth * dpr;
       canvas.height = parent.clientHeight * dpr;
-      canvas.style.width  = `${parent.clientWidth}px`;
+      canvas.style.width = `${parent.clientWidth}px`;
       canvas.style.height = `${parent.clientHeight}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       rebuildGeometry();
@@ -304,18 +304,18 @@ export default function MusicalVisual({
 
     // ── frame state ───────────────────────────────────────────────────────────
     let displayEnergy = 0;
-    let displayBass   = 0;
-    let time          = 0;
-    let frameId       = 0;
-    let smoothPitchH  = 0.5;
+    let displayBass = 0;
+    let time = 0;
+    let frameId = 0;
+    let smoothPitchH = 0.5;
 
     // Supernova state
     const shockwaves: Shockwave[] = [];
-    const debris:     Debris[]    = [];
+    const debris: Debris[] = [];
     let prevAmp = 0;
 
     const spawnDetonation = (w: number, h: number, amp: number, pH: number) => {
-      const diag  = Math.sqrt(w * w + h * h) * 0.55;
+      const diag = Math.sqrt(w * w + h * h) * 0.55;
       const speed = 2.8 + amp * 5.5;
       shockwaves.push({ radius: 0, maxRadius: diag, speed, birthAmp: amp, opacity: 1 });
       if (amp > 0.5) {
@@ -324,11 +324,11 @@ export default function MusicalVisual({
       const count = Math.round(lerp(8, 38, amp));
       for (let i = 0; i < count; i++) {
         debris.push({
-          angle:  Math.random() * Math.PI * 2,
-          speed:  1.5 + Math.random() * amp * 7,
+          angle: Math.random() * Math.PI * 2,
+          speed: 1.5 + Math.random() * amp * 7,
           radius: 0,
-          size:   0.8 + Math.random() * (1.5 + amp * 2.5),
-          decay:  0.96 - Math.random() * 0.04,
+          size: 0.8 + Math.random() * (1.5 + amp * 2.5),
+          decay: 0.96 - Math.random() * 0.04,
           opacity: 0.6 + Math.random() * 0.4,
           colorT: pH + (Math.random() - 0.5) * 0.2,
         });
@@ -346,29 +346,29 @@ export default function MusicalVisual({
       prevAmp = amp;
 
       for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw   = shockwaves[i];
+        const sw = shockwaves[i];
         sw.radius += sw.speed;
-        const prog  = sw.radius / sw.maxRadius;
-        sw.opacity  = clamp(1 - prog * 1.1, 0, 1);
+        const prog = sw.radius / sw.maxRadius;
+        sw.opacity = clamp(1 - prog * 1.1, 0, 1);
         if (sw.opacity <= 0.01) { shockwaves.splice(i, 1); continue; }
         const thick = (3 + sw.birthAmp * 8) * (1 - prog * 0.7);
-        const fade  = 1 - prog * prog;
+        const fade = 1 - prog * prog;
         ctx.beginPath();
         ctx.arc(cx, cy, sw.radius, 0, Math.PI * 2);
         ctx.strokeStyle = novaColor(pH, sw.birthAmp * 0.85, sw.opacity * 0.3 * fade);
-        ctx.lineWidth   = thick * 3.5;
+        ctx.lineWidth = thick * 3.5;
         ctx.stroke();
         ctx.beginPath();
         ctx.arc(cx, cy, sw.radius, 0, Math.PI * 2);
         ctx.strokeStyle = novaColor(pH, sw.birthAmp * 0.85, sw.opacity * fade);
-        ctx.lineWidth   = thick;
+        ctx.lineWidth = thick;
         ctx.stroke();
       }
 
       for (let i = debris.length - 1; i >= 0; i--) {
-        const d   = debris[i];
+        const d = debris[i];
         d.radius += d.speed;
-        d.speed  *= 0.985;
+        d.speed *= 0.985;
         d.opacity *= d.decay;
         if (d.opacity < 0.015) { debris.splice(i, 1); continue; }
         ctx.beginPath();
@@ -377,47 +377,49 @@ export default function MusicalVisual({
         ctx.fill();
       }
 
-      const breathe  = Math.sin(time * 1.6) * 0.012;
-      const coreR    = Math.min(w, h) * (0.045 + amp * 0.08 + bass * 0.025 + breathe);
-      const coronaR  = coreR * (3.5 + amp * 2.5);
-      const corona   = ctx.createRadialGradient(cx, cy, coreR * 0.5, cx, cy, coronaR);
-      corona.addColorStop(0,   novaColor(pH, amp,       0.35 + amp * 0.25));
+      const breathe = Math.sin(time * 1.6) * 0.012;
+      const coreR = Math.min(w, h) * (0.045 + amp * 0.08 + bass * 0.025 + breathe);
+      const coronaR = coreR * (3.5 + amp * 2.5);
+      const corona = ctx.createRadialGradient(cx, cy, coreR * 0.5, cx, cy, coronaR);
+      corona.addColorStop(0, novaColor(pH, amp, 0.35 + amp * 0.25));
       corona.addColorStop(0.4, novaColor(pH, amp * 0.7, 0.12 + amp * 0.1));
-      corona.addColorStop(1,   novaColor(pH, 0,         0));
+      corona.addColorStop(1, novaColor(pH, 0, 0));
       ctx.beginPath(); ctx.arc(cx, cy, coronaR, 0, Math.PI * 2);
       ctx.fillStyle = corona; ctx.fill();
 
       const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-      core.addColorStop(0,   `rgba(255,255,255,${(0.85 + amp * 0.15).toFixed(2)})`);
-      core.addColorStop(0.3, novaColor(pH, 1,   0.9));
+      core.addColorStop(0, `rgba(255,255,255,${(0.85 + amp * 0.15).toFixed(2)})`);
+      core.addColorStop(0.3, novaColor(pH, 1, 0.9));
       core.addColorStop(0.7, novaColor(pH, 0.8, 0.6));
-      core.addColorStop(1,   novaColor(pH, 0.4, 0));
+      core.addColorStop(1, novaColor(pH, 0.4, 0));
       ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
       ctx.fillStyle = core; ctx.fill();
     };
 
     // ── DRAW: Hex Bloom ───────────────────────────────────────────────────────
-    const HEX_ANGLE  = Math.PI / 3;
+    const HEX_ANGLE = Math.PI / 3;
     const HEX_OFFSET = -Math.PI / 6;
 
     const traceHex = (cx: number, cy: number, r: number) => {
       ctx.beginPath();
       for (let i = 0; i < 6; i++) {
         const a = HEX_ANGLE * i + HEX_OFFSET;
-        i === 0
-          ? ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
-          : ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        if (i === 0) {
+          ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        } else {
+          ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        }
       }
       ctx.closePath();
     };
 
     const drawHexBloom = (w: number, h: number, amp: number, bass: number) => {
-      ctx.fillStyle   = "#000";
+      ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
-      const breathe     = Math.sin(time * 1.1) * 0.04;
+      const breathe = Math.sin(time * 1.1) * 0.04;
       const totalEnergy = clamp(amp + bass * 0.35 + breathe, 0, 1);
-      const outerR      = hexR * 0.88;
+      const outerR = hexR * 0.88;
 
       for (const cell of hexCells) {
         const bloom = clamp(totalEnergy - cell.dist * 0.82, 0, 1);
@@ -426,7 +428,7 @@ export default function MusicalVisual({
           traceHex(cell.cx, cell.cy, outerR);
           ctx.globalAlpha = 1;
           ctx.strokeStyle = "rgba(40,0,80,0.35)";
-          ctx.lineWidth   = 0.5;
+          ctx.lineWidth = 0.5;
           ctx.stroke();
           continue;
         }
@@ -436,20 +438,20 @@ export default function MusicalVisual({
         // Fill
         traceHex(cell.cx, cell.cy, outerR);
         ctx.globalAlpha = clamp(bloom * 0.85, 0, 0.9);
-        ctx.fillStyle   = col;
+        ctx.fillStyle = col;
         ctx.fill();
 
         // Border
         ctx.globalAlpha = clamp(bloom * 1.2, 0, 1);
         ctx.strokeStyle = col;
-        ctx.lineWidth   = 0.8 + bloom * 2;
+        ctx.lineWidth = 0.8 + bloom * 2;
         ctx.stroke();
 
         // Inner glow
         if (bloom > 0.6) {
           traceHex(cell.cx, cell.cy, outerR * 0.55 * bloom);
           ctx.globalAlpha = (bloom - 0.6) * 0.7;
-          ctx.fillStyle   = col;
+          ctx.fillStyle = col;
           ctx.fill();
         }
       }
@@ -480,17 +482,17 @@ export default function MusicalVisual({
     };
 
     const drawPlasmaVeins = (w: number, h: number, amp: number, bass: number, pc: number, pH: number) => {
-      ctx.fillStyle   = "#000";
+      ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
 
-      const rawCharge  = clamp(Math.pow(amp, 0.6) + bass * 0.4, 0, 1);
-      const pulse      = Math.sin(time * 2.8) * 0.18 + Math.sin(time * 1.1) * 0.07;
+      const rawCharge = clamp(Math.pow(amp, 0.6) + bass * 0.4, 0, 1);
+      const pulse = Math.sin(time * 2.8) * 0.18 + Math.sin(time * 1.1) * 0.07;
       const rootCharge = clamp(rawCharge + pulse * rawCharge, 0, 1);
 
       computeCharges(rootCharge, pc);
 
-      ctx.lineCap  = "round";
+      ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
       // Pass 1 — core lines
@@ -503,7 +505,7 @@ export default function MusicalVisual({
         ctx.lineTo(seg.x2, seg.y2);
         ctx.strokeStyle = veinColor(charge, pH);
         ctx.globalAlpha = 0.5 + charge * 0.5;
-        ctx.lineWidth   = clamp(2.8 - seg.depth * 0.32, 0.5, 2.8);
+        ctx.lineWidth = clamp(2.8 - seg.depth * 0.32, 0.5, 2.8);
         ctx.stroke();
       }
 
@@ -517,7 +519,7 @@ export default function MusicalVisual({
         ctx.lineTo(seg.x2, seg.y2);
         ctx.strokeStyle = veinColor(charge, pH);
         ctx.globalAlpha = charge * charge * 0.5;
-        ctx.lineWidth   = clamp(charge * charge * 18, 1, 18);
+        ctx.lineWidth = clamp(charge * charge * 18, 1, 18);
         ctx.stroke();
       }
 
@@ -525,14 +527,14 @@ export default function MusicalVisual({
 
       // Center glow
       if (rootCharge > 0.08 && veinSegs.length > 0) {
-        const cx  = veinSegs[0].x1;
-        const cy  = veinSegs[0].y1;
+        const cx = veinSegs[0].x1;
+        const cy = veinSegs[0].y1;
         const glR = 8 + rootCharge * 28;
-        const gr  = ctx.createRadialGradient(cx, cy, 0, cx, cy, glR);
-        gr.addColorStop(0, veinColor(1,   pH));
+        const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, glR);
+        gr.addColorStop(0, veinColor(1, pH));
         gr.addColorStop(1, "rgba(0,0,0,0)");
         ctx.globalAlpha = rootCharge * 0.95;
-        ctx.fillStyle   = gr;
+        ctx.fillStyle = gr;
         ctx.beginPath();
         ctx.arc(cx, cy, glR, 0, Math.PI * 2);
         ctx.fill();
@@ -552,15 +554,15 @@ export default function MusicalVisual({
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
 
-      displayEnergy = chaseValue(displayEnergy, normalizeVisualEnergy(e),  reduced ? 0.78 : 0.92, reduced ? 0.55 : 0.72);
-      displayBass   = chaseValue(displayBass,   normalizeVisualEnergy(be), reduced ? 0.80 : 0.94, reduced ? 0.58 : 0.75);
+      displayEnergy = chaseValue(displayEnergy, normalizeVisualEnergy(e), reduced ? 0.78 : 0.92, reduced ? 0.55 : 0.72);
+      displayBass = chaseValue(displayBass, normalizeVisualEnergy(be), reduced ? 0.80 : 0.94, reduced ? 0.58 : 0.75);
 
       const bassLive = normalizeVisualEnergy(rbe) * 0.88 + displayBass * 0.12;
-      const amp      = liveAmplitude(displayEnergy, normalizeVisualEnergy(re), bassLive);
+      const amp = liveAmplitude(displayEnergy, normalizeVisualEnergy(re), bassLive);
 
-      const safePh  = Number.isFinite(ph) ? ph : 0.5;
+      const safePh = Number.isFinite(ph) ? ph : 0.5;
       smoothPitchH += (safePh - smoothPitchH) * (reduced ? 0.12 : 0.18);
-      time         += reduced ? 0.008 : 0.016;
+      time += reduced ? 0.008 : 0.016;
 
       // Always reset globalAlpha at top of frame
       ctx.globalAlpha = 1;

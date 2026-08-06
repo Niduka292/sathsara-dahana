@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
 import sisi1 from "../../../../assets/sisi-1.jpg";
 import sisi2 from "../../../../assets/sisi-2.jpg";
 import sisi3 from "../../../../assets/sisi-3.jpg";
