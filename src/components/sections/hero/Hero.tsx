@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
 import FuzzyText from '../../../../components/FuzzyText';
 import VortexBackground from "../../ui/VortexBackground";
@@ -10,18 +9,6 @@ import "../../../styles/animations.css";
 
 
 export default function Hero() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
 
   return (
     <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden py-32 bg-transparent">
