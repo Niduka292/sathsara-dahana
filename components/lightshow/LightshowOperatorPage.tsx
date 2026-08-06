@@ -29,6 +29,7 @@ export default function LightshowOperatorPage() {
   const [audioEnergy, setAudioEnergy] = useState(0);
   const [bassEnergy, setBassEnergy] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [bpm, setBpm] = useState(120);
 
   const handlePinSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -123,6 +124,7 @@ export default function LightshowOperatorPage() {
             active={active}
             manualEnergy={manualEnergy}
             manualMode={manualMode}
+            bpm={bpm}
             audienceCount={meta.audienceCount}
             audioEnergy={audioEnergy}
             bassEnergy={bassEnergy}
@@ -137,6 +139,7 @@ export default function LightshowOperatorPage() {
             }}
             onManualEnergyChange={setManualEnergy}
             onManualModeChange={setManualMode}
+            onBpmChange={setBpm}
             onEmergencyStop={() => {
               setActive(false);
               void emergencyStopLightshow();
