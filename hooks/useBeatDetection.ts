@@ -20,6 +20,8 @@ interface BeatDetectionResult {
   stop: () => void;
   lastEnergy: number;
   lastBassEnergy: number;
+  analyserNode: AnalyserNode | null;
+  sampleRate: number | null;
 }
 
 const WRITE_INTERVAL_MS = 33;
@@ -245,6 +247,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     stop,
     lastEnergy,
     lastBassEnergy,
+    analyserNode: analyserRef.current,          
+    sampleRate: audioContextRef.current?.sampleRate ?? null,  
   };
 }
 
