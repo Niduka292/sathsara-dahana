@@ -7,6 +7,14 @@
 @theme inline {
   --font-cinzel: var(--font-cinzel), serif;
   --font-heading: var(--font-sans);
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -173,3 +181,20 @@ html {
     radial-gradient(at 50% 0%, rgba(147, 197, 253, 0.05) 0, transparent 50%),
     radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.1) 0, transparent 50%);
 }
+
+/* Hide system cursor on desktop when star cursor is active */
+@media (hover: hover) and (pointer: fine) {
+  .star-cursor-active,
+  .star-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+/* Gold and Violet glow utilities */
+.text-glow-gold {
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.2);
+}
+
+.text-glow-violet {
+  text-shadow: 0 0 20px rgba(167, 139, 250, 0.5), 0 0 40px rgba(167, 139, 250, 0.2);
+}

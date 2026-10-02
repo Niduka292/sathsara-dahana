@@ -11,7 +11,7 @@ import "../../../styles/animations.css";
 export default function Hero() {
 
   return (
-    <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden py-32 bg-transparent">
+    <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden py-20 md:py-32 bg-transparent">
       <VortexBackground />
       
       <div className="relative z-10 container mx-auto px-6 flex flex-col items-center justify-center text-center mt-12">
@@ -47,7 +47,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="text-6xl md:text-8xl lg:text-[9.5rem] font-bold leading-none tracking-tighter uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white/90 via-white/80 to-blue-200/50 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)] transform-gpu"
+            className="text-4xl sm:text-6xl md:text-8xl lg:text-[9.5rem] font-bold leading-none tracking-tighter uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white/90 via-white/80 to-blue-200/50 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)] transform-gpu"
           >
             <FuzzyText>
               Sathsara Dahana
@@ -59,7 +59,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.2, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg md:text-xl text-white/50 mb-16 italic font-cinzel tracking-[0.2em] max-w-2xl"
+            className="text-base md:text-xl text-white/50 mb-16 italic font-cinzel tracking-[0.2em] max-w-2xl"
           >
             Where Every Note Echoes Across Centuries
           </motion.p>
@@ -75,11 +75,11 @@ export default function Hero() {
               <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-medium font-cinzel">The Grand Event</span>
               <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-white/20" />
             </div>
-            <div className="flex flex-col items-center gap-4 text-2xl md:text-4xl tracking-[0.4em] font-cinzel text-white/80 font-bold">
-              <div>
-                6 <span className="text-blue-400/60">•</span> SEPTEMBER <span className="text-blue-400/60">•</span> 2026
+            <div className="flex flex-col items-center gap-4 text-lg sm:text-2xl md:text-4xl tracking-[0.15em] sm:tracking-[0.4em] font-cinzel text-white/80 font-bold">
+              <div className="text-glow-gold">
+                6 <span className="text-[#fbbf24]/80">•</span> SEPTEMBER <span className="text-[#fbbf24]/80">•</span> 2026
               </div>
-              <div>7:00 PM</div>
+              <div className="text-[#fbbf24]/60">7:00 PM</div>
             </div>
           </motion.div>
 
@@ -87,14 +87,14 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row gap-8 w-full max-w-2xl justify-center px-6"
+            className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full max-w-2xl justify-center px-6"
           >
-            <button className="relative px-10 py-5 bg-white/5 border border-white/10 text-white/60 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.05)] backdrop-blur-md group overflow-hidden rounded-sm">
+            <button className="relative px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 text-white/60 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.05)] backdrop-blur-md group overflow-hidden rounded-sm">
               <span className="relative z-10 font-cinzel">Secure Your Portal</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-[0.16,1,0.3,1]" />
             </button>
 
-            <button className="relative px-10 py-5 bg-white/5 border border-white/10 text-white/40 text-[11px] font-bold uppercase tracking-[0.3em] hover:text-white/80 hover:border-white/20 transition-all duration-500 group overflow-hidden rounded-sm backdrop-blur-sm">
+            <button className="relative px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 text-white/40 text-[11px] font-bold uppercase tracking-[0.3em] hover:text-white/80 hover:border-white/20 transition-all duration-500 group overflow-hidden rounded-sm backdrop-blur-sm">
               <span className="relative z-10 font-cinzel">Explore The Journey</span>
               <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1]" />
             </button>

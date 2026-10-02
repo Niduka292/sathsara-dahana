@@ -39,7 +39,7 @@ export default function Countdown() {
   if (!isMounted) return null;
 
   return (
-    <section className="relative w-full py-32 bg-transparent overflow-hidden z-20 border-y border-white/5">
+    <section className="relative w-full py-20 md:py-32 bg-transparent overflow-hidden z-20 border-y border-white/5">
       {/* Decorative background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />
@@ -70,10 +70,10 @@ export default function Countdown() {
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center transform-gpu"
           >
-            <div className="flex items-center gap-8 mb-16">
-              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent to-blue-500/50" />
-              <span className="text-[11px] md:text-xs uppercase tracking-[0.6em] text-blue-400 font-bold font-cinzel">The Portal Opens In</span>
-              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent to-blue-500/50" />
+            <div className="flex items-center gap-4 sm:gap-8 mb-10 sm:mb-16">
+              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent to-[#fbbf24]/50" />
+              <span className="text-[11px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.6em] text-[#fbbf24] font-bold font-cinzel text-glow-gold">The Portal Opens In</span>
+              <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent to-[#fbbf24]/50" />
             </div>
 
             <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-8 lg:gap-16 w-full max-w-6xl">
@@ -87,12 +87,12 @@ export default function Countdown() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-20 flex flex-col items-center gap-4 px-8 py-4 border border-blue-500/10 rounded-full bg-blue-500/5 backdrop-blur-sm transform-gpu"
+              className="mt-20 flex flex-col items-center gap-4 px-4 py-3 sm:px-8 sm:py-4 border border-[#fbbf24]/20 rounded-2xl sm:rounded-full bg-[#fbbf24]/5 backdrop-blur-sm transform-gpu"
             >
-            <div className="text-[10px] uppercase tracking-[0.4em] text-blue-300/40 font-bold font-cinzel">
+            <div className="text-[10px] uppercase tracking-[0.4em] text-[#fbbf24]/50 font-bold font-cinzel">
               Celestial Event
             </div>
-            <div className="text-sm md:text-base text-blue-100/60 font-cinzel tracking-[0.3em] font-medium text-center">
+            <div className="text-sm md:text-base text-[#fbbf24]/70 font-cinzel tracking-[0.1em] sm:tracking-[0.3em] font-medium text-center text-glow-gold">
               JUNE 6, 2026 • 07:00 PM • COLOMBO
             </div>
           </motion.div>

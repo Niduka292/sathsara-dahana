@@ -84,7 +84,7 @@ export default function Timeline() {
   });
 
   return (
-    <section id="timeline" ref={containerRef} className="relative w-full py-40 bg-transparent overflow-hidden">
+    <section id="timeline" ref={containerRef} className="relative w-full py-20 md:py-40 bg-transparent overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0 pointer-events-none transform-gpu">
         <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-blue-300 rounded-full blur-[1px]" />
@@ -94,12 +94,12 @@ export default function Timeline() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-32">
+        <div className="text-center mb-16 md:mb-32">
           <motion.span 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-blue-400 text-[11px] font-bold tracking-[0.5em] uppercase mb-4 block font-cinzel"
+            className="text-[#a78bfa] text-[11px] font-bold tracking-[0.5em] uppercase mb-4 block font-cinzel text-glow-violet"
           >
             Chronological Odyssey
           </motion.span>
@@ -123,7 +123,7 @@ export default function Timeline() {
             className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-blue-600 via-blue-400 to-cyan-300 md:-translate-x-1/2 origin-top z-20 transform-gpu"
           />
 
-          <div className="flex flex-col gap-32 md:gap-40">
+          <div className="flex flex-col gap-20 md:gap-40">
             {events.map((event, index) => {
               const isEven = index % 2 === 0;
 
@@ -138,7 +138,7 @@ export default function Timeline() {
                 >
                   {/* Left Content (Desktop only) */}
                   <div className={`hidden md:flex w-1/2 pr-20 flex-col ${isEven ? "items-end text-right" : "opacity-0 pointer-events-none"}`}>
-                    <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors duration-700 ease-[0.16,1,0.3,1]">
+                    <span className={`text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel transition-colors duration-700 ease-[0.16,1,0.3,1] ${index % 2 === 1 ? "text-[#a78bfa]/60 group-hover:text-[#a78bfa]" : "text-blue-400/60 group-hover:text-blue-400"}`}>
                       {event.label}
                     </span>
                     <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors duration-700 ease-[0.16,1,0.3,1]">
@@ -178,7 +178,7 @@ export default function Timeline() {
                     </div>
                     {!isEven && (
                       <div className="hidden md:flex flex-col items-start text-left">
-                        <span className="text-blue-400/60 text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel group-hover:text-blue-400 transition-colors duration-700 ease-[0.16,1,0.3,1]">
+                        <span className={`text-[10px] md:text-xs font-bold tracking-[0.4em] uppercase mb-4 font-cinzel transition-colors duration-700 ease-[0.16,1,0.3,1] ${index % 2 === 1 ? "text-[#a78bfa]/60 group-hover:text-[#a78bfa]" : "text-blue-400/60 group-hover:text-blue-400"}`}>
                           {event.label}
                         </span>
                         <h3 className="text-2xl md:text-4xl font-bold mb-6 font-cinzel text-white group-hover:text-blue-200 transition-colors duration-700 ease-[0.16,1,0.3,1]">

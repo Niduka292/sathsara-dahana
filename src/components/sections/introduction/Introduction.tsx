@@ -6,7 +6,7 @@ import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
 
 export default function Introduction() {
   return (
-    <section id="introduction" className="relative w-full min-h-screen py-32 bg-transparent overflow-hidden flex items-center z-10">
+    <section id="introduction" className="relative w-full min-h-screen py-20 md:py-32 bg-transparent overflow-hidden flex items-center z-10">
       {/* Background Subtle Effects */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[120px]" />
@@ -14,7 +14,7 @@ export default function Introduction() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-32">
+        <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-32">
 
           {/* Left Side: Text */}
           <motion.div
@@ -25,11 +25,11 @@ export default function Introduction() {
             className="flex-1 text-left order-2 lg:order-1 transform-gpu lg:ml-15"
           >
             <div className="flex items-center gap-6 mb-8">
-              <div className="h-[1px] w-16 bg-gradient-to-r from-blue-500 to-transparent" />
-              <span className="text-[11px] uppercase tracking-[0.4em] text-blue-400 font-bold font-cinzel">The Cosmic Legacy</span>
+              <div className="h-[1px] w-16 bg-gradient-to-r from-[#a78bfa] to-transparent" />
+              <span className="text-[11px] uppercase tracking-[0.4em] text-[#a78bfa] font-bold font-cinzel text-glow-violet">The Cosmic Legacy</span>
             </div>
 
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold uppercase mb-12 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold uppercase mb-8 md:mb-12 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400 leading-tight">
               A Grand <br />Extravaganza
             </h2>
 
