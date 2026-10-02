@@ -16,7 +16,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-2">
             <Link href="/" className="text-2xl md:text-3xl font-cinzel tracking-widest text-white mb-8 block">
-              Sisi <span className="text-blue-400">Arundathee</span>
+              Sathsara <span className="text-blue-400">Dahana</span>
             </Link>
             <p className="text-blue-100/40 text-sm md:text-base leading-relaxed max-w-md mb-8">
               A celestial journey through the evolution of sound. Join us as we explore the melodies that define our past and shape our future.
@@ -71,7 +71,7 @@ export default function Footer() {
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel">
-            © {new Date().getFullYear()} Sisi Arundathee • Designed with Stardust
+            © {new Date().getFullYear()} Sathsara Dahana • Designed with Stardust
           </div>
           
           <div className="flex gap-4 sm:gap-8 text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel">

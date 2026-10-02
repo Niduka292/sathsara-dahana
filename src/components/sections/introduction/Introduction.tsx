@@ -41,7 +41,7 @@ export default function Introduction() {
                 viewport={{ once: true }}
                 className="first-letter:text-5xl first-letter:font-cinzel first-letter:mr-3 first-letter:float-left first-letter:text-blue-400"
               >
-                {`"Sisi Arundathee" is one of the most iconic cultural showcases organized by the Student Council of the Faculty of Applied Sciences at the University of Sri Jayewardenepura. Recognized as a vibrant celebration of creativity, the event has historically served as a platform where undergraduate students step beyond the boundaries of science to express their artistic talents through music, dance, and stage performances.`}
+                {`"Sathsara Dahana" is one of the most iconic cultural showcases organized by the Student Council of the Faculty of Applied Sciences at the University of Sri Jayewardenepura. Recognized as a vibrant celebration of creativity, the event has historically served as a platform where undergraduate students step beyond the boundaries of science to express their artistic talents through music, dance, and stage performances.`}
               </motion.p>
 
               <motion.p
@@ -50,7 +50,7 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`Originating as an annual tradition, "Sisi Arundathee" has been described as a grand cultural extravaganza that brings together a diverse range of performances—from traditional Sri Lankan and South Asian dance forms to contemporary Western music and choreography. The event not only highlights the multifaceted talents of students but also reinforces the idea that scientific minds can equally thrive in artistic expression.`}
+                {`Originating as an annual tradition, "Sathsara Dahana" has been described as a grand cultural extravaganza that brings together a diverse range of performances—from traditional Sri Lankan and South Asian dance forms to contemporary Western music and choreography. The event not only highlights the multifaceted talents of students but also reinforces the idea that scientific minds can equally thrive in artistic expression.`}
               </motion.p>
 
               <motion.div
@@ -69,7 +69,7 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`With a legacy spanning many years, the event has been a hallmark of student life. After its most recent edition in 2019, "Sisi Arundathee" has remained discontinued, marking a pause in what was once a highly anticipated annual tradition. Its absence has been strongly felt, further emphasizing its cultural and emotional significance within the university community.`}
+                {`With a legacy spanning many years, the event has been a hallmark of student life. After its most recent edition in 2019, "Sathsara Dahana" has remained discontinued, marking a pause in what was once a highly anticipated annual tradition. Its absence has been strongly felt, further emphasizing its cultural and emotional significance within the university community.`}
               </motion.p>
             </div>
           </motion.div>

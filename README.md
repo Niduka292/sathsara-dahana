@@ -1,6 +1,6 @@
-# 🎶 Sisi Arundathee – Official Event Website
+# 🎶 Sathsara Dahana – Official Event Website
 
-A modern, interactive web platform built for the university musical event **Sisi Arundathee**, designed with a **time travel theme**.
+A modern, interactive web platform built for the university musical event **Sathsara Dahana**, designed with a **time travel theme**.
 The website showcases event details, memories, sponsorships, and includes a **teaser puzzle system** to unlock the main experience.
 
 ---
@@ -64,8 +64,8 @@ src/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/sisi-arundathee.git
-cd sisi-arundathee
+git clone https://github.com/your-org/sathsara-dahana.git
+cd sathsara-dahana
 ```
 
 ---
