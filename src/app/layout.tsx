@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cinzel } from "next/font/google";
 import "./globals.css";
+import StarCursor from "../components/ui/StarCursor";
+import LoadingScreen from "../components/ui/LoadingScreen";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -8,7 +10,7 @@ const cinzel = Cinzel({
 });
 
 export const metadata: Metadata = {
-  title: "Sisi Arundathee",
+  title: "Sathsara Dahana",
   description: "A time-travel themed musical experience",
   icons: {
     icon: "/favicon.ico",
@@ -21,8 +23,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={cinzel.variable}>
-      <body className="bg-transparent text-white antialiased">{children}</body>
+    <html lang="en" className={cinzel.variable} suppressHydrationWarning>
+      <body className="bg-transparent text-white antialiased" suppressHydrationWarning>
+        <LoadingScreen />
+        <StarCursor />
+        {children}
+      </body>
     </html>
   );
 }

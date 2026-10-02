@@ -25,7 +25,7 @@ export default function Sponsors() {
   const doubledSponsors = [...sponsors, ...sponsors];
 
   return (
-    <section id="sponsors" className="relative w-full py-24 bg-transparent overflow-hidden border-t border-white/5">
+    <section id="sponsors" className="relative w-full py-16 md:py-24 bg-transparent overflow-hidden border-t border-white/5">
       <div className="text-center mb-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold font-cinzel text-white/80 tracking-widest mb-2">
           Our Partners
@@ -39,7 +39,7 @@ export default function Sponsors() {
           {doubledSponsors.map((sponsor, index) => (
             <div
               key={`${sponsor.id}-${index}`}
-              className="inline-flex flex-col items-center justify-center mx-6 px-12 py-10 min-w-[280px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all duration-700 ease-[0.16,1,0.3,1] group cursor-pointer transform-gpu"
+              className="inline-flex flex-col items-center justify-center mx-3 sm:mx-6 px-6 sm:px-12 py-8 sm:py-10 min-w-[220px] sm:min-w-[280px] bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl hover:border-cyan-500/40 hover:bg-white/[0.05] transition-all duration-700 ease-[0.16,1,0.3,1] group cursor-pointer transform-gpu"
             >
               {/* Logo/Image Container */}
               <div className="relative w-20 h-20 mb-6 group-hover:scale-110 transition-transform duration-700 ease-[0.16,1,0.3,1] transform-gpu">

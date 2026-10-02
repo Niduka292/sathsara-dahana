@@ -6,12 +6,12 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-[#02040d] pt-32 pb-12 overflow-hidden border-t border-white/5">
+    <footer className="relative bg-[#02040d] pt-20 pb-8 md:pt-32 md:pb-12 overflow-hidden border-t border-white/5">
       {/* Background Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/10 rounded-full blur-[120px] -z-10" />
 
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 sm:gap-16 mb-12 sm:mb-20">
           
           {/* Brand Column */}
           <div className="md:col-span-2">
@@ -70,11 +70,11 @@ export default function Footer() {
         </div>
 
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-100/20 font-cinzel">
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel">
             © {new Date().getFullYear()} Sisi Arundathee • Designed with Stardust
           </div>
           
-          <div className="flex gap-8 text-[10px] md:text-xs uppercase tracking-[0.3em] text-blue-100/20 font-cinzel">
+          <div className="flex gap-4 sm:gap-8 text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel">
             <a href="#" className="hover:text-blue-300 transition-colors">Privacy</a>
             <a href="#" className="hover:text-blue-300 transition-colors">Terms</a>
           </div>
