@@ -182,14 +182,6 @@ html {
     radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.1) 0, transparent 50%);
 }
 
-/* Hide system cursor on desktop when star cursor is active */
-@media (hover: hover) and (pointer: fine) {
-  .star-cursor-active,
-  .star-cursor-active * {
-    cursor: none !important;
-  }
-}
-
 /* Gold and Violet glow utilities */
 .text-glow-gold {
   text-shadow: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.2);

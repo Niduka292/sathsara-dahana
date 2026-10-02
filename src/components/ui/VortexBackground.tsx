@@ -51,10 +51,6 @@ export const VortexBackground: React.FC = () => {
       '#a5f3fc', // Star Light Cyan
       '#7dd3fc', // Sky Blue
       '#e0f2fe', // Very light blue
-      '#fbbf24', // Gold
-      '#fcd34d', // Light Gold
-      '#a78bfa', // Violet
-      '#c4b5fd', // Light Violet
     ];
 
     const initParticle = (p?: Partial<Particle>): Particle => {

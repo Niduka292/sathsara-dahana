@@ -39,7 +39,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-cinzel tracking-widest text-xs uppercase mb-8 opacity-60">Navigation</h4>
             <ul className="space-y-4">
-              {["Introduction", "Timeline","Sponsors", "Team"].map((item) => (
+              {["Introduction", "Timeline"].map((item) => (
                 <li key={item}>
                   <Link 
                     href={`#${item.toLowerCase()}`} 

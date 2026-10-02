@@ -64,6 +64,8 @@ export default function Hero() {
             Where Every Note Echoes Across Centuries
           </motion.p>
 
+          {/* Date section disabled */}
+          {/*
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,6 +84,7 @@ export default function Hero() {
               <div className="text-[#fbbf24]/60">7:00 PM</div>
             </div>
           </motion.div>
+          */}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -89,14 +92,14 @@ export default function Hero() {
             transition={{ duration: 1.2, delay: 1.4, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full max-w-2xl justify-center px-6"
           >
-            <button className="relative px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 text-white/60 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.05)] backdrop-blur-md group overflow-hidden rounded-sm">
-              <span className="relative z-10 font-cinzel">Secure Your Portal</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-[0.16,1,0.3,1]" />
-            </button>
-
-            <button className="relative px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 text-white/40 text-[11px] font-bold uppercase tracking-[0.3em] hover:text-white/80 hover:border-white/20 transition-all duration-500 group overflow-hidden rounded-sm backdrop-blur-sm">
+            <button 
+              onClick={() => {
+                document.getElementById('introduction')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="relative px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 text-white/60 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-500 shadow-[0_0_30px_rgba(255,255,255,0.05)] backdrop-blur-md group overflow-hidden rounded-sm"
+            >
               <span className="relative z-10 font-cinzel">Explore The Journey</span>
-              <div className="absolute inset-0 bg-white/5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-[0.16,1,0.3,1]" />
             </button>
           </motion.div>
         </motion.div>
