@@ -4,23 +4,18 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Guitar, Mic2, PersonStanding, Users } from "lucide-react";
 import type { ResultCategory, SelectionResult } from "@/src/data/dancingCrewResults";
+import { loadCategoryResults, lookupSelectionResult } from "@/src/services/results.client";
 import ResultModal from "./ResultModal";
 import ResultSearch from "./ResultSearch";
 import ResultsTable from "./ResultsTable";
 
-type ResultsExperienceProps = {
-  resultGroups: Record<ResultCategory, SelectionResult[]>;
-};
-
 const categories = [
-  { id: "dancing" as const, label: "Dancing", resultName: "Dancing Crew", Icon: PersonStanding },
-  { id: "singing" as const, label: "Singing", resultName: "Singing category", Icon: Mic2 },
-  { id: "instrumental" as const, label: "Instrumental", resultName: "Instrumental category", Icon: Guitar },
+  { id: "dancing" as const, label: "Dancing", Icon: PersonStanding },
+  { id: "singing" as const, label: "Singing", Icon: Mic2 },
+  { id: "instrumental" as const, label: "Instrumental", Icon: Guitar },
 ];
 
-const normalizeIndexNumber = (value: string) => value.trim().toLocaleLowerCase();
-
-export default function ResultsExperience({ resultGroups }: ResultsExperienceProps) {
+export default function ResultsExperience() {
   const [selectedCategory, setSelectedCategory] = useState<ResultCategory | null>(null);
   const [indexNumber, setIndexNumber] = useState("");
   const [error, setError] = useState("");
@@ -29,11 +24,16 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
   const [matchedResult, setMatchedResult] = useState<SelectionResult | null>(null);
   const [searchedIndex, setSearchedIndex] = useState("");
   const [showTable, setShowTable] = useState(false);
+  const [fullResults, setFullResults] = useState<SelectionResult[]>([]);
+  const [isTableLoading, setIsTableLoading] = useState(false);
+  const [tableError, setTableError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const lookupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
+  const listControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => {
-    if (lookupTimerRef.current) clearTimeout(lookupTimerRef.current);
+    requestControllerRef.current?.abort();
+    listControllerRef.current?.abort();
   }, []);
 
   const closeModal = useCallback(() => {
@@ -42,6 +42,8 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
   }, []);
 
   const selectCategory = (category: ResultCategory) => {
+    requestControllerRef.current?.abort();
+    listControllerRef.current?.abort();
     setSelectedCategory(category);
     setIndexNumber("");
     setError("");
@@ -49,13 +51,45 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
     setSearchedIndex("");
     setIsModalOpen(false);
     setShowTable(false);
+    setFullResults([]);
+    setIsTableLoading(false);
+    setTableError("");
     window.setTimeout(() => inputRef.current?.focus(), 50);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const toggleFullResults = async () => {
+    if (!selectedCategory || isTableLoading) return;
+    if (showTable) {
+      setShowTable(false);
+      return;
+    }
+    if (fullResults.length) {
+      setShowTable(true);
+      return;
+    }
+
+    setIsTableLoading(true);
+    setTableError("");
+    listControllerRef.current?.abort();
+    const controller = new AbortController();
+    listControllerRef.current = controller;
+    try {
+      const results = await loadCategoryResults(selectedCategory, controller.signal);
+      if (listControllerRef.current !== controller) return;
+      setFullResults(results);
+      setShowTable(true);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+      setTableError("We could not load the full results right now. Please try again.");
+    } finally {
+      if (listControllerRef.current === controller) setIsTableLoading(false);
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!selectedCategory) return;
-    const normalizedIndex = normalizeIndexNumber(indexNumber);
+    if (!selectedCategory || isLoading) return;
+    const normalizedIndex = indexNumber.trim();
 
     if (!normalizedIndex) {
       setError("Please enter your index number.");
@@ -63,17 +97,26 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
       return;
     }
 
-    setError("");
-    setIsLoading(true);
-    if (lookupTimerRef.current) clearTimeout(lookupTimerRef.current);
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
 
-    lookupTimerRef.current = setTimeout(() => {
-      const result = resultGroups[selectedCategory].find((participant) => normalizeIndexNumber(participant.indexNumber) === normalizedIndex) ?? null;
+    setError("");
+    setMatchedResult(null);
+    setIsModalOpen(false);
+    setIsLoading(true);
+
+    try {
+      const result = await lookupSelectionResult(selectedCategory, normalizedIndex, controller.signal);
       setMatchedResult(result);
-      setSearchedIndex(indexNumber.trim());
-      setIsLoading(false);
+      setSearchedIndex(normalizedIndex);
       setIsModalOpen(true);
-    }, 450);
+    } catch (requestError) {
+      if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+      setError("We could not check your result right now. Please try again.");
+    } finally {
+      if (requestControllerRef.current === controller) setIsLoading(false);
+    }
   };
 
   return (
@@ -126,18 +169,20 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
               onSubmit={handleSubmit}
             />
 
-            <div className="mt-7 flex justify-center">
+            <div className="mt-7 flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => setShowTable((current) => !current)}
+                onClick={toggleFullResults}
+                disabled={isTableLoading}
                 aria-expanded={showTable}
                 aria-controls="full-results"
                 className="flex min-h-12 items-center gap-3 rounded-full border border-white/10 bg-white/[0.035] px-6 font-cinzel text-[10px] uppercase tracking-[0.22em] text-white/60 backdrop-blur-xl transition hover:border-blue-300/30 hover:bg-blue-500/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 sm:text-xs"
               >
                 <Users aria-hidden="true" className="h-4 w-4 text-blue-300/65" />
-                {showTable ? "Hide Full Results" : "View Full Results"}
+                {isTableLoading ? "Loading Results" : showTable ? "Hide Full Results" : "View Full Results"}
                 <ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform duration-500 ${showTable ? "rotate-180" : ""}`} />
               </button>
+              {tableError ? <p className="text-xs text-rose-200/80" role="alert">{tableError}</p> : null}
             </div>
           </motion.div>
         ) : (
@@ -165,8 +210,8 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
           >
             <div className="pt-20">
               <ResultsTable
-                results={resultGroups[selectedCategory ?? "dancing"]}
-                categoryName={categories.find((category) => category.id === selectedCategory)?.resultName ?? "Dancing Crew"}
+                results={fullResults}
+                categoryName={categories.find((item) => item.id === selectedCategory)?.label ?? "Selection"}
               />
             </div>
           </motion.section>
@@ -177,7 +222,7 @@ export default function ResultsExperience({ resultGroups }: ResultsExperiencePro
         isOpen={isModalOpen}
         result={matchedResult}
         searchedIndex={searchedIndex}
-        categoryName={categories.find((category) => category.id === selectedCategory)?.resultName ?? "selected category"}
+        category={selectedCategory}
         onClose={closeModal}
       />
     </>

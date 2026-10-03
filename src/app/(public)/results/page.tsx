@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import ResultsExperience from "@/src/components/results/ResultsExperience";
 import ResultsHero from "@/src/components/results/ResultsHero";
 import VortexBackground from "@/src/components/ui/VortexBackground";
-import { resultsByCategory } from "@/src/data/dancingCrewResults";
 
 export const metadata: Metadata = {
   title: "Selection Results | Sathsara Dahana 2026",
@@ -18,7 +17,7 @@ export default function ResultsPage() {
 
       <div className="relative z-10 mx-auto max-w-7xl">
         <ResultsHero />
-        <ResultsExperience resultGroups={resultsByCategory} />
+        <ResultsExperience />
       </div>
     </section>
   );

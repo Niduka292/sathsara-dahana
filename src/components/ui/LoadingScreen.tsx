@@ -71,6 +71,7 @@ export default function LoadingScreen() {
               src={DahanaLogo}
               alt="Sathsara Dahana Logo"
               fill
+              sizes="(min-width: 768px) 144px, 96px"
               className="object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
               priority
             />

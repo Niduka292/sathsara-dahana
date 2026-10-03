@@ -1,0 +1,71 @@
+import { normalizeSingingResult, type RawResultRow } from "@/src/services/results.normalizers";
+
+// Source: Google Sheet "Website" tab. Only public result fields are retained.
+const selectedRows: RawResultRow[] = [
+  { "Index Number": "AS2022136", "Name (with Initials)": "D.M.H.A. Fernandi", "Reg. No.": "S027" },
+  { "Index Number": "AS2023107", "Name (with Initials)": "Rasula Dissanayake", "Reg. No.": "S100" },
+  { "Index Number": "AS2023200", "Name (with Initials)": "T.C. Raveesha Gamage", "Reg. No.": "S013" },
+  { "Index Number": "AS2023215", "Name (with Initials)": "H.K. Madhurya Minimuthu", "Reg. No.": "S048" },
+  { "Index Number": "AS2023216", "Name (with Initials)": "D.A.M.R. Wijerathne", "Reg. No.": "S078" },
+  { "Index Number": "AS2023242", "Name (with Initials)": "H.A.O.G. Hingurusinghe", "Reg. No.": "S063" },
+  { "Index Number": "AS2023295", "Name (with Initials)": "Suyama Abesekara", "Reg. No.": "S099" },
+  { "Index Number": "AS2023310", "Name (with Initials)": "B.Y.N. Seneviratne", "Reg. No.": "S055" },
+  { "Index Number": "AS2023314", "Name (with Initials)": "Isumi Aponso", "Reg. No.": "S103" },
+  { "Index Number": "AS2023391", "Name (with Initials)": "H.D. Binusha Hewage", "Reg. No.": "S054" },
+  { "Index Number": "AS2023395", "Name (with Initials)": "K.H.P.H. De Silva", "Reg. No.": "S064" },
+  { "Index Number": "AS2023414", "Name (with Initials)": "G.M.A.I. Liyanage", "Reg. No.": "S060" },
+  { "Index Number": "AS2023445", "Name (with Initials)": "Vihara Bandara", "Reg. No.": "S056" },
+  { "Index Number": "AS2023458", "Name (with Initials)": "M.P.E. Kawshalya", "Reg. No.": "S016" },
+  { "Index Number": "AS2023539", "Name (with Initials)": "Devin Hesara", "Reg. No.": "S098" },
+  { "Index Number": "AS2023549", "Name (with Initials)": "K.V.A. Sathsara", "Reg. No.": "S032" },
+  { "Index Number": "AS2023619", "Name (with Initials)": "K.N. Kumarage", "Reg. No.": "S062" },
+  { "Index Number": "AS2023640", "Name (with Initials)": "E.D. Shehani", "Reg. No.": "S009" },
+  { "Index Number": "AS2023648", "Name (with Initials)": "S.J.Y. Kanchana", "Reg. No.": "S091" },
+  { "Index Number": "AS2023662", "Name (with Initials)": "H.W.T. Sewwandi", "Reg. No.": "S028" },
+  { "Index Number": "AS2023742", "Name (with Initials)": "N.C. Vishva Ravisara Ariyasiri", "Reg. No.": "S050" },
+  { "Index Number": "AS20240001", "Name (with Initials)": "K.M. Dumindu Shan Milinda", "Reg. No.": "S061" },
+  { "Index Number": "AS20240091", "Name (with Initials)": "M.P.G. Jayawardhana", "Reg. No.": "S067" },
+  { "Index Number": "AS20240094", "Name (with Initials)": "G.W.S. Chanathkara", "Reg. No.": "S077" },
+  { "Index Number": "AS20240158", "Name (with Initials)": "H.R.D. Githmanthi", "Reg. No.": "S086" },
+  { "Index Number": "AS20240179", "Name (with Initials)": "W.P. Buddhima Withanapathirana", "Reg. No.": "S088" },
+  { "Index Number": "AS20240184", "Name (with Initials)": "P.S.A. Palliyaguru", "Reg. No.": "S087" },
+  { "Index Number": "AS20240217", "Name (with Initials)": "M.M.S.M. Senarathne", "Reg. No.": "S082" },
+  { "Index Number": "AS20240292", "Name (with Initials)": "H.D. Chandana", "Reg. No.": "S008" },
+  { "Index Number": "AS20240306", "Name (with Initials)": "P.Y. Salani Vibodha Yasasvi", "Reg. No.": "S021" },
+  { "Index Number": "AS20240345", "Name (with Initials)": "D.T. Dewmini", "Reg. No.": "S004" },
+  { "Index Number": "AS20240357", "Name (with Initials)": "R.M.S.D. Rajaguru", "Reg. No.": "S068" },
+  { "Index Number": "AS20240425", "Name (with Initials)": "C.J.K. Pasindu", "Reg. No.": "S096" },
+  { "Index Number": "AS20240438", "Name (with Initials)": "U.K.D. Ranasinghe", "Reg. No.": "S019" },
+  { "Index Number": "AS20240447", "Name (with Initials)": "P.L. Wijerathne", "Reg. No.": "S041" },
+  { "Index Number": "AS20240517", "Name (with Initials)": "Nethma.M. Abeysirigunawardhana", "Reg. No.": "S030" },
+  { "Index Number": "AS20240536", "Name (with Initials)": "R.M.P.G. Rathnaweera", "Reg. No.": "S007" },
+  { "Index Number": "AS20240565", "Name (with Initials)": "M.K. Pulindu Ransaka", "Reg. No.": "S049" },
+  { "Index Number": "AS20240608", "Name (with Initials)": "B.H.M.M. De Silva", "Reg. No.": "S031" },
+  { "Index Number": "AS20240610", "Name (with Initials)": "D. S. Muthukumarana", "Reg. No.": "S059" },
+  { "Index Number": "AS20240623", "Name (with Initials)": "H.M.R.T. Herath", "Reg. No.": "S017" },
+  { "Index Number": "AS20240631", "Name (with Initials)": "T.U.P. Ranchagoda", "Reg. No.": "S005" },
+  { "Index Number": "AS20240732", "Name (with Initials)": "O.C.S.M. Hennayake", "Reg. No.": "S024" },
+  { "Index Number": "AS20240736", "Name (with Initials)": "A.V. Dinith Chanuka Madhubhashana", "Reg. No.": "S025" },
+  { "Index Number": "AS20240749", "Name (with Initials)": "W.A.P. Amaya", "Reg. No.": "S022" },
+  { "Index Number": "AS20240757", "Name (with Initials)": "M.C.Y. Sandakini", "Reg. No.": "S045" },
+  { "Index Number": "AS20240840", "Name (with Initials)": "H.A.M.A.H. Herath", "Reg. No.": "S011" },
+  { "Index Number": "AS20241003", "Name (with Initials)": "Janesh Akalanka", "Reg. No.": "S073" },
+  { "Index Number": "AS20241027", "Name (with Initials)": "W.M.S. Fernando", "Reg. No.": "S033" },
+  { "Index Number": "AS20241029", "Name (with Initials)": "I.J.M.D.T. Senadheera", "Reg. No.": "S071" },
+  { "Index Number": "AS20241040", "Name (with Initials)": "B.K.L.S. Rodrigo", "Reg. No.": "S023" },
+];
+
+// Source: Google Sheet "Reserved" tab. The tab itself is the status source.
+const reserveRows: RawResultRow[] = [
+  { "Index Number": "AS2023051", "Name (with Initials)": "S.K.P. Pivithuruni", "Reg. No.": "S047" },
+  { "Index Number": "AS2023365", "Name (with Initials)": "W.V. Malith Thenuka", "Reg. No.": "S093" },
+  { "Index Number": "AS2023551", "Name (with Initials)": "K.R.L. Dias", "Reg. No.": "S089" },
+  { "Index Number": "AS2023762", "Name (with Initials)": "H.A.P. Sanudi Dinara Jayawardana", "Reg. No.": "S051" },
+  { "Index Number": "AS20240733", "Name (with Initials)": "S.D. Senuthi Mewanya", "Reg. No.": "S029" },
+];
+
+export const singingResults = [
+  ...selectedRows.map((row) => normalizeSingingResult(row, "selected")),
+  ...reserveRows.map((row) => normalizeSingingResult(row, "reserve")),
+];
+

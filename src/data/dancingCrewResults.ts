@@ -2,12 +2,13 @@ export type SelectionResult = {
   indexNumber: string;
   name: string;
   registrationNumber: string;
-  faculty?: string;
-  year?: string;
-  category?: string;
+  category: ResultCategory;
+  status: SelectionStatus;
+  instrument?: string;
 };
 
 export type ResultCategory = "dancing" | "singing" | "instrumental";
+export type SelectionStatus = "selected" | "reserve";
 
 /**
  * Public Dancing Crew selection results.
@@ -16,7 +17,7 @@ export type ResultCategory = "dancing" | "singing" | "instrumental";
  * email addresses, identity numbers, addresses, marks, or private notes.
  * The search and table update automatically when this array is replaced.
  */
-export const dancingCrewResults: SelectionResult[] = [
+const dancingRows = [
   { indexNumber: "AS2022170", name: "G.A. Imadhi", registrationNumber: "S011" },
   { indexNumber: "AS2022271", name: "H.S.Aluthduwehewage", registrationNumber: "S062" },
   { indexNumber: "AS2023027", name: "K.G. Vidanagamage", registrationNumber: "S047" },
@@ -86,17 +87,10 @@ export const dancingCrewResults: SelectionResult[] = [
   { indexNumber: "AS20240709", name: "R.S.S. Samarakkody", registrationNumber: "S005" },
   { indexNumber: "AS20240975", name: "R.A.A.D.Morathota", registrationNumber: "S026" },
   { indexNumber: "AS20241007", name: "K.D. Sasini Gavindya", registrationNumber: "S043" },
-];
+] satisfies Array<Pick<SelectionResult, "indexNumber" | "name" | "registrationNumber">>;
 
-// Add the Singing and Instrumental spreadsheet rows here using the same
-// public-only shape. Keeping each category separate prevents cross-category
-// matches when a visitor searches an index number.
-export const singingResults: SelectionResult[] = [];
-
-export const instrumentalResults: SelectionResult[] = [];
-
-export const resultsByCategory: Record<ResultCategory, SelectionResult[]> = {
-  dancing: dancingCrewResults,
-  singing: singingResults,
-  instrumental: instrumentalResults,
-};
+export const dancingCrewResults: SelectionResult[] = dancingRows.map((row) => ({
+  ...row,
+  category: "dancing",
+  status: "selected",
+}));

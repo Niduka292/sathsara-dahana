@@ -29,7 +29,7 @@ export default function ResultSearch({
       <div aria-hidden="true" className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/60 to-transparent" />
 
       <label htmlFor="index-number" className="mb-3 block font-cinzel text-[10px] uppercase tracking-[0.28em] text-blue-100/55 sm:text-xs">
-        Index Number
+        Index or Registration Number
       </label>
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
@@ -62,9 +62,10 @@ export default function ResultSearch({
       </div>
 
       <div className="mt-3 min-h-5" aria-live="polite">
-        {error ? <p id="index-number-error" className="text-xs text-rose-200/80">{error}</p> : null}
+        {error
+          ? <p id="index-number-error" className="text-xs text-rose-200/80">{error}</p>
+          : <p className="text-xs text-blue-100/30">You can also use your registration number.</p>}
       </div>
     </form>
   );
 }
-
