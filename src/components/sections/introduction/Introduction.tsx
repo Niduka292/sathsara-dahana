@@ -30,7 +30,7 @@ export default function Introduction() {
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold uppercase mb-8 md:mb-12 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400 leading-tight">
-              A Grand <br />Extravaganza
+              Beyond The <br />Ordinary
             </h2>
 
             <div className="space-y-8 text-blue-100/70 font-light leading-relaxed text-base md:text-lg text-justify">
@@ -41,7 +41,7 @@ export default function Introduction() {
                 viewport={{ once: true }}
                 className="first-letter:text-5xl first-letter:font-cinzel first-letter:mr-3 first-letter:float-left first-letter:text-blue-400"
               >
-                {`"Sathsara Dahana" is one of the most iconic cultural showcases organized by the Student Council of the Faculty of Applied Sciences at the University of Sri Jayewardenepura. Recognized as a vibrant celebration of creativity, the event has historically served as a platform where undergraduate students step beyond the boundaries of science to express their artistic talents through music, dance, and stage performances.`}
+                {`Sathsara Dahana 2026 is a cultural showcase organized by the Faculty of Applied Sciences, University of Sri Jayewardenepura, bringing together the artistic talents of its undergraduate community in celebration of creativity, expression, and togetherness.`}
               </motion.p>
 
               <motion.p
@@ -50,18 +50,8 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`Originating as an annual tradition, "Sathsara Dahana" has been described as a grand cultural extravaganza that brings together a diverse range of performances—from traditional Sri Lankan and South Asian dance forms to contemporary Western music and choreography. The event not only highlights the multifaceted talents of students but also reinforces the idea that scientific minds can equally thrive in artistic expression.`}
+                {`At its heart, Sathsara Dahana is an occasion where 2nd and 3rd year undergraduates take the stage to welcome the newest members of the faculty, the 1st year freshers through an evening of music, dance, drama, and orchestral performances. It marks the beginning of a new chapter of university life through a shared celebration of art and creativity.`}
               </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                viewport={{ once: true }}
-                className="p-8 border-l-2 border-blue-500/30 bg-blue-500/5 backdrop-blur-sm rounded-r-2xl italic font-serif text-blue-200/80 transform-gpu"
-              >
-                {`"Proceeds from the event have previously been directed toward community development initiatives, reflecting the faculty's commitment to using student-driven creativity for meaningful societal impact."`}
-              </motion.div>
 
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -69,7 +59,34 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`With a legacy spanning many years, the event has been a hallmark of student life. After its most recent edition in 2019, "Sathsara Dahana" has remained discontinued, marking a pause in what was once a highly anticipated annual tradition. Its absence has been strongly felt, further emphasizing its cultural and emotional significance within the university community.`}
+                {`The event brings together a wide range of artistic traditions and styles, including Sinhala, Tamil, English, Western, and traditional Sri Lankan influences. Each performance reflects the creativity, dedication, and diverse talents of students who step beyond their academic disciplines to express themselves through art.`}
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true }}
+              >
+                {`Adding a distinctive character to this year's edition is a carefully crafted theme that gives the evening its own identity. Through music, movement, emotion, and imagination, Sathsara Dahana 2026 offers an experience that extends beyond individual performances.`}
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true }}
+              >
+                {`More than a cultural showcase, Sathsara Dahana reflects the spirit of the Faculty of Applied Sciences, where academic pursuits and artistic expression come together. It provides students with a platform to explore their talents, collaborate creatively, and create lasting memories within the university community.`}
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true }}
+              >
+                {`Sathsara Dahana 2026 invites the students of the University of Sri Jayewardenepura to experience an evening created by the students of the Faculty of Applied Sciences, a celebration of art, creativity, connection, and new beginnings.`}
               </motion.p>
             </div>
           </motion.div>
