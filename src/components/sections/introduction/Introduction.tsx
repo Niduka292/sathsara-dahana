@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
+import TimeAstrolabe from "./TimeAstrolabe";
 
 export default function Introduction() {
   return (
@@ -73,95 +72,9 @@ export default function Introduction() {
             </div>
           </motion.div>
 
-          {/* Right Side: Portal Animation - Hidden on mobile */}
-          <div className="hidden xl:flex flex-1 justify-end items-center relative order-1 xl:order-2 h-[500px] w-full xl:pr-[10%] transform-gpu">
-
-            {/* Master Wrapper */}
-            <div className="relative w-full max-w-[300px] md:max-w-[400px] lg:max-w-[500px] aspect-square">
-
-              {/*
-                LAYER 1 — Clip mask (controls visibility window).
-                Only animates clipPath. No transforms here so the
-                clip boundary stays perfectly anchored to the wrapper.
-              */}
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center z-20"
-                animate={{
-                  clipPath: [
-                    "inset(0px -80px 0px -80px)",
-                    "inset(0px 100px 0px -150px)",
-                    "inset(0px 400px 0px -80px)",
-                    "inset(0px 400px 0px -80px)",
-                    "inset(0px 80px 0px -120px)",
-                    "inset(0px -80px 0px -80px)",
-                  ]
-                }}
-                transition={{
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.032, 0.38, 0.66, 0.95, 1.0]
-                }}
-              >
-                {/*
-                  LAYER 2 — Float (purely translates Y).
-                  Completely independent animation — duration 3.5s
-                  is not a divisor of 8s so the phase drifts naturally,
-                  preventing the float from ever looking mechanical or looped.
-                  willChange: "transform" keeps this on the GPU compositor.
-                */}
-                <motion.div
-                  animate={{ y: [-12, 12, -12] }}
-                  transition={{
-                    duration: 3.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  style={{ willChange: "transform" }}
-                >
-                  <div className="relative w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64">
-                    <Image
-                      src={DahanaLogo}
-                      alt="Sathsara Dahana Logo"
-                      fill
-                      className="object-contain drop-shadow-[0_0_20px_rgba(147,197,253,0.8)]"
-                    />
-                  </div>
-                </motion.div>
-              </motion.div>
-
-              {/* The Moving Portal */}
-              <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                <motion.div
-                  className="relative w-[120px] h-[220px] md:w-[180px] md:h-[350px] lg:w-[220px] lg:h-[450px] rounded-[100%]"
-                  animate={{
-                    x: ["110%", "-110%", "110%"],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  style={{
-                    background: "radial-gradient(ellipse at center, rgba(147,197,253,0.4) 0%, rgba(59,130,246,0.7) 50%, rgba(37,99,235,0.9) 100%)",
-                    border: "8px solid #93c5fd",
-                    boxShadow: "0 0 80px rgba(59,130,246,0.9), 0 0 20px rgba(255,255,255,0.4), inset 0 0 80px rgba(59,130,246,0.8), inset 0 0 20px rgba(255,255,255,0.5)",
-                    willChange: "transform",
-                  }}
-                >
-                  {/* Inner energetic pulse — CSS-driven to keep off JS thread */}
-                  <motion.div
-                    className="absolute inset-0 rounded-[100%]"
-                    animate={{ opacity: [0.4, 0.8, 0.4] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    style={{
-                      boxShadow: "inset 0 0 100px rgba(255,255,255,0.7)"
-                    }}
-                  />
-                </motion.div>
-              </div>
-
-            </div>
+          {/* Right Side: Time machine astrolabe (above the text on phones and tablets) */}
+          <div className="flex flex-1 justify-center lg:justify-end items-center relative order-1 lg:order-2 w-full py-4 lg:py-0 lg:h-[500px] xl:pr-[10%]">
+            <TimeAstrolabe />
           </div>
 
         </div>
