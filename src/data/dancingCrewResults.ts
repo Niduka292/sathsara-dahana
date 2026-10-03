@@ -45,7 +45,7 @@ const dancingRows = [
   { indexNumber: "AS2023612", name: "H.M.V.G.P.N.Abeyrathna", registrationNumber: "S041" },
   { indexNumber: "AS2023613", name: "P.U.A.H. Fernando", registrationNumber: "S022" },
   { indexNumber: "AS2023621", name: "U.C.N. Nethumila", registrationNumber: "S001" },
-  { indexNumber: "AS2023636", name: "D.N. Vidanaage", registrationNumber: "S003" },
+  { indexNumber: "AS2023636", name: "D.N. Vidanage", registrationNumber: "S003" },
   { indexNumber: "AS2023676", name: "M H W S M S S Herath", registrationNumber: "S029" },
   { indexNumber: "AS2023678", name: "D. N. C. Fernando", registrationNumber: "S059" },
   { indexNumber: "AS2023728", name: "M.D.T. Pathmasena", registrationNumber: "S035" },

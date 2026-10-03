@@ -6,6 +6,7 @@ import { SearchX, X } from "lucide-react";
 import type { ResultCategory, SelectionResult } from "@/src/data/dancingCrewResults";
 import CongratulationsCard from "./CongratulationsCard";
 import DownloadCardButton from "./DownloadCardButton";
+import ResultSummary from "./ResultSummary";
 
 type ResultModalProps = {
   isOpen: boolean;
@@ -33,6 +34,7 @@ const categoryLabels: Record<ResultCategory, string> = {
 export default function ResultModal({ isOpen, result, searchedIndex, category, onClose }: ResultModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,7 +95,7 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className={`relative my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-3xl border bg-[#050a18]/95 px-4 py-7 text-center shadow-2xl min-[375px]:px-5 sm:max-h-[calc(100dvh-2.5rem)] sm:px-10 sm:py-10 ${
+            className={`relative my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-xl overflow-y-auto rounded-3xl border bg-[#050a18]/95 px-3 py-6 text-center shadow-2xl min-[375px]:px-4 sm:max-h-[calc(100dvh-2.5rem)] sm:px-8 sm:py-8 ${
               isReserve
                 ? "border-violet-300/20 shadow-[0_0_80px_rgba(124,58,237,0.18)]"
                 : result
@@ -123,7 +125,12 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
             </button>
 
             {result ? (
-              <CongratulationsCard result={result} />
+              <>
+                <ResultSummary result={result} />
+                <div className="pointer-events-none fixed left-[-10000px] top-0 w-[480px]" aria-hidden="true">
+                  <CongratulationsCard ref={cardRef} result={result} />
+                </div>
+              </>
             ) : (
               <div className="py-4">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/45">
@@ -139,7 +146,7 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
             )}
 
             <div className={`mt-7 grid gap-3 ${result && !isReserve ? "sm:grid-cols-[1fr_auto]" : ""}`}>
-              {result && !isReserve ? <DownloadCardButton result={result} /> : null}
+              {result && !isReserve ? <DownloadCardButton result={result} cardRef={cardRef} /> : null}
               <button
                 ref={closeButtonRef}
                 type="button"

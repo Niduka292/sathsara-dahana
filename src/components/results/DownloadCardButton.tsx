@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type RefObject } from "react";
 import { Download, LoaderCircle } from "lucide-react";
 import type { SelectionResult } from "@/src/data/dancingCrewResults";
 import { downloadResultCard } from "@/src/lib/downloadResultCard";
 
 type DownloadCardButtonProps = {
   result: SelectionResult;
+  cardRef: RefObject<HTMLDivElement | null>;
 };
 
-export default function DownloadCardButton({ result }: DownloadCardButtonProps) {
+export default function DownloadCardButton({ result, cardRef }: DownloadCardButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,7 +19,8 @@ export default function DownloadCardButton({ result }: DownloadCardButtonProps) 
     setIsDownloading(true);
     setError("");
     try {
-      await downloadResultCard(result);
+      if (!cardRef.current) throw new Error("The card preview is not available.");
+      await downloadResultCard(cardRef.current, result);
     } catch {
       setError("We could not create the image. Please try again.");
     } finally {
@@ -41,4 +43,3 @@ export default function DownloadCardButton({ result }: DownloadCardButtonProps) 
     </div>
   );
 }
-
