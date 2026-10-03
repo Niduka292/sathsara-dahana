@@ -15,7 +15,7 @@ const selectedRows: RawResultRow[] = [
   { Instrument: "Violinist", Name: "A.V. Dinith Chanuka Madhubhashana", "Index Number": "AS20240736", "Reg. No.": "I013" },
   { Instrument: "Violinist", Name: "P.L. Wijerathne", "Index Number": "AS20240447", "Reg. No.": "I008" },
   { Instrument: "Drummer", Name: "H.R.A. Dilshan", "Index Number": "AS20240548", "Reg. No.": "I016" },
-  { Instrument: "Drummer", Name: "N.S. Kalathunga", "Index Number": "AS2023203", "Reg. No.": "I017" },
+  { Instrument: "Drummer", Name: "N.S. Kulathunga", "Index Number": "AS2023203", "Reg. No.": "I017" },
   { Instrument: "Drummer", Name: "D.M.R.S. Medhawa", "Index Number": "AS2023902", "Reg. No.": "I020" },
   { Instrument: "Percussionist", Name: "H.D. Binusha Hewage", "Index Number": "AS2023391", "Reg. No.": "I021" },
   { Instrument: "Percussionist", Name: "L.M.D.T. Senadheera", "Index Number": "AS20241029", "Reg. No.": "I019" },
