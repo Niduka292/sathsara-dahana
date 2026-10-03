@@ -61,7 +61,7 @@ export default function Hero() {
             transition={{ duration: 1.2, delay: 1, ease: [0.16, 1, 0.3, 1] }}
             className="text-base md:text-xl text-white/50 mb-16 italic font-cinzel tracking-[0.2em] max-w-2xl"
           >
-            Where Every Note Echoes Between Yesterday and Tomorrow
+            Where Every Note Echoes Through Time
           </motion.p>
 
           {/* Date section disabled */}

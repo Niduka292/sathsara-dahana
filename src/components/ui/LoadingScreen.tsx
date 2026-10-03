@@ -60,7 +60,10 @@ export default function LoadingScreen() {
   );
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={() => {
+      document.documentElement.dataset.introComplete = "true";
+      window.dispatchEvent(new Event("sathsara:intro-complete"));
+    }}>
       {isLoading && (
         <motion.div
           key="loading-screen"
