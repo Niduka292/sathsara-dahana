@@ -39,13 +39,17 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-cinzel tracking-widest text-xs uppercase mb-8 opacity-60">Navigation</h4>
             <ul className="space-y-4">
-              {["Introduction", "Timeline"].map((item) => (
-                <li key={item}>
-                  <Link 
-                    href={`#${item.toLowerCase()}`} 
+              {[
+                { label: "Introduction", href: "/#introduction" },
+                { label: "Timeline", href: "/#timeline" },
+                { label: "Results", href: "/results" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
                     className="text-blue-100/40 hover:text-blue-300 transition-colors text-sm uppercase tracking-widest"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}

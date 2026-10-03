@@ -4,11 +4,13 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   // Close menu when clicking a link
   const closeMenu = () => setIsOpen(false);
@@ -17,6 +19,8 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      if (pathname !== "/") return;
 
       const sections = ["introduction", "timeline"];
       const current = sections.find(section => {
@@ -33,7 +37,7 @@ export default function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   // Prevent scroll when menu is open
   useEffect(() => {
@@ -48,8 +52,9 @@ export default function Navbar() {
   }, [isOpen]);
 
   const navLinks = [
-    { name: "ABOUT", href: "#introduction", id: "introduction" },
-    { name: "TIMELINE", href: "#timeline", id: "timeline" },
+    { name: "ABOUT", href: "/#introduction", id: "introduction" },
+    { name: "TIMELINE", href: "/#timeline", id: "timeline" },
+    { name: "RESULTS", href: "/results", id: "results" },
   ];
 
   return (
@@ -79,10 +84,11 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className={`transition-all duration-500 ease-[0.16,1,0.3,1] relative group ${activeSection === link.id ? "text-blue-400" : "text-white/70 hover:text-white"}`}
+              aria-current={pathname === "/results" && link.id === "results" ? "page" : undefined}
+              className={`transition-all duration-500 ease-[0.16,1,0.3,1] relative group ${(activeSection === link.id || (pathname === "/results" && link.id === "results")) ? "text-blue-400" : "text-white/70 hover:text-white"}`}
             >
               {link.name}
-              <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-500 ease-[0.16,1,0.3,1] ${activeSection === link.id ? "w-full" : "w-0 group-hover:w-full"}`} />
+              <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-500 ease-[0.16,1,0.3,1] ${(activeSection === link.id || (pathname === "/results" && link.id === "results")) ? "w-full" : "w-0 group-hover:w-full"}`} />
             </Link>
           ))}
         </div>
