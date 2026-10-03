@@ -15,10 +15,10 @@ interface TimelineEvent {
 const events: TimelineEvent[] = [
   {
     id: "act-1",
-    label: "ACT I • ANCIENT ECHOES",
-    title: "The Dawn Raga",
+    label: "01 • THE FIRST NOTE",
+    title: "Auditions Open",
     description:
-      "A haunting journey back to the origins of melody — where the first notes ever hummed still tremble in the air of eternity.",
+      "A first step into a story yet to unfold. Voices, movements, and melodies come together as students step forward to take the stage.",
     icon: (
       <svg
         className="w-5 h-5 text-blue-300"
@@ -38,34 +38,34 @@ const events: TimelineEvent[] = [
   },
   {
     id: "act-2",
-    label: "ACT II • THE GOLDEN ERA",
-    title: "Voices of a Forgotten Empire",
+    label: "02 • THE MOMENTS ARE CHOSEN",
+    title: "Audition Results",
     description:
-      "Melodies that once drifted through palace corridors, carrying the weight of royalty, love, and loss across gilded halls.",
+      "Every story begins with a choice. The voices and talents that will shape this year's Sathsara Dahana are revealed.",
     icon: <span className="text-xl">⏳</span>,
   },
   {
     id: "act-3",
-    label: "ACT III • THE TURNING POINT",
-    title: "Revolution in C Minor",
+    label: "03 • THE PRELUDE",
+    title: "Before It Unfolds",
     description:
-      "When music became a weapon, a protest, a heartbeat for change — the songs that lit fires in the hearts of generations.",
+      "A period of preparation before the journey takes form, where anticipation grows and something begins to emerge.",
     icon: <span className="text-xl">🎵</span>,
   },
   {
     id: "act-4",
-    label: "ACT IV • THE SYNTHETIC AGE",
-    title: "Neon Lullabies",
+    label: "04 • SOMETHING IS ABOUT TO CHANGE",
+    title: "The Theme Begins to Unfold",
     description:
-      "The fusion of ancient rhythms with synthetic beats, creating a bridge between the analog past and the boundless future.",
+      "A story waits beneath the surface. Piece by piece, the first clues begin to emerge.",
     icon: <span className="text-xl">🎹</span>,
   },
   {
     id: "act-5",
-    label: "ACT V • THE FINAL CRESCENDO",
-    title: "Echoes of Tomorrow",
+    label: "05 • THE JOURNEY UNFOLDS",
+    title: "Sathsara Dahana 2026",
     description:
-      "What lies beyond the known spectrum of sound? A glimpse into the melodies that have yet to be written in the stars.",
+      "An evening of music, movement, and expression — where every performance becomes part of something beyond the ordinary.",
     icon: <span className="text-xl">✨</span>,
   },
 ];
@@ -101,7 +101,7 @@ export default function Timeline() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-[#a78bfa] text-[11px] font-bold tracking-[0.5em] uppercase mb-4 block font-cinzel text-glow-violet"
           >
-            Chronological Odyssey
+            Fragments of Time
           </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -109,7 +109,7 @@ export default function Timeline() {
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="text-4xl md:text-6xl font-bold font-cinzel text-white drop-shadow-[0_0_20px_rgba(59,130,246,0.4)] transform-gpu"
           >
-            The Path of Sound
+            The Path to What Lies Ahead
           </motion.h2>
         </div>
 
