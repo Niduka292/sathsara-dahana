@@ -3,130 +3,202 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { Silkscreen, VT323 } from "next/font/google";
 import DahanaLogo from "../../../assets/dahana-logo-no-bg.png";
 import "../../styles/animations.css";
 
+const pixelTitle = Silkscreen({ subsets: ["latin"], weight: ["400", "700"] });
+const pixelBody = VT323({ subsets: ["latin"], weight: "400" });
+
+const LOAD_DURATION = 2800;
+const TOTAL_BLOCKS = 20;
+
+const STATUS_STEPS = [
+  "BOOTING SYSTEM...",
+  "LOADING STAGE ASSETS...",
+  "TUNING INSTRUMENTS...",
+  "WARMING UP THE LIGHTS...",
+  "READY.",
+];
+
+// Olive LCD palette, matching the classic monochrome desktop look
+const INK = "#1f2414";
+const PAPER = "#959d78";
+const PAPER_DARK = "#7f8763";
+
 export default function LoadingScreen() {
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     // Prevent scroll while loading
     document.body.style.overflow = "hidden";
 
+    const start = Date.now();
+    const ticker = setInterval(() => {
+      const pct = Math.min(100, Math.round(((Date.now() - start) / (LOAD_DURATION - 300)) * 100));
+      setProgress(pct);
+      if (pct >= 100) clearInterval(ticker);
+    }, 80);
+
     const timer = setTimeout(() => {
       setIsLoading(false);
       document.body.style.overflow = "unset";
-    }, 2800);
+    }, LOAD_DURATION);
 
     return () => {
+      clearInterval(ticker);
       clearTimeout(timer);
       document.body.style.overflow = "unset";
     };
   }, []);
 
-  const titleText = "Sathsara Dahana";
-  const letters = titleText.split("");
+  const filledBlocks = Math.round((progress / 100) * TOTAL_BLOCKS);
+  const statusIndex = Math.min(
+    STATUS_STEPS.length - 1,
+    Math.floor((progress / 100) * (STATUS_STEPS.length - 1))
+  );
 
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
           key="loading-screen"
-          exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#02040d]"
+          // CRT "power off": collapse to a line, then fade
+          exit={{ scaleY: [1, 0.004, 0.004], opacity: [1, 1, 0] }}
+          transition={{ duration: 0.6, times: [0, 0.6, 1], ease: "easeIn" }}
+          className={`${pixelBody.className} fixed inset-0 z-[200] flex items-center justify-center px-4 overflow-hidden`}
+          style={{ backgroundColor: PAPER, color: INK }}
         >
-          {/* Background glow effects */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* Central blue glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[150px]" />
-            {/* Gold accent glow */}
-            <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-[#fbbf24]/5 rounded-full blur-[120px]" />
-            {/* Violet accent glow */}
-            <div className="absolute top-[60%] right-[30%] w-[250px] h-[250px] bg-[#a78bfa]/5 rounded-full blur-[100px]" />
-          </div>
+          {/* Subtle scanlines */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.12]"
+            style={{
+              backgroundImage: `repeating-linear-gradient(0deg, ${INK} 0px, ${INK} 1px, transparent 1px, transparent 3px)`,
+            }}
+          />
 
-          {/* Pulsing ring behind logo */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="w-40 h-40 md:w-56 md:h-56 rounded-full border border-blue-500/20 animate-loader-pulse-ring" />
-          </div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div
-              className="w-56 h-56 md:w-72 md:h-72 rounded-full border border-[#fbbf24]/10 animate-loader-pulse-ring"
-              style={{ animationDelay: "0.5s" }}
-            />
-          </div>
+          {/* Screen border */}
+          <div className="absolute inset-2 md:inset-3 pointer-events-none border-[6px]" style={{ borderColor: INK }} />
 
-          {/* Logo */}
+          {/* Window */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.6, filter: "blur(20px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            transition={{
-              duration: 1.2,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className="relative w-24 h-16 md:w-36 md:h-24 mb-8 z-10"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "linear" }}
+            className="relative z-10 w-full max-w-[520px] border-4"
+            style={{ borderColor: INK, backgroundColor: PAPER, boxShadow: `6px 6px 0 ${INK}` }}
           >
-            <Image
-              src={DahanaLogo}
-              alt="Sathsara Dahana Logo"
-              fill
-              sizes="(min-width: 768px) 144px, 96px"
-              className="object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.6)]"
-              priority
-            />
-          </motion.div>
+            {/* Title bar */}
+            <div
+              className={`${pixelTitle.className} flex items-center justify-between px-3 py-1.5 text-[11px] md:text-xs tracking-wider`}
+              style={{ backgroundColor: INK, color: PAPER }}
+            >
+              <span>SATHSARA_DAHANA.EXE</span>
+              <div className="flex gap-1.5">
+                {["_", "□", "×"].map((glyph) => (
+                  <span
+                    key={glyph}
+                    className="w-4 h-4 flex items-center justify-center border leading-none"
+                    style={{ borderColor: PAPER }}
+                  >
+                    {glyph}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-          {/* Title — letter-by-letter stagger */}
-          <div className="relative z-10 flex flex-wrap justify-center overflow-hidden mb-12 px-4">
-            {letters.map((letter, i) => (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.5 + i * 0.05,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className={`text-lg sm:text-2xl md:text-4xl lg:text-5xl font-cinzel font-bold tracking-normal sm:tracking-wider ${
-                  letter === " " ? "mx-2" : ""
-                } text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-300`}
+            {/* Fake tabs */}
+            <div className="flex border-b-4" style={{ borderColor: INK }}>
+              {["LOADER", "STAGE", "ABOUT"].map((tab, i) => (
+                <span
+                  key={tab}
+                  className={`${pixelTitle.className} flex-1 text-center text-[10px] py-1.5 border-r-4 last:border-r-0`}
+                  style={
+                    i === 0
+                      ? { backgroundColor: INK, color: PAPER, borderColor: INK }
+                      : { borderColor: INK, backgroundColor: PAPER_DARK }
+                  }
+                >
+                  {tab}
+                </span>
+              ))}
+            </div>
+
+            <div className="px-5 md:px-8 pt-6 pb-7 flex flex-col items-center">
+              {/* Logo, rendered as a dark monochrome silhouette */}
+              <div className="relative w-20 h-14 md:w-28 md:h-20 mb-4">
+                <Image
+                  src={DahanaLogo}
+                  alt="Sathsara Dahana Logo"
+                  fill
+                  sizes="(min-width: 768px) 112px, 80px"
+                  className="object-contain [filter:grayscale(1)_brightness(0.25)_contrast(1.4)]"
+                  priority
+                />
+              </div>
+
+              {/* Title */}
+              <h1
+                className={`${pixelTitle.className} text-center font-bold text-2xl sm:text-3xl md:text-4xl leading-none tracking-wide`}
+                style={{ textShadow: `3px 3px 0 ${PAPER_DARK}` }}
               >
-                {letter === " " ? "\u00A0" : letter}
-              </motion.span>
-            ))}
-          </div>
+                SATHSARA
+                <br />
+                DAHANA
+              </h1>
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.6, duration: 0.8 }}
-            className="relative z-10 text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.5em] text-white/30 font-cinzel mb-16"
-          >
-            A Musical Journey Through Time
-          </motion.p>
+              <p className="mt-3 text-lg md:text-xl tracking-widest opacity-80">
+                A MUSICAL JOURNEY THROUGH TIME
+              </p>
 
-          {/* Progress bar */}
-          <div className="relative z-10 w-48 md:w-64 h-[2px] bg-white/5 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 via-[#fbbf24] to-[#a78bfa] rounded-full animate-loader-progress shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-          </div>
+              {/* Status line */}
+              <div className="w-full mt-6 flex items-center justify-between text-lg md:text-xl">
+                <span className="flex items-center gap-2">
+                  <span className="inline-block w-3 h-3 border-2" style={{ borderColor: INK }}>
+                    <span
+                      className="block w-full h-full"
+                      style={{ backgroundColor: progress >= 100 ? INK : "transparent" }}
+                    />
+                  </span>
+                  {STATUS_STEPS[statusIndex]}
+                </span>
+                <span className="tabular-nums">{String(progress).padStart(3, "0")}%</span>
+              </div>
 
-          {/* Loading text */}
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.5, 1] }}
-            transition={{
-              delay: 0.8,
-              duration: 2,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            className="relative z-10 mt-6 text-[9px] uppercase tracking-[0.4em] text-white/20 font-cinzel"
-          >
-            Entering the portal
-          </motion.span>
+              {/* Segmented progress bar */}
+              <div
+                className="w-full mt-2 p-1 border-4 flex gap-[3px]"
+                style={{ borderColor: INK }}
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                {Array.from({ length: TOTAL_BLOCKS }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="flex-1 h-4"
+                    style={{ backgroundColor: i < filledBlocks ? INK : PAPER_DARK }}
+                  />
+                ))}
+              </div>
+
+              {/* Dotted divider, like the retro slider track */}
+              <div
+                className="w-full h-[3px] mt-6"
+                style={{
+                  backgroundImage: `repeating-linear-gradient(90deg, ${INK} 0px, ${INK} 3px, transparent 3px, transparent 7px)`,
+                }}
+              />
+
+              {/* Blinking prompt */}
+              <p className="w-full mt-3 text-lg md:text-xl">
+                C:\&gt; ENTERING THE PORTAL
+                <span className="animate-retro-blink">_</span>
+              </p>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
