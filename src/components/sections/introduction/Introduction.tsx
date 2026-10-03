@@ -26,7 +26,7 @@ export default function Introduction() {
           >
             <div className="flex items-center gap-6 mb-8">
               <div className="h-[1px] w-16 bg-gradient-to-r from-[#a78bfa] to-transparent" />
-              <span className="text-[11px] uppercase tracking-[0.4em] text-[#a78bfa] font-bold font-cinzel text-glow-violet">The Cosmic Legacy</span>
+              <span className="text-[11px] uppercase tracking-[0.4em] text-[#a78bfa] font-bold font-cinzel text-glow-violet">Where Time Tells a Story</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold uppercase mb-8 md:mb-12 font-cinzel text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-blue-400 leading-tight">
@@ -50,7 +50,7 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`At its heart, Sathsara Dahana is an occasion where 2nd and 3rd year undergraduates take the stage to welcome the newest members of the faculty, the 1st year freshers through an evening of music, dance, drama, and orchestral performances. It marks the beginning of a new chapter of university life through a shared celebration of art and creativity.`}
+                {`At its heart, Sathsara Dahana is an occasion where 2nd and 3rd year undergraduates take the stage to welcome the newest members of the faculty, the 1st year freshers, through an evening of music, dance, drama, and orchestral performances. It marks the beginning of a new chapter of university life through a shared celebration of art and creativity.`}
               </motion.p>
 
               <motion.p
@@ -59,7 +59,7 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`The event brings together a wide range of artistic traditions and styles, including Sinhala, Tamil, English, Western, and traditional Sri Lankan influences. Each performance reflects the creativity, dedication, and diverse talents of students who step beyond their academic disciplines to express themselves through art.`}
+                {`The event brings together diverse artistic traditions, including Sinhala, Tamil, English, Western, and traditional Sri Lankan influences. Each performance reflects the creativity and dedication of students who step beyond their academic disciplines to express themselves through art. This year's edition introduces a carefully crafted theme that gives the evening its own identity, bringing together music, movement, emotion, and imagination.`}
               </motion.p>
 
               <motion.p
@@ -68,25 +68,7 @@ export default function Introduction() {
                 transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
               >
-                {`Adding a distinctive character to this year's edition is a carefully crafted theme that gives the evening its own identity. Through music, movement, emotion, and imagination, Sathsara Dahana 2026 offers an experience that extends beyond individual performances.`}
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
-                viewport={{ once: true }}
-              >
-                {`More than a cultural showcase, Sathsara Dahana reflects the spirit of the Faculty of Applied Sciences, where academic pursuits and artistic expression come together. It provides students with a platform to explore their talents, collaborate creatively, and create lasting memories within the university community.`}
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                viewport={{ once: true }}
-              >
-                {`Sathsara Dahana 2026 invites the students of the University of Sri Jayewardenepura to experience an evening created by the students of the Faculty of Applied Sciences, a celebration of art, creativity, connection, and new beginnings.`}
+                {`More than a cultural showcase, Sathsara Dahana reflects the spirit of the Faculty of Applied Sciences, providing students with a platform to explore their talents, collaborate creatively, and create lasting memories. Sathsara Dahana 2026 invites the University of Sri Jayewardenepura community to experience an evening celebrating art, creativity, connection, and new beginnings.`}
               </motion.p>
             </div>
           </motion.div>
