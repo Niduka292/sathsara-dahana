@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Facebook, MapPin } from "lucide-react";
 import Link from "next/link";
+import DeveloperCredits from "../developer-credits/DeveloperCredits";
 
 // lucide-react has no TikTok icon, so it is drawn inline
 function TikTok({ size = 18 }: { size?: number }) {
@@ -97,6 +98,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Sathsara Dahana • Designed with Stardust
           </div>
         </div>
+        <DeveloperCredits />
       </div>
     </footer>
   );
