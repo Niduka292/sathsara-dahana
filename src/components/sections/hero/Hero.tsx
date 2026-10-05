@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
+import FuzzyText from '../../../../components/FuzzyText';
 import VortexBackground from "../../ui/VortexBackground";
 import "../../../styles/animations.css";
 
@@ -46,9 +47,12 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl sm:text-5xl md:text-6xl lg:text-[5.5rem] xl:text-[6.5rem] font-bold leading-none tracking-tighter uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white/90 via-white/80 to-blue-200/50 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)] transform-gpu"
+            className="text-4xl sm:text-6xl md:text-8xl lg:text-[9.5rem] font-bold leading-none tracking-tighter uppercase mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-white/90 via-white/80 to-blue-200/50 drop-shadow-[0_0_30px_rgba(59,130,246,0.4)] transform-gpu"
           >
-            Sathsara Dahana
+            <FuzzyText>
+              Sathsara Dahana
+            </FuzzyText>
+
           </motion.h1>
 
           <motion.p
