@@ -8,13 +8,11 @@ import styles from "./DeveloperCredits.module.css";
 export default function DeveloperCredits() {
   return (
     <Dialog.Root>
-      <div className={styles.credit}>
-        <p className={styles.creditLabel}>Designed &amp; Developed by</p>
-        <Dialog.Trigger className={styles.trigger}>
-          <span>Web Development Team</span>
-          <ArrowRight size={15} aria-hidden="true" />
-        </Dialog.Trigger>
-      </div>
+      <Dialog.Trigger className={styles.button}>
+        <span className={styles.label}>Designed &amp; Developed by</span>
+        <span className={styles.team}>Web Development Team</span>
+        <ArrowRight size={13} className={styles.arrow} aria-hidden="true" />
+      </Dialog.Trigger>
       <DeveloperModal />
     </Dialog.Root>
   );

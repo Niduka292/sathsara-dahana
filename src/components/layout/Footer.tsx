@@ -93,12 +93,12 @@ export default function Footer() {
 
         </div>
 
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel">
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.3em] text-blue-100/20 font-cinzel text-center md:text-left">
             © {new Date().getFullYear()} Sathsara Dahana • Designed with Stardust
           </div>
+          <DeveloperCredits />
         </div>
-        <DeveloperCredits />
       </div>
     </footer>
   );
