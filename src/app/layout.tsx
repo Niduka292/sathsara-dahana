@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   applicationName: "Sathsara Dahana",
   icons: {
     icon: [
-      { url: "/favicon.ico?v=2", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+      { url: "/branding/icon-192.png", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
       { url: "/branding/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
     apple: [{ url: "/branding/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
