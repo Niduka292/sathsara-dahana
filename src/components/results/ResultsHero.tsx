@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 
-export default function ResultsHero() {
+export default function ResultsHero({ released }: { released: boolean }) {
   return (
     <header className="mx-auto flex max-w-4xl flex-col items-center text-center">
       <div className="mb-6 flex items-center gap-4 text-blue-300/70">
@@ -18,9 +18,11 @@ export default function ResultsHero() {
       <h2 className="mt-5 font-cinzel text-sm uppercase tracking-[0.2em] text-white/70 sm:text-lg sm:tracking-[0.3em]">
         Selection Results
       </h2>
-      <p className="mt-6 max-w-xl text-sm leading-7 text-blue-100/45 sm:text-base">
-        Choose your category, then enter your index number to check your selection status.
-      </p>
+      {released && (
+        <p className="mt-6 max-w-xl text-sm leading-7 text-blue-100/45 sm:text-base">
+          Choose your category, then enter your index number to check your selection status.
+        </p>
+      )}
     </header>
   );
 }

@@ -3,12 +3,16 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowUpRight, AudioLines, MicVocal, Music2, X } from "lucide-react";
+import { useResultsRelease } from "@/hooks/useResultsRelease";
+import { RESULTS_RELEASE_LABEL } from "@/src/lib/resultsRelease";
 import styles from "./ResultsAnnouncement.module.css";
+import CountdownSeconds from "./CountdownSeconds";
 
 // Survives client-side navigation, but resets on a full page refresh.
 let announcementShown = false;
 
 export default function ResultsAnnouncement() {
+  const { released, countdown } = useResultsRelease();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const resultsLinkRef = useRef<HTMLAnchorElement>(null);
 
@@ -83,15 +87,28 @@ export default function ResultsAnnouncement() {
         </button>
 
         <div className={styles.content}>
-          <p className={styles.eyebrow}><span /> The wait is over</p>
+          <p className={styles.eyebrow}><span /> {released ? "The wait is over" : "The wait is almost over"}</p>
 
-          <p className={styles.kicker}>Your moment is here.</p>
+          <p className={styles.kicker}>{released ? "Your moment is here." : RESULTS_RELEASE_LABEL}</p>
           <h2 id="results-announcement-title" className={styles.title}>
-            Results<br /><span>are out!</span>
+            Results<br /><span>{released ? "are out!" : "are coming soon!"}</span>
           </h2>
           <p id="results-announcement-description" className={styles.description}>
-            The spotlight is calling. Check the Sathsara Dahana 2026 selection results and discover your next stage.
+            {released
+              ? "The spotlight is calling. Check the Sathsara Dahana 2026 selection results and discover your next stage."
+              : "The Sathsara Dahana 2026 selection results will be revealed soon. Stay tuned — your moment is almost here."}
           </p>
+
+          {!released && (
+            <p role="timer" aria-label="Time until results release" className="mt-4 font-cinzel text-sm tabular-nums tracking-wider text-[#fcd88b]">
+              {countdown ? (
+                <>
+                  {`${String(countdown.days).padStart(2, "0")}d : ${String(countdown.hours).padStart(2, "0")}h : ${String(countdown.minutes).padStart(2, "0")}m : `}
+                  <CountdownSeconds value={countdown.seconds} />s
+                </>
+              ) : "—d : —h : —m : —s"}
+            </p>
+          )}
 
           <ul className={styles.categories} aria-label="Result categories">
             <li><AudioLines size={14} aria-hidden="true" /> Dancing</li>

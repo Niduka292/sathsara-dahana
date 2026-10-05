@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import ResultsExperience from "@/src/components/results/ResultsExperience";
-import ResultsHero from "@/src/components/results/ResultsHero";
+import ResultsReleaseGate from "@/src/components/results/ResultsReleaseGate";
 import VortexBackground from "@/src/components/ui/VortexBackground";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Selection Results | Sathsara Dahana 2026",
@@ -16,8 +17,7 @@ export default function ResultsPage() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.018)_1px,transparent_1px)] bg-[size:72px_72px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl">
-        <ResultsHero />
-        <ResultsExperience />
+        <ResultsReleaseGate initialNow={Date.now()} />
       </div>
     </section>
   );
