@@ -4,20 +4,20 @@ import { FormEvent, RefObject } from "react";
 import { LoaderCircle, Search } from "lucide-react";
 
 type ResultSearchProps = {
-  indexNumber: string;
+  query: string;
   error: string;
   isLoading: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
-  onIndexNumberChange: (value: string) => void;
+  onQueryChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
 export default function ResultSearch({
-  indexNumber,
+  query,
   error,
   isLoading,
   inputRef,
-  onIndexNumberChange,
+  onQueryChange,
   onSubmit,
 }: ResultSearchProps) {
   return (
@@ -28,24 +28,24 @@ export default function ResultSearch({
     >
       <div aria-hidden="true" className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/60 to-transparent" />
 
-      <label htmlFor="index-number" className="mb-3 block font-cinzel text-[10px] uppercase tracking-[0.28em] text-blue-100/55 sm:text-xs">
-        Index or Registration Number
+      <label htmlFor="result-query" className="mb-3 block font-cinzel text-[10px] uppercase tracking-[0.28em] text-blue-100/55 sm:text-xs">
+        Name or Index Number
       </label>
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search aria-hidden="true" className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-300/45" />
           <input
             ref={inputRef}
-            id="index-number"
-            name="indexNumber"
+            id="result-query"
+            name="query"
             type="text"
-            value={indexNumber}
-            onChange={(event) => onIndexNumberChange(event.target.value)}
-            placeholder="Enter your Index Number"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Enter your name or index number"
             autoComplete="off"
-            aria-describedby={error ? "index-number-error" : undefined}
+            aria-describedby={error ? "result-query-error" : undefined}
             aria-invalid={Boolean(error)}
-            className="h-14 w-full rounded-xl border border-white/10 bg-black/25 pl-11 pr-4 text-sm uppercase tracking-[0.08em] text-white outline-none transition placeholder:normal-case placeholder:tracking-normal placeholder:text-white/25 focus:border-blue-400/55 focus:ring-4 focus:ring-blue-500/10"
+            className="h-14 w-full rounded-xl border border-white/10 bg-black/25 pl-11 pr-4 text-sm tracking-[0.03em] text-white outline-none transition placeholder:text-white/25 focus:border-blue-400/55 focus:ring-4 focus:ring-blue-500/10"
           />
         </div>
         <button
@@ -55,7 +55,7 @@ export default function ResultSearch({
         >
           <span className="relative z-10 flex items-center justify-center gap-2">
             {isLoading ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
-            {isLoading ? "Checking" : "Check Result"}
+            {isLoading ? "Searching" : "Search"}
           </span>
           <span aria-hidden="true" className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
         </button>
@@ -63,8 +63,8 @@ export default function ResultSearch({
 
       <div className="mt-3 min-h-5" aria-live="polite">
         {error
-          ? <p id="index-number-error" className="text-xs text-rose-200/80">{error}</p>
-          : <p className="text-xs text-blue-100/30">You can also use your registration number.</p>}
+          ? <p id="result-query-error" className="text-xs text-rose-200/80">{error}</p>
+          : <p className="text-xs text-blue-100/30">You can search by your full name or exact index number.</p>}
       </div>
     </form>
   );

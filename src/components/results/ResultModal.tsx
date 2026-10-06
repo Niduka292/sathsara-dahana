@@ -136,17 +136,15 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/45">
                   <SearchX aria-hidden="true" className="h-7 w-7" />
                 </div>
-                <h2 id="result-modal-title" className="font-cinzel text-2xl font-bold text-white sm:text-3xl">Result Not Found</h2>
+                <h2 id="result-modal-title" className="font-cinzel text-2xl font-bold text-white sm:text-3xl">We&apos;re Sorry!</h2>
                 <p id="result-modal-description" className="mx-auto mt-4 max-w-md text-sm leading-7 text-blue-100/55">
-                  We couldn&apos;t find a result for this Index Number. Please check the number and try again.
+                  We could not find any selections for &ldquo;{searchedIndex}&rdquo;. Please check your name or index number and try again. Thank you for participating in Sathsara Dahana — keep pursuing your passion!
                 </p>
-                {category ? <p className="mt-4 font-cinzel text-[10px] uppercase tracking-[0.22em] text-blue-200/35">{categoryLabels[category]}</p> : null}
-                <p className="mt-3 break-all font-cinzel text-xs tracking-[0.12em] text-white/40">{searchedIndex}</p>
               </div>
             )}
 
-            <div className={`mt-7 grid gap-3 ${result && !isReserve ? "sm:grid-cols-[1fr_auto]" : ""}`}>
-              {result && !isReserve ? <DownloadCardButton result={result} cardRef={cardRef} /> : null}
+            <div className={`mt-7 grid gap-3 ${result ? "sm:grid-cols-[1fr_auto]" : ""}`}>
+              {result ? <DownloadCardButton result={result} cardRef={cardRef} /> : null}
               <button
                 ref={closeButtonRef}
                 type="button"
