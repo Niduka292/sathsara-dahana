@@ -9,7 +9,8 @@
     "dev:clean": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:results-release": "node --test scripts/test-results-release.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

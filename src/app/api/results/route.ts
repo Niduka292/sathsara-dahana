@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
-import { findAllResultsForIdentifier, findSelectionResult, isResultCategory } from "@/src/services/results.service";
+import { findSelectionResult, isResultCategory } from "@/src/services/results.service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const lockedResponse = resultsReleaseResponse();
+  if (lockedResponse) return lockedResponse;
+
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category")?.trim() ?? "";
   const identifier = searchParams.get("identifier")?.trim() ?? "";
