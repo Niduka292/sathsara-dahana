@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { findSelectionResult, isResultCategory } from "@/src/services/results.service";
+import { resultsReleaseResponse } from "@/src/lib/resultsRelease.server";
+import { findAllResultsForIdentifier, findSelectionResult, isResultCategory } from "@/src/services/results.service";
 
 export const dynamic = "force-dynamic";
 

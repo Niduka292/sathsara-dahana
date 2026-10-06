@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Guitar, HeartCrack, LoaderCircle, Mic2, PersonStanding } from "lucide-react";
+import { Download, Guitar, HeartCrack, LoaderCircle, Mic2, PersonStanding, type LucideIcon } from "lucide-react";
 import type { ResultCategory, SelectionResult } from "@/src/data/dancingCrewResults";
 import { lookupAllResults } from "@/src/services/results.client";
 import { downloadResultCard } from "@/src/lib/downloadResultCard";
@@ -10,7 +10,7 @@ import CongratulationsCard from "./CongratulationsCard";
 import ResultSearch from "./ResultSearch";
 
 // ─── pageant button config ────────────────────────────────────────────────────
-const categories: { id: ResultCategory; label: string; Icon: React.ComponentType<{ className?: string; "aria-hidden"?: string }> }[] = [
+const categories: { id: ResultCategory; label: string; Icon: LucideIcon }[] = [
   { id: "dancing",      label: "Dancing",      Icon: PersonStanding },
   { id: "singing",      label: "Singing",       Icon: Mic2 },
   { id: "instrumental", label: "Instrumental",  Icon: Guitar },
