@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { SearchX, X } from "lucide-react";
 import type { ResultCategory, SelectionResult } from "@/src/data/dancingCrewResults";
@@ -72,7 +73,11 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
 
   const isReserve = result?.status === "reserve";
 
-  return (
+  // Render at document level so the results section's stacking context cannot
+  // place the dialog behind the fixed navbar.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen ? (
         <motion.div
@@ -157,6 +162,7 @@ export default function ResultModal({ isOpen, result, searchedIndex, category, o
           </motion.div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
