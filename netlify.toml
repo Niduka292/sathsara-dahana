@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--no-audit --no-fund"
+
+# Netlify auto-detects Next.js and applies its official runtime plugin
+# (needed for the /api/results route and server rendering).
