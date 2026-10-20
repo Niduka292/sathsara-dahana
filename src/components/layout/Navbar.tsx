@@ -22,8 +22,8 @@ export default function Navbar() {
 
       if (pathname !== "/") return;
 
-      const sections = ["introduction", "timeline"];
-      const current = sections.find(section => {
+      const sections = ["introduction", "artists", "orchestra", "timeline"];
+      const current = sections.find((section) => {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
@@ -53,6 +53,8 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "ABOUT", href: "/#introduction", id: "introduction" },
+    { name: "ARTISTS", href: "/#artists", id: "artists" },
+    { name: "ORCHESTRA", href: "/#orchestra", id: "orchestra" },
     { name: "TIMELINE", href: "/#timeline", id: "timeline" },
     { name: "RESULTS", href: "/results", id: "results" },
   ];

@@ -1,23 +1,19 @@
 import Hero from "../../components/sections/hero/Hero";
 import ResultsAnnouncement from "../../components/results/ResultsAnnouncement";
-// import Countdown from "../../components/sections/countdown/Countdown";
 import Timeline from "../../components/sections/timeline/Timeline";
-// import Memories from "../../components/sections/memories/Memories";
 import Introduction from "../../components/sections/introduction/Introduction";
-// import Team from "../../components/sections/team/Team";
-// import Sponsors from "../../components/sections/sponsors/Sponsors";
+import Artists from "../../components/sections/artists/Artists";
+import Orchestra from "../../components/sections/orchestra/Orchestra";
 
 export default function Home() {
   return (
     <>
       <ResultsAnnouncement />
       <Hero />
-      {/* <Countdown /> */}
       <Introduction />
+      <Artists />
+      <Orchestra />
       <Timeline />
-      {/* <Memories /> */}
-      {/* <Team /> */}
-      {/* <Sponsors /> */}
     </>
   );
 }

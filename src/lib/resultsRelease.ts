@@ -1,5 +1,5 @@
 /** One release instant for the countdown, popup, and server-side access checks. */
-export const RESULTS_RELEASE_TIME = new Date("2026-10-06T20:00:00+05:30");
+export const RESULTS_RELEASE_TIME = new Date("2026-10-06T19:45:00+05:30");
 
 export function areResultsReleased(now = Date.now()) {
   return now >= RESULTS_RELEASE_TIME.getTime();

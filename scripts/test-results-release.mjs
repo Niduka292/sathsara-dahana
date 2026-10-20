@@ -11,7 +11,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
-const release = Date.parse("2026-10-06T20:00:00+05:30");
+const release = Date.parse("2026-10-06T19:45:00+05:30");
 
 // Isolated test clock/module loader: no production time override or extra dependencies.
 function fixture(now, overrides = {}, globals = {}) {
@@ -45,8 +45,8 @@ function fixture(now, overrides = {}, globals = {}) {
 test("Colombo release instant, label, countdown rounding, and zero clamp", () => {
   const { load } = fixture(release - 1000);
   const config = load("@/src/lib/resultsRelease");
-  assert.equal(config.RESULTS_RELEASE_TIME.toISOString(), "2026-10-06T14:30:00.000Z");
-  assert.equal(config.RESULTS_RELEASE_LABEL, "October 6, 2026 • 8:00 PM");
+  assert.equal(config.RESULTS_RELEASE_TIME.toISOString(), "2026-10-06T14:15:00.000Z");
+  assert.equal(config.RESULTS_RELEASE_LABEL, "October 6, 2026 • 7:45 PM");
   assert.equal(config.areResultsReleased(), false);
   assert.deepEqual(Object.values(config.getResultsCountdown(release - 192858000)), [2, 5, 34, 18]);
   assert.deepEqual(Object.values(config.getResultsCountdown()), [0, 0, 0, 1]);
@@ -70,7 +70,7 @@ test("both APIs deny early requests, then unlock without cookies at the exact bo
       assert.equal(response.status, 403);
       assert.equal(response.headers.get("Cache-Control"), "no-store");
       const body = await response.json();
-      assert.equal(body.releaseTime, "2026-10-06T14:30:00.000Z");
+      assert.equal(body.releaseTime, "2026-10-06T14:15:00.000Z");
       assert.equal("result" in body || "results" in body, false);
     }
   }

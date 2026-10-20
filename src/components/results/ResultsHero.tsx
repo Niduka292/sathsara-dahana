@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 
-export default function ResultsHero({ released }: { released: boolean }) {
+export default function ResultsHero({ released = true }: { released?: boolean }) {
   return (
     <header className="mx-auto flex max-w-4xl flex-col items-center text-center">
       <div className="mb-6 flex items-center gap-4 text-blue-300/70">
