@@ -9,6 +9,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { useRef } from "react";
+import Link from "next/link";
 
 interface TimelineEvent {
   id: string;
@@ -164,7 +165,11 @@ function TimelineRow({ event, index }: { event: TimelineEvent; index: number }) 
       <div className="hidden md:block w-1/2 pr-24">{isLeft && textBlock}</div>
 
       {/* Clock node + portal rings */}
-      <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center z-30">
+      <Link
+        href="/puzzle"
+        aria-label="Enter the Timekeepers Puzzle"
+        className="absolute left-0 md:left-1/2 md:-translate-x-1/2 flex items-center justify-center z-30 cursor-pointer group focus:outline-none"
+      >
         <motion.div
           style={{ scale: portalScale, opacity: portalOpacity, borderColor: accent }}
           className="absolute w-14 h-14 md:w-20 md:h-20 rounded-full border-2 pointer-events-none"
@@ -173,8 +178,10 @@ function TimelineRow({ event, index }: { event: TimelineEvent; index: number }) 
           style={{ scale: portalScale2, opacity: portalOpacity2, borderColor: accent }}
           className="absolute w-14 h-14 md:w-20 md:h-20 rounded-full border pointer-events-none"
         />
-        <ClockDial progress={progress} accent={accent} hour={event.hour} />
-      </div>
+        <div className="transition-transform duration-300 group-hover:scale-110">
+          <ClockDial progress={progress} accent={accent} hour={event.hour} />
+        </div>
+      </Link>
 
       {/* Right side (desktop) / all text (mobile) */}
       <div className="w-full md:w-1/2 pl-20 md:pl-24">

@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import DahanaLogo from "../../../../assets/dahana-logo-no-bg.png";
 
@@ -43,10 +44,14 @@ function Hand({ seconds, length, width, color }: { seconds: number; length: stri
 
 export default function TimeAstrolabe() {
   return (
-    <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] xl:max-w-[500px] aspect-square">
+    <Link
+      href="/puzzle"
+      aria-label="Enter the Timekeepers Puzzle"
+      className="group relative block w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] xl:max-w-[500px] aspect-square cursor-pointer focus:outline-none"
+    >
       {/* Soft breathing glow behind everything */}
       <motion.div
-        className="absolute inset-[12%] rounded-full bg-blue-500/20 blur-[60px]"
+        className="absolute inset-[12%] rounded-full bg-blue-500/20 blur-[60px] transition-all duration-500 group-hover:bg-blue-400/35 group-hover:scale-105"
         animate={{ opacity: [0.5, 0.9, 0.5], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -140,7 +145,7 @@ export default function TimeAstrolabe() {
         <motion.div
           animate={{ y: [-8, 8, -8] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="relative w-[46%] aspect-square will-change-transform"
+          className="relative w-[46%] aspect-square will-change-transform transition-transform duration-500 group-hover:scale-105"
         >
           <Image
             src={DahanaLogo}
@@ -151,6 +156,6 @@ export default function TimeAstrolabe() {
           />
         </motion.div>
       </div>
-    </div>
+    </Link>
   );
 }
