@@ -3,55 +3,82 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Lock, Unlock, RotateCcw, Sparkles, Clock, Grid } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RotateCcw, Sparkles, Grid, HelpCircle, X } from "lucide-react";
 import VortexBackground from "../ui/VortexBackground";
 
 const ROMAN_NUMERALS = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
 
-// Target Time: 11:09
-const TARGET_HOUR = 11;
-const TARGET_MINUTE = 9;
+// Target Time/Date for the Clock Puzzle: 10.31 (October 31st)
+const TARGET_HOUR = 10;
+const TARGET_MINUTE = 31;
 
-// 3x3 Sliding Tile Grid
-// Target is the center row (indices 3, 4, 5) spelling "F", "A", "S"
-// Solvable initial configuration (even number of swaps from a solved state)
-// Solved reference: ["D", "H", "N", "F", "A", "S", "2", "6", ""]
-// Let's apply 12 valid legal moves from solved reference so it is 100% solvable and fun!
-// Reference:
-// 0: D, 1: H, 2: N
-// 3: F, 4: A, 5: S
-// 6: 2, 7: 6, 8: ""
-// Move 1 (5->8): D, H, N, F, A, "", 2, 6, S
-// Move 2 (4->5): D, H, N, F, "", A, 2, 6, S
-// Move 3 (1->4): D, "", N, F, H, A, 2, 6, S
-// Move 4 (0->1): "", D, N, F, H, A, 2, 6, S
-// Move 5 (3->0): F, D, N, "", H, A, 2, 6, S
-// Move 6 (4->3): F, D, N, H, "", A, 2, 6, S
-// Move 7 (7->4): F, D, N, H, 6, A, 2, "", S
-// Move 8 (8->7): F, D, N, H, 6, A, 2, S, ""
-const INITIAL_TILES = ["F", "D", "N", "H", "6", "A", "2", "S", ""];
+// Standard 8-Puzzle Target: ["1", "2", "3", "4", "5", "6", "7", "8", ""]
+const SOLVED_TILES = ["1", "2", "3", "4", "5", "6", "7", "8", ""];
+
+// Solvable initial state (6 valid moves from solved state so it's fun and mobile-friendly)
+const INITIAL_TILES = ["4", "1", "3", "2", "", "5", "7", "8", "6"];
+
+type ClockMode = "realtime" | "rewinding" | "editable";
 
 export default function PuzzleExperience() {
-  // --- CLOCK PUZZLE STATE ---
-  // Initial time: 03:30 so the user gets to move both hands
-  const [hour, setHour] = useState<number>(3);
-  const [minute, setMinute] = useState<number>(30);
-  const [activeHand, setActiveHand] = useState<"hour" | "minute">("hour");
-  const [draggingHand, setDraggingHand] = useState<"hour" | "minute" | null>(null);
-  const clockRef = useRef<HTMLDivElement>(null);
-
-  const isClockSolved = hour === TARGET_HOUR && minute === TARGET_MINUTE;
-
-  // --- BLOCK SLIDING PUZZLE STATE ---
+  // --- 8-PUZZLE STATE ---
   const [tiles, setTiles] = useState<string[]>(INITIAL_TILES);
   const touchStartRef = useRef<{ x: number; y: number; index: number } | null>(null);
 
-  // Solved when the middle row (indices 3, 4, 5) spells F - A - S
-  const isBlocksSolved = tiles[3] === "F" && tiles[4] === "A" && tiles[5] === "S";
+  const isEightPuzzleSolved = tiles.every((tile, idx) => tile === SOLVED_TILES[idx]);
 
-  const isAllSolved = isClockSolved && isBlocksSolved;
+  // --- CLOCK STATE ---
+  const [clockMode, setClockMode] = useState<ClockMode>("realtime");
+  const [realTimeAngles, setRealTimeAngles] = useState<{
+    hourAngle: number;
+    minuteAngle: number;
+    secondAngle: number;
+  }>({ hourAngle: 0, minuteAngle: 0, secondAngle: 0 });
+
+  // Editable clock state (starts at 03.15 when user clicks the rewinding clock)
+  const [hour, setHour] = useState<number>(3);
+  const [minute, setMinute] = useState<number>(15);
+  const [draggingHand, setDraggingHand] = useState<"hour" | "minute" | null>(null);
+  const [showClueModal, setShowClueModal] = useState(false);
+  const clockRef = useRef<HTMLDivElement>(null);
+
+  const isClockSolved =
+    clockMode === "editable" && hour === TARGET_HOUR && minute === TARGET_MINUTE;
+
+  const isAllSolved = isEightPuzzleSolved && isClockSolved;
   const [showVictoryModal, setShowVictoryModal] = useState(false);
 
+  // 1. Real-time clock ticking when in "realtime" mode
+  useEffect(() => {
+    if (clockMode !== "realtime") return;
+
+    const updateRealTime = () => {
+      const now = new Date();
+      const h = now.getHours() % 12;
+      const m = now.getMinutes();
+      const s = now.getSeconds();
+      const ms = now.getMilliseconds();
+
+      const secondAngle = (s + ms / 1000) * 6;
+      const minuteAngle = (m + s / 60) * 6;
+      const hourAngle = (h + m / 60) * 30;
+
+      setRealTimeAngles({ hourAngle, minuteAngle, secondAngle });
+    };
+
+    updateRealTime();
+    const interval = setInterval(updateRealTime, 50);
+    return () => clearInterval(interval);
+  }, [clockMode]);
+
+  // 2. When 8-puzzle is solved, automatically transition clock from "realtime" -> "rewinding"
+  useEffect(() => {
+    if (isEightPuzzleSolved && clockMode === "realtime") {
+      setClockMode("rewinding");
+    }
+  }, [isEightPuzzleSolved, clockMode]);
+
+  // 3. Show victory modal when both puzzles are solved
   useEffect(() => {
     if (isAllSolved) {
       const timer = setTimeout(() => setShowVictoryModal(true), 450);
@@ -61,7 +88,10 @@ export default function PuzzleExperience() {
     }
   }, [isAllSolved]);
 
-  // --- CLOCK INTERACTION LOGIC ---
+  // --- CLOCK INTERACTION LOGIC (ONLY IN EDITABLE MODE) ---
+  const editableMinuteAngle = minute * 6;
+  const editableHourAngle = (hour % 12) * 30 + minute * 0.5;
+
   const updateClockFromPoint = useCallback(
     (clientX: number, clientY: number, handToMove: "hour" | "minute") => {
       if (!clockRef.current) return;
@@ -71,7 +101,6 @@ export default function PuzzleExperience() {
       const dx = clientX - centerX;
       const dy = clientY - centerY;
 
-      // Angle in degrees where 12 o'clock is 0 deg, clockwise [0, 360)
       let deg = Math.atan2(dx, -dy) * (180 / Math.PI);
       if (deg < 0) deg += 360;
 
@@ -87,8 +116,33 @@ export default function PuzzleExperience() {
     []
   );
 
+  // Pick whichever hand is angularly closer when clicking directly on the dial face
+  const pickClosestHand = useCallback(
+    (clientX: number, clientY: number): "hour" | "minute" => {
+      if (!clockRef.current) return "minute";
+      const rect = clockRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+
+      let deg = Math.atan2(dx, -dy) * (180 / Math.PI);
+      if (deg < 0) deg += 360;
+
+      const angleDiff = (a: number, b: number) => {
+        const d = Math.abs(a - b) % 360;
+        return d > 180 ? 360 - d : d;
+      };
+
+      const diffHour = angleDiff(deg, editableHourAngle);
+      const diffMin = angleDiff(deg, editableMinuteAngle);
+      return diffHour < diffMin ? "hour" : "minute";
+    },
+    [editableHourAngle, editableMinuteAngle]
+  );
+
   useEffect(() => {
-    if (!draggingHand) return;
+    if (!draggingHand || clockMode !== "editable") return;
 
     const handlePointerMove = (e: PointerEvent) => {
       e.preventDefault();
@@ -108,14 +162,9 @@ export default function PuzzleExperience() {
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
     };
-  }, [draggingHand, updateClockFromPoint]);
+  }, [draggingHand, clockMode, updateClockFromPoint]);
 
-  // Calculate visual angles
-  const minuteAngle = minute * 6;
-  // Smooth hour hand angle (includes slight offset from minutes, or exact hour markers when dragging hour)
-  const hourAngle = ((hour % 12) * 30) + (minute * 0.5);
-
-  // --- BLOCK PUZZLE INTERACTION LOGIC ---
+  // --- 8-PUZZLE INTERACTION LOGIC ---
   const moveTile = useCallback((index: number) => {
     setTiles((prev) => {
       const emptyIndex = prev.indexOf("");
@@ -136,7 +185,6 @@ export default function PuzzleExperience() {
     });
   }, []);
 
-  // Swipe gesture on the grid or individual tile
   const handleTouchStart = (e: React.TouchEvent, index: number) => {
     const touch = e.touches[0];
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, index };
@@ -153,37 +201,30 @@ export default function PuzzleExperience() {
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
 
-    // If it was a swipe (> 20px), check if swipe direction points toward the empty slot
     if (Math.max(absX, absY) > 20) {
       const emptyIndex = tiles.indexOf("");
       const emptyRow = Math.floor(emptyIndex / 3);
       const emptyCol = emptyIndex % 3;
 
       if (absX > absY) {
-        // Horizontal swipe
         const swipeDirCol = dx > 0 ? 1 : -1;
-        // Either swiped the specific tile toward empty, or swiped anywhere on grid in that direction
         const targetTileRow = emptyRow;
         const targetTileCol = emptyCol - swipeDirCol;
         if (targetTileCol >= 0 && targetTileCol < 3) {
-          const tileToMove = targetTileRow * 3 + targetTileCol;
-          moveTile(tileToMove);
+          moveTile(targetTileRow * 3 + targetTileCol);
           return;
         }
       } else {
-        // Vertical swipe
         const swipeDirRow = dy > 0 ? 1 : -1;
         const targetTileRow = emptyRow - swipeDirRow;
         const targetTileCol = emptyCol;
         if (targetTileRow >= 0 && targetTileRow < 3) {
-          const tileToMove = targetTileRow * 3 + targetTileCol;
-          moveTile(tileToMove);
+          moveTile(targetTileRow * 3 + targetTileCol);
           return;
         }
       }
     }
 
-    // Fallback: if tapped or short drag on an adjacent tile, move it directly
     if (startIdx >= 0) {
       moveTile(startIdx);
     }
@@ -191,6 +232,10 @@ export default function PuzzleExperience() {
 
   const resetBlocks = () => {
     setTiles(INITIAL_TILES);
+    setClockMode("realtime");
+    setHour(3);
+    setMinute(15);
+    setShowClueModal(false);
   };
 
   return (
@@ -205,7 +250,7 @@ export default function PuzzleExperience() {
 
       <div className="relative z-10 mx-auto max-w-2xl flex flex-col items-center">
         {/* Top Bar Navigation */}
-        <div className="w-full flex items-center justify-between mb-6 sm:mb-8">
+        <div className="w-full flex items-center justify-between mb-4 sm:mb-6">
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-cinzel text-[11px] uppercase tracking-[0.2em] text-blue-200/80 backdrop-blur-md transition-all hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
@@ -214,110 +259,64 @@ export default function PuzzleExperience() {
             <span>Back</span>
           </Link>
 
-          <div className="flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-950/30 px-3.5 py-1.5 backdrop-blur-md">
-            {isAllSolved ? (
-              <Unlock className="h-3.5 w-3.5 text-[#fbbf24]" />
-            ) : (
-              <Lock className="h-3.5 w-3.5 text-blue-400" />
-            )}
-            <span className="font-cinzel text-[10px] uppercase tracking-[0.22em] text-blue-200">
-              {isAllSolved ? "Portal Unlocked" : `${(isClockSolved ? 1 : 0) + (isBlocksSolved ? 1 : 0)} / 2 Locks`}
-            </span>
-          </div>
-        </div>
-
-        {/* Title Header */}
-        <div className="text-center mb-6 sm:mb-10">
-          <p className="font-cinzel text-[10px] sm:text-xs uppercase tracking-[0.38em] text-[#a78bfa] mb-2">
-            Secrets of Time
-          </p>
-          <h1 className="font-cinzel text-2xl sm:text-4xl font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-400">
-            The Chrono Cipher
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-blue-100/60 max-w-md mx-auto">
-            Align the hands of time and slide the ancient runes into place to unlock the gate.
-          </p>
+          {clockMode === "editable" && (
+            <button
+              type="button"
+              onClick={() => setShowClueModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#a78bfa]/40 bg-[#a78bfa]/15 px-3.5 py-2 font-cinzel text-[10px] uppercase tracking-[0.2em] text-[#e9d5ff] backdrop-blur-md transition-all hover:bg-[#a78bfa]/25"
+            >
+              <HelpCircle className="h-3.5 w-3.5 text-[#c4b5fd]" />
+              <span>Riddle Clue</span>
+            </button>
+          )}
         </div>
 
         {/* ============================================================ */}
-        {/* PUZZLE 1: ANALOG CLOCK INPUT (TOP)                           */}
+        {/* TOP: ANALOG CLOCK (REALTIME -> REWINDING -> EDITABLE)        */}
         {/* ============================================================ */}
-        <div
-          className={`w-full rounded-3xl border p-5 sm:p-7 backdrop-blur-xl transition-all duration-500 mb-6 sm:mb-8 ${
-            isClockSolved
-              ? "border-[#fbbf24]/50 bg-[#081229]/80 shadow-[0_0_45px_rgba(251,191,36,0.18)]"
-              : "border-blue-400/20 bg-[#050b1c]/80 shadow-[0_0_40px_rgba(59,130,246,0.12)]"
-          }`}
-        >
-          {/* Card Header */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <div className="flex items-center gap-2.5">
-              <Clock className={`h-4 w-4 ${isClockSolved ? "text-[#fbbf24]" : "text-blue-400"}`} />
-              <h2 className="font-cinzel text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white">
-                I. Align The Hands
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isClockSolved ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fbbf24]/20 border border-[#fbbf24]/40 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-[#fbbf24]">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Synchronized
-                </span>
-              ) : (
-                <span className="font-cinzel text-xs tabular-nums tracking-widest text-blue-200/70 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
-                  {String(hour).padStart(2, "0")}:{String(minute).padStart(2, "0")}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Hand Selector Toggle for effortless touch accuracy */}
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <button
-              type="button"
-              onClick={() => setActiveHand("hour")}
-              className={`px-3.5 py-1.5 rounded-full font-cinzel text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
-                activeHand === "hour"
-                  ? "bg-blue-500/30 border border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.35)]"
-                  : "bg-white/5 border border-white/10 text-blue-200/50 hover:text-white"
-              }`}
-            >
-              Hour Hand ({hour})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveHand("minute")}
-              className={`px-3.5 py-1.5 rounded-full font-cinzel text-[10px] sm:text-xs uppercase tracking-widest transition-all ${
-                activeHand === "minute"
-                  ? "bg-[#fbbf24]/25 border border-[#fbbf24] text-[#fcd88b] shadow-[0_0_15px_rgba(251,191,36,0.3)]"
-                  : "bg-white/5 border border-white/10 text-blue-200/50 hover:text-white"
-              }`}
-            >
-              Minute Hand ({String(minute).padStart(2, "0")})
-            </button>
-          </div>
-
-          {/* Interactive Analog Clock Dial */}
-          <div className="flex flex-col items-center justify-center">
+        <div className="w-full flex flex-col items-center mb-6 sm:mb-8">
+          <div className="relative flex items-center justify-center w-full">
+            {/* The Analog Clock Dial */}
             <div
               ref={clockRef}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                setDraggingHand(activeHand);
-                updateClockFromPoint(e.clientX, e.clientY, activeHand);
+              onClick={() => {
+                if (clockMode === "rewinding") {
+                  setClockMode("editable");
+                  setShowClueModal(true);
+                }
               }}
-              className="relative w-[240px] h-[240px] sm:w-[290px] sm:h-[290px] rounded-full select-none touch-none cursor-grab active:cursor-grabbing flex items-center justify-center"
+              onPointerDown={(e) => {
+                if (clockMode !== "editable") return;
+                e.preventDefault();
+                const closest = pickClosestHand(e.clientX, e.clientY);
+                setDraggingHand(closest);
+                updateClockFromPoint(e.clientX, e.clientY, closest);
+              }}
+              className={`relative w-[210px] h-[210px] sm:w-[260px] sm:h-[260px] rounded-full select-none flex items-center justify-center transition-shadow duration-500 ${
+                clockMode === "rewinding"
+                  ? "cursor-pointer shadow-[0_0_50px_rgba(167,139,250,0.45)] animate-pulse"
+                  : clockMode === "editable"
+                  ? isClockSolved
+                    ? "touch-none cursor-grab active:cursor-grabbing shadow-[0_0_55px_rgba(251,191,36,0.35)]"
+                    : "touch-none cursor-grab active:cursor-grabbing shadow-[0_0_45px_rgba(59,130,246,0.25)]"
+                  : "cursor-default shadow-[0_0_30px_rgba(59,130,246,0.12)]"
+              }`}
             >
               {/* Dial SVG */}
               <svg viewBox="0 0 300 300" className="w-full h-full overflow-visible">
-                {/* Outer Glow Circle */}
                 <circle
                   cx="150"
                   cy="150"
                   r="142"
                   fill="#030716"
-                  stroke={isClockSolved ? "#fbbf24" : "#60a5fa"}
-                  strokeOpacity="0.5"
+                  stroke={
+                    isClockSolved
+                      ? "#fbbf24"
+                      : clockMode === "rewinding"
+                      ? "#a78bfa"
+                      : "#60a5fa"
+                  }
+                  strokeOpacity="0.55"
                   strokeWidth="2"
                 />
                 <circle
@@ -341,7 +340,15 @@ export default function PuzzleExperience() {
                       y1="12"
                       x2="150"
                       y2={isMajor ? "24" : "18"}
-                      stroke={isClockSolved ? "#fbbf24" : isMajor ? "#93c5fd" : "#60a5fa"}
+                      stroke={
+                        isClockSolved
+                          ? "#fbbf24"
+                          : clockMode === "rewinding"
+                          ? "#c4b5fd"
+                          : isMajor
+                          ? "#93c5fd"
+                          : "#60a5fa"
+                      }
                       strokeOpacity={isMajor ? 0.9 : 0.35}
                       strokeWidth={isMajor ? 2 : 1}
                       transform={`rotate(${i * 6} 150 150)`}
@@ -372,64 +379,149 @@ export default function PuzzleExperience() {
                 })}
               </svg>
 
-              {/* HOUR HAND */}
-              <div
-                style={{ transform: `rotate(${hourAngle}deg)` }}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setActiveHand("hour");
-                  setDraggingHand("hour");
-                }}
-                className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[4px] w-[8px] h-[27%] rounded-full bg-gradient-to-t from-blue-400 to-white shadow-[0_0_12px_rgba(96,165,250,0.9)] cursor-grab active:cursor-grabbing z-20"
-              >
-                {/* Grab Handle Knob on Tip */}
-                <div
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 transition-transform ${
-                    activeHand === "hour"
-                      ? "border-white bg-blue-500/80 scale-110 shadow-[0_0_12px_#60a5fa]"
-                      : "border-blue-300/50 bg-blue-950/60"
-                  }`}
-                />
-              </div>
+              {/* --- MODE 1: NORMAL REAL-TIME CLOCK HANDS --- */}
+              {clockMode === "realtime" && (
+                <>
+                  {/* Hour Hand */}
+                  <div
+                    style={{ transform: `rotate(${realTimeAngles.hourAngle}deg)` }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[3.5px] w-[7px] h-[26%] rounded-full bg-gradient-to-t from-blue-400 to-white shadow-[0_0_10px_rgba(96,165,250,0.8)] pointer-events-none z-20"
+                  />
+                  {/* Minute Hand */}
+                  <div
+                    style={{ transform: `rotate(${realTimeAngles.minuteAngle}deg)` }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[2px] w-[4px] h-[36%] rounded-full bg-gradient-to-t from-amber-500 to-[#fde68a] shadow-[0_0_10px_rgba(251,191,36,0.8)] pointer-events-none z-30"
+                  />
+                  {/* Second Hand */}
+                  <div
+                    style={{ transform: `rotate(${realTimeAngles.secondAngle}deg)` }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[1px] w-[2px] h-[40%] rounded-full bg-cyan-300/90 shadow-[0_0_8px_#67e8f9] pointer-events-none z-35"
+                  />
+                </>
+              )}
 
-              {/* MINUTE HAND */}
-              <div
-                style={{ transform: `rotate(${minuteAngle}deg)` }}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setActiveHand("minute");
-                  setDraggingHand("minute");
-                }}
-                className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[2.5px] w-[5px] h-[38%] rounded-full bg-gradient-to-t from-amber-500 to-[#fde68a] shadow-[0_0_14px_rgba(251,191,36,0.9)] cursor-grab active:cursor-grabbing z-30"
-              >
-                {/* Grab Handle Knob on Tip */}
-                <div
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 transition-transform ${
-                    activeHand === "minute"
-                      ? "border-white bg-amber-500/90 scale-110 shadow-[0_0_12px_#fbbf24]"
-                      : "border-amber-300/50 bg-amber-950/60"
-                  }`}
-                />
-              </div>
+              {/* --- MODE 2: RAPID ANTI-CLOCKWISE REWINDING HANDS --- */}
+              {clockMode === "rewinding" && (
+                <>
+                  <motion.div
+                    animate={{ rotate: [0, -360] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[3.5px] w-[7px] h-[26%] rounded-full bg-gradient-to-t from-purple-400 to-white shadow-[0_0_15px_#a78bfa] pointer-events-none z-20"
+                  />
+                  <motion.div
+                    animate={{ rotate: [0, -360] }}
+                    transition={{ duration: 0.35, repeat: Infinity, ease: "linear" }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[2px] w-[4px] h-[36%] rounded-full bg-gradient-to-t from-amber-400 to-white shadow-[0_0_16px_#fbbf24] pointer-events-none z-30"
+                  />
+                </>
+              )}
+
+              {/* --- MODE 3: EDITABLE / DRAGGABLE PUZZLE HANDS --- */}
+              {clockMode === "editable" && (
+                <>
+                  {/* Hour Hand */}
+                  <div
+                    style={{ transform: `rotate(${editableHourAngle}deg)` }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setDraggingHand("hour");
+                    }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[4px] w-[8px] h-[27%] rounded-full bg-gradient-to-t from-blue-400 to-white shadow-[0_0_12px_rgba(96,165,250,0.9)] cursor-grab active:cursor-grabbing z-20"
+                  >
+                    <div
+                      className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 transition-transform ${
+                        draggingHand === "hour"
+                          ? "border-white bg-blue-500 scale-125 shadow-[0_0_14px_#60a5fa]"
+                          : "border-blue-200/80 bg-blue-600/80 shadow-[0_0_8px_#60a5fa]"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Minute Hand */}
+                  <div
+                    style={{ transform: `rotate(${editableMinuteAngle}deg)` }}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setDraggingHand("minute");
+                    }}
+                    className="absolute left-1/2 bottom-1/2 origin-bottom -ml-[2.5px] w-[5px] h-[38%] rounded-full bg-gradient-to-t from-amber-500 to-[#fde68a] shadow-[0_0_14px_rgba(251,191,36,0.9)] cursor-grab active:cursor-grabbing z-30"
+                  >
+                    <div
+                      className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-2 transition-transform ${
+                        draggingHand === "minute"
+                          ? "border-white bg-amber-500 scale-125 shadow-[0_0_14px_#fbbf24]"
+                          : "border-amber-200/80 bg-amber-500/80 shadow-[0_0_8px_#fbbf24]"
+                      }`}
+                    />
+                  </div>
+                </>
+              )}
 
               {/* Center Pin */}
               <div className="absolute w-4 h-4 rounded-full bg-[#fcd88b] border-2 border-[#030716] shadow-[0_0_10px_#fbbf24] z-40 pointer-events-none" />
             </div>
 
-            <p className="mt-3 text-[11px] sm:text-xs text-blue-200/50 text-center">
-              Drag the clock hands or tap anywhere on the dial to set the time.
-            </p>
+            {/* SIDE TIME / DATE DISPLAY (e.g., 10.31) IN EDITABLE STAGE */}
+            <AnimatePresence>
+              {clockMode === "editable" && (
+                <motion.div
+                  initial={{ opacity: 0, x: -12, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -12, scale: 0.9 }}
+                  className={`ml-3 sm:ml-6 flex flex-col items-center justify-center rounded-2xl border px-3.5 py-2.5 sm:px-5 sm:py-3.5 backdrop-blur-xl transition-all ${
+                    isClockSolved
+                      ? "border-[#fbbf24] bg-[#fbbf24]/20 text-[#fcd88b] shadow-[0_0_30px_rgba(251,191,36,0.35)]"
+                      : draggingHand
+                      ? "border-blue-400 bg-blue-950/70 text-white shadow-[0_0_25px_rgba(59,130,246,0.35)]"
+                      : "border-blue-400/30 bg-[#050b1c]/90 text-blue-100"
+                  }`}
+                >
+                  <span className="font-cinzel text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-blue-300/70 mb-0.5">
+                    Date
+                  </span>
+                  <span className="font-cinzel text-lg sm:text-2xl font-bold tabular-nums tracking-wider">
+                    {String(hour).padStart(2, "0")}.{String(minute).padStart(2, "0")}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Subtle status prompt below the clock only when rewinding or editable */}
+          <AnimatePresence mode="wait">
+            {clockMode === "rewinding" && (
+              <motion.p
+                key="rewinding-prompt"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-[#c4b5fd] animate-pulse text-center"
+              >
+                Time is unravelling... Tap the clock to seize the hands
+              </motion.p>
+            )}
+            {clockMode === "editable" && (
+              <motion.p
+                key="editable-prompt"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="mt-3 text-[11px] sm:text-xs text-blue-200/60 text-center"
+              >
+                Drag the clock hands to align the date from the riddle.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ============================================================ */}
-        {/* PUZZLE 2: SWIPE BLOCK PUZZLE FOR "FAS" (BOTTOM)              */}
+        {/* BOTTOM: CLASSIC 8-PUZZLE                                     */}
         {/* ============================================================ */}
         <div
           className={`w-full rounded-3xl border p-5 sm:p-7 backdrop-blur-xl transition-all duration-500 ${
-            isBlocksSolved
+            isEightPuzzleSolved
               ? "border-[#fbbf24]/50 bg-[#081229]/80 shadow-[0_0_45px_rgba(251,191,36,0.18)]"
               : "border-blue-400/20 bg-[#050b1c]/80 shadow-[0_0_40px_rgba(59,130,246,0.12)]"
           }`}
@@ -437,58 +529,44 @@ export default function PuzzleExperience() {
           {/* Card Header */}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-2.5">
-              <Grid className={`h-4 w-4 ${isBlocksSolved ? "text-[#fbbf24]" : "text-blue-400"}`} />
+              <Grid className={`h-4 w-4 ${isEightPuzzleSolved ? "text-[#fbbf24]" : "text-blue-400"}`} />
               <h2 className="font-cinzel text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white">
-                II. Align The Crest
+                8-Tile Sliding Puzzle
               </h2>
             </div>
 
             <div className="flex items-center gap-2">
-              {isBlocksSolved ? (
+              {isEightPuzzleSolved && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fbbf24]/20 border border-[#fbbf24]/40 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-[#fbbf24]">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Aligned
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Solved
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={resetBlocks}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-blue-200/70 hover:bg-white/10 hover:text-white transition-colors"
-                >
-                  <RotateCcw className="h-3 w-3" /> Reset
-                </button>
               )}
+              <button
+                type="button"
+                onClick={resetBlocks}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-blue-200/70 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </button>
             </div>
           </div>
 
           <p className="text-center text-xs text-blue-100/60 mb-5">
-            Swipe or tap the blocks to form the faculty initials across the{" "}
-            <span className="text-[#fcd88b] font-semibold">center row</span>.
+            {isEightPuzzleSolved
+              ? "The tiles are aligned in order! Look to the clock above."
+              : "Swipe or tap the numbered blocks to arrange 1 through 8 in order."}
           </p>
 
-          {/* 3x3 Block Grid */}
-          <div className="relative mx-auto w-full max-w-[270px] sm:max-w-[310px] aspect-square p-3 rounded-2xl border border-blue-400/20 bg-[#020512]/90 shadow-inner select-none touch-none">
-            {/* Highlighted Center Target Row Indicator */}
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute left-1.5 right-1.5 top-1/2 -translate-y-1/2 h-[32%] rounded-xl border-2 transition-colors duration-500 ${
-                isBlocksSolved
-                  ? "border-[#fbbf24] bg-[#fbbf24]/10 shadow-[0_0_20px_rgba(251,191,36,0.25)]"
-                  : "border-dashed border-blue-400/40 bg-blue-500/[0.04]"
-              }`}
-            />
-
+          {/* 3x3 8-Puzzle Grid */}
+          <div className="relative mx-auto w-full max-w-[260px] sm:max-w-[300px] aspect-square p-3 rounded-2xl border border-blue-400/20 bg-[#020512]/90 shadow-inner select-none touch-none">
             <div
               className="relative z-10 grid grid-cols-3 grid-rows-3 gap-2.5 w-full h-full"
               onTouchStart={(e) => handleTouchStart(e, -1)}
               onTouchEnd={handleTouchEnd}
             >
-              {tiles.map((letter, idx) => {
-                const isEmpty = letter === "";
-                const isCenterRow = idx >= 3 && idx <= 5;
-                const isCorrectInSlot =
-                  (idx === 3 && letter === "F") ||
-                  (idx === 4 && letter === "A") ||
-                  (idx === 5 && letter === "S");
+              {tiles.map((tileValue, idx) => {
+                const isEmpty = tileValue === "";
+                const isCorrectInPlace = tileValue === SOLVED_TILES[idx];
 
                 if (isEmpty) {
                   return (
@@ -501,7 +579,7 @@ export default function PuzzleExperience() {
 
                 return (
                   <motion.button
-                    key={letter}
+                    key={tileValue}
                     layout
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     type="button"
@@ -515,29 +593,79 @@ export default function PuzzleExperience() {
                       handleTouchEnd(e);
                     }}
                     className={`relative flex items-center justify-center w-full h-full rounded-xl font-cinzel text-2xl sm:text-3xl font-bold select-none cursor-pointer transition-colors ${
-                      isBlocksSolved && isCenterRow
-                        ? "bg-gradient-to-b from-[#fbbf24]/40 to-amber-600/30 border-2 border-[#fbbf24] text-white shadow-[0_0_20px_rgba(251,191,36,0.5)]"
-                        : isCorrectInSlot
-                        ? "bg-blue-500/30 border-2 border-blue-300 text-white shadow-[0_0_15px_rgba(96,165,250,0.4)]"
+                      isEightPuzzleSolved
+                        ? "bg-gradient-to-b from-[#fbbf24]/35 to-amber-600/25 border-2 border-[#fbbf24] text-white shadow-[0_0_18px_rgba(251,191,36,0.35)]"
+                        : isCorrectInPlace
+                        ? "bg-blue-500/25 border border-blue-300/60 text-white"
                         : "bg-gradient-to-b from-blue-900/50 to-[#091536]/90 border border-blue-400/30 text-blue-100 hover:border-blue-300/60 active:scale-95"
                     }`}
                   >
-                    {letter}
+                    <span>{tileValue}</span>
                   </motion.button>
                 );
               })}
             </div>
           </div>
-
-          {/* Center Row Status */}
-          <div className="mt-4 flex items-center justify-center gap-3 text-[11px] font-cinzel uppercase tracking-[0.25em] text-blue-200/60">
-            <span>Center Row:</span>
-            <span className={isBlocksSolved ? "text-[#fbbf24] font-bold" : "text-white"}>
-              {tiles[3] || "_"} • {tiles[4] || "_"} • {tiles[5] || "_"}
-            </span>
-          </div>
         </div>
       </div>
+
+      {/* ============================================================ */}
+      {/* CLUE POPUP MODAL WHEN USER CLICKS THE REWINDING CLOCK        */}
+      {/* ============================================================ */}
+      <AnimatePresence>
+        {showClueModal && (
+          <div className="fixed inset-0 z-[190] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowClueModal(false)}
+              className="absolute inset-0 bg-black/75 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 16 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="relative z-10 w-full max-w-md rounded-3xl border border-[#a78bfa]/50 bg-gradient-to-b from-[#0e1538] to-[#050816] p-6 sm:p-8 text-center shadow-[0_0_60px_rgba(167,139,250,0.3)]"
+            >
+              <button
+                type="button"
+                onClick={() => setShowClueModal(false)}
+                aria-label="Close clue"
+                className="absolute right-4 top-4 rounded-full bg-white/10 p-1.5 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-[#c4b5fd]">
+                The Timekeeper&apos;s Riddle
+              </p>
+
+              <h3 className="mt-2 font-cinzel text-xl sm:text-2xl font-bold uppercase text-white">
+                When Shadows Awake
+              </h3>
+
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5 text-xs sm:text-sm italic leading-relaxed text-blue-100/85 font-serif">
+                &ldquo;Seek the night when lanterns glow, masks are worn, and whispers echo at the very end of the tenth moon.
+                <br />
+                <br />
+                Let the <span className="text-blue-300 not-italic font-semibold">short hand mark the month</span>, and the{" "}
+                <span className="text-[#fcd88b] not-italic font-semibold">long hand mark the final night</span>.&rdquo;
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowClueModal(false)}
+                className="mt-6 w-full rounded-full bg-gradient-to-r from-[#8b5cf6] to-blue-500 px-6 py-2.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-white shadow-[0_0_25px_rgba(139,92,246,0.45)] hover:opacity-95 transition-opacity"
+              >
+                Set The Clock
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* ============================================================ */}
       {/* SECRET REVEAL MODAL WHEN BOTH PUZZLES ARE SOLVED             */}
@@ -565,7 +693,7 @@ export default function PuzzleExperience() {
               </div>
 
               <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-[#fcd88b]">
-                11:09 • FAS Unlocked
+                10.31 • October 31st Unlocked
               </p>
 
               <h3 className="mt-2 font-cinzel text-2xl sm:text-3xl font-bold uppercase text-white">
@@ -573,8 +701,8 @@ export default function PuzzleExperience() {
               </h3>
 
               <p className="mt-4 text-xs sm:text-sm leading-relaxed text-blue-100/75">
-                You have synchronized the exact moment <span className="text-[#fcd88b] font-semibold">11:09</span> and aligned the mark of the{" "}
-                <span className="text-[#fcd88b] font-semibold">Faculty of Applied Sciences (FAS)</span>. The journey beyond the ordinary awaits you at Sathsara Dahana 2026!
+                You solved the cipher and aligned the hands of time to{" "}
+                <span className="text-[#fcd88b] font-semibold">10.31 (October 31st)</span>. Something beyond the ordinary awaits you on Halloween night at Sathsara Dahana 2026!
               </p>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
