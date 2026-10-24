@@ -13,13 +13,13 @@ const VIOLET = "#a78bfa";
 const GOLD = "#fbbf24";
 const NUMERALS = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
 
-/** A full-size layer that spins forever around the centre (HTML transform, so the pivot is exact). */
-function Spin({ seconds, reverse = false, children }: { seconds: number; reverse?: boolean; children: ReactNode }) {
+/** A full-size layer that spins clockwise forever around the centre. */
+function Spin({ seconds, children }: { seconds: number; children: ReactNode }) {
   const reduceMotion = useReducedMotion();
   return (
     <motion.div
       className="absolute inset-0 will-change-transform"
-      animate={reduceMotion ? undefined : { rotate: reverse ? -360 : 360 }}
+      animate={reduceMotion ? undefined : { rotate: 360 }}
       transition={{ duration: seconds, repeat: Infinity, ease: "linear" }}
     >
       <svg viewBox="0 0 500 500" className="w-full h-full overflow-visible" aria-hidden="true">
@@ -29,14 +29,35 @@ function Spin({ seconds, reverse = false, children }: { seconds: number; reverse
   );
 }
 
-/** A clock hand pointing up from the centre, spinning at its own speed. */
-function Hand({ seconds, length, width, color }: { seconds: number; length: string; width: number; color: string }) {
+/** A clock hand pointing from the centre, sweeping clockwise at its own separate speed and angle. */
+function Hand({
+  seconds,
+  length,
+  width,
+  color,
+  initialAngle = 0,
+}: {
+  seconds: number;
+  length: string;
+  width: number;
+  color: string;
+  initialAngle?: number;
+}) {
   const reduceMotion = useReducedMotion();
+  const start = initialAngle;
+  const end = initialAngle + 360;
+
   return (
     <motion.div
-      className="absolute left-1/2 bottom-1/2 origin-bottom rounded-full"
-      style={{ height: length, width, marginLeft: -width / 2, background: `linear-gradient(to top, transparent, ${color})` }}
-      animate={reduceMotion ? undefined : { rotate: 360 }}
+      className="absolute left-1/2 bottom-1/2 origin-bottom rounded-full pointer-events-none will-change-transform"
+      style={{
+        height: length,
+        width,
+        marginLeft: -width / 2,
+        background: `linear-gradient(to top, transparent, ${color})`,
+      }}
+      initial={{ rotate: start }}
+      animate={reduceMotion ? undefined : { rotate: end }}
       transition={{ duration: seconds, repeat: Infinity, ease: "linear" }}
     />
   );
@@ -44,6 +65,7 @@ function Hand({ seconds, length, width, color }: { seconds: number; length: stri
 
 export default function TimeAstrolabe() {
   return (
+<<<<<<< HEAD
     <Link
       href="/puzzle"
       aria-label="Enter the Timekeepers Puzzle"
@@ -53,7 +75,19 @@ export default function TimeAstrolabe() {
       <motion.div
         className="absolute inset-[12%] rounded-full bg-blue-500/20 blur-[60px] transition-all duration-500 group-hover:bg-blue-400/35 group-hover:scale-105"
         animate={{ opacity: [0.5, 0.9, 0.5], scale: [0.95, 1.05, 0.95] }}
+=======
+    <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] xl:max-w-[500px] aspect-square">
+      {/* Soft breathing red glow behind everything */}
+      <motion.div
+        className="absolute inset-[10%] rounded-full bg-red-600/30 blur-[70px]"
+        animate={{ opacity: [0.55, 0.95, 0.55], scale: [0.95, 1.05, 0.95] }}
+>>>>>>> 0cedd31 (Clock's color change)
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute inset-[20%] rounded-full bg-rose-500/20 blur-[50px]"
+        animate={{ opacity: [0.4, 0.8, 0.4], scale: [1.02, 0.95, 1.02] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Outer ring: 60 minute ticks, slow clockwise */}
@@ -75,8 +109,8 @@ export default function TimeAstrolabe() {
         ))}
       </Spin>
 
-      {/* Numeral ring: Roman hours, counter-clockwise */}
-      <Spin seconds={90} reverse>
+      {/* Numeral ring: Roman hours, separate slow clockwise rotation */}
+      <Spin seconds={180}>
         <circle cx={C} cy={C} r={186} fill="none" stroke={VIOLET} strokeOpacity={0.3} strokeWidth={1} />
         {NUMERALS.map((numeral, i) => (
           <text
@@ -97,8 +131,8 @@ export default function TimeAstrolabe() {
         ))}
       </Spin>
 
-      {/* Inner dashed ring with gold markers, faster clockwise */}
-      <Spin seconds={40}>
+      {/* Inner dashed ring with gold markers, clockwise */}
+      <Spin seconds={45}>
         <circle cx={C} cy={C} r={160} fill="none" stroke={BLUE} strokeOpacity={0.4} strokeWidth={1} strokeDasharray="2 8" />
         {[0, 90, 180, 270].map((angle) => (
           <rect
@@ -136,9 +170,11 @@ export default function TimeAstrolabe() {
         );
       })}
 
-      {/* Clock hands sweeping behind the logo */}
-      <Hand seconds={60} length="30%" width={3} color={BLUE} />
-      <Hand seconds={10} length="38%" width={1.5} color={GOLD} />
+      {/* Clock hands sweeping separately clockwise behind the logo */}
+      {/* Short hand (hour hand): speeds up to 24s full rotation */}
+      <Hand seconds={24} length="28%" width={3.5} color={BLUE} initialAngle={290} />
+      {/* Long hand (minute hand): speeds up to 6s fast sweep */}
+      <Hand seconds={6} length="40%" width={1.5} color={GOLD} initialAngle={65} />
 
       {/* Centre: floating logo */}
       <div className="absolute inset-0 flex items-center justify-center">
