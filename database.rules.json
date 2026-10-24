@@ -17,6 +17,20 @@
           ".write": true
         }
       }
+    },
+    "puzzle": {
+      "daily": {
+        "$dateKey": {
+          "$visitorId": {
+            ".read": true,
+            ".write": true
+          }
+        }
+      },
+      "firstWinner": {
+        ".read": true,
+        ".write": "!data.exists()"
+      }
     }
   }
 }
