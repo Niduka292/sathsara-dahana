@@ -37,8 +37,8 @@ const GOLD = "#fbbf24";
 const TARGET_HOUR = 10;
 const TARGET_MINUTE = 31;
 
-// 30-second countdown constraint & daily limits
-const PUZZLE_TIME_LIMIT_SEC = 30;
+// 1-minute (60-second) countdown constraint & daily limits
+const PUZZLE_TIME_LIMIT_SEC = 60;
 const PUZZLE_TIME_LIMIT_MS = PUZZLE_TIME_LIMIT_SEC * 1000;
 const MAX_DAILY_TRIES = 3;
 const MAX_MANUAL_SHUFFLES = 2;
@@ -468,12 +468,17 @@ export default function PuzzleExperience() {
 
   // --- STOPWATCH DERIVED VALUES ---
   const secondsRemaining = Math.ceil(timeLeftMs / 1000);
+  const displayMinutes = Math.floor(secondsRemaining / 60);
+  const displaySeconds = secondsRemaining % 60;
+  const formattedStopwatch = `${String(displayMinutes).padStart(2, "0")}:${String(
+    displaySeconds
+  ).padStart(2, "0")}`;
   const progressFraction = Math.max(0, Math.min(1, timeLeftMs / PUZZLE_TIME_LIMIT_MS));
-  // Stopwatch main hand sweeps 360 deg over 30 seconds (starts at XII = 360° and counts down to 0°)
+  // Stopwatch main hand sweeps 360 deg over 60 seconds (starts at XII = 360° and counts down to 0°)
   const stopwatchSweepAngle = progressFraction * 360;
   // Sub-second hand sweeps once per second for stopwatch feel
   const subSecondAngle = ((PUZZLE_TIME_LIMIT_MS - timeLeftMs) % 1000) * 0.36;
-  const isLowTime = clockMode === "stopwatch" && secondsRemaining <= 8;
+  const isLowTime = clockMode === "stopwatch" && secondsRemaining <= 10;
 
   const stopwatchRingRadius = 122;
   const stopwatchRingCircumference = 2 * Math.PI * stopwatchRingRadius;
@@ -924,7 +929,7 @@ export default function PuzzleExperience() {
                         }`}
                       />
                       <span className="font-cinzel text-xs sm:text-sm font-bold tabular-nums tracking-wider">
-                        00:{String(secondsRemaining).padStart(2, "0")}
+                        {formattedStopwatch}
                       </span>
                     </div>
                   </div>
@@ -1053,7 +1058,7 @@ export default function PuzzleExperience() {
                 exit={{ opacity: 0, y: -6 }}
                 className="mt-3 font-cinzel text-xs uppercase tracking-[0.2em] text-[#fca5a5] text-center"
               >
-                30s elapsed — Try lost! ({triesRemaining} {triesRemaining === 1 ? "try" : "tries"} left today)
+                1 min elapsed — Try lost! ({triesRemaining} {triesRemaining === 1 ? "try" : "tries"} left today)
               </motion.p>
             ) : clockMode === "stopwatch" ? (
               <motion.p
@@ -1063,7 +1068,7 @@ export default function PuzzleExperience() {
                 exit={{ opacity: 0, y: -6 }}
                 className="mt-3 font-cinzel text-[11px] sm:text-xs uppercase tracking-[0.2em] text-[#c4b5fd]/80 text-center"
               >
-                30-second countdown active — Solve before time runs out!
+                1-minute countdown active — Solve before time runs out!
               </motion.p>
             ) : clockMode === "rewinding" ? (
               <motion.p
@@ -1174,8 +1179,8 @@ export default function PuzzleExperience() {
               : isOutOfTries
               ? "You have used all 3 tries for today. The cipher resets at 00:00."
               : clockMode === "stopwatch"
-              ? "Arrange tiles 1 through 15 in order before the 30-second stopwatch runs out."
-              : "Make your first move to start the 30-second countdown."}
+              ? "Arrange tiles 1 through 15 in order before the 1-minute stopwatch runs out."
+              : "Make your first move to start the 1-minute countdown."}
           </p>
 
           {/* 4x4 15-Puzzle Grid */}
