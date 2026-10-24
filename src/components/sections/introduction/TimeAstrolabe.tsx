@@ -65,27 +65,19 @@ function Hand({
 
 export default function TimeAstrolabe() {
   return (
-<<<<<<< HEAD
     <Link
       href="/puzzle"
       aria-label="Enter the Timekeepers Puzzle"
       className="group relative block w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] xl:max-w-[500px] aspect-square cursor-pointer focus:outline-none"
     >
-      {/* Soft breathing glow behind everything */}
+      {/* Soft breathing red glow behind everything with puzzle hover transition */}
       <motion.div
-        className="absolute inset-[12%] rounded-full bg-blue-500/20 blur-[60px] transition-all duration-500 group-hover:bg-blue-400/35 group-hover:scale-105"
-        animate={{ opacity: [0.5, 0.9, 0.5], scale: [0.95, 1.05, 0.95] }}
-=======
-    <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[400px] xl:max-w-[500px] aspect-square">
-      {/* Soft breathing red glow behind everything */}
-      <motion.div
-        className="absolute inset-[10%] rounded-full bg-red-600/30 blur-[70px]"
+        className="absolute inset-[10%] rounded-full bg-red-600/30 blur-[70px] transition-all duration-500 group-hover:bg-red-500/45 group-hover:scale-105"
         animate={{ opacity: [0.55, 0.95, 0.55], scale: [0.95, 1.05, 0.95] }}
->>>>>>> 0cedd31 (Clock's color change)
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute inset-[20%] rounded-full bg-rose-500/20 blur-[50px]"
+        className="absolute inset-[20%] rounded-full bg-rose-500/20 blur-[50px] transition-all duration-500 group-hover:bg-rose-400/30"
         animate={{ opacity: [0.4, 0.8, 0.4], scale: [1.02, 0.95, 1.02] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
