@@ -1258,7 +1258,7 @@ function EraDestinationInterface({
           <div className="flex items-center gap-3">
             <Cpu className="w-5 h-5 text-[#ff2a85] animate-pulse" />
             <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] text-white">
-              {meta.label} // NODE: {travelledDate}
+              {`${meta.label} // NODE: ${travelledDate}`}
             </span>
           </div>
           <button
