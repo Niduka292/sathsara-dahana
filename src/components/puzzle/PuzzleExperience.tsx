@@ -130,7 +130,6 @@ export default function PuzzleExperience() {
 
   // --- 15-PUZZLE STATE ---
   const [tiles, setTiles] = useState<string[]>(INITIAL_TILES);
-  const touchStartRef = useRef<{ x: number; y: number; index: number } | null>(null);
 
   const isFifteenPuzzleSolved = tiles.every((tile, idx) => tile === SOLVED_TILES[idx]);
 
@@ -596,52 +595,6 @@ export default function PuzzleExperience() {
     },
     [isOutOfTries, isFifteenPuzzleSolved, tiles, clockMode, saveDailyState, triesUsed, shufflesUsed]
   );
-
-  const handleTouchStart = (e: React.TouchEvent, index: number) => {
-    if (isOutOfTries) return;
-    const touch = e.touches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, index };
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (isOutOfTries || !touchStartRef.current) return;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartRef.current.x;
-    const dy = touch.clientY - touchStartRef.current.y;
-    const startIdx = touchStartRef.current.index;
-    touchStartRef.current = null;
-
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-
-    if (Math.max(absX, absY) > 20) {
-      const emptyIndex = tiles.indexOf("");
-      const emptyRow = Math.floor(emptyIndex / GRID_SIZE);
-      const emptyCol = emptyIndex % GRID_SIZE;
-
-      if (absX > absY) {
-        const swipeDirCol = dx > 0 ? 1 : -1;
-        const targetTileRow = emptyRow;
-        const targetTileCol = emptyCol - swipeDirCol;
-        if (targetTileCol >= 0 && targetTileCol < GRID_SIZE) {
-          moveTile(targetTileRow * GRID_SIZE + targetTileCol);
-          return;
-        }
-      } else {
-        const swipeDirRow = dy > 0 ? 1 : -1;
-        const targetTileRow = emptyRow - swipeDirRow;
-        const targetTileCol = emptyCol;
-        if (targetTileRow >= 0 && targetTileRow < GRID_SIZE) {
-          moveTile(targetTileRow * GRID_SIZE + targetTileCol);
-          return;
-        }
-      }
-    }
-
-    if (startIdx >= 0) {
-      moveTile(startIdx);
-    }
-  };
 
   return (
     <section className="relative min-h-screen w-full overflow-x-hidden bg-[#050207] px-4 pb-20 pt-24 sm:px-6 sm:pb-28 sm:pt-32">
@@ -1186,12 +1139,8 @@ export default function PuzzleExperience() {
           </p>
 
           {/* 4x4 15-Puzzle Grid */}
-          <div className="relative mx-auto w-full max-w-[290px] sm:max-w-[340px] aspect-square p-3 rounded-2xl border border-[#a78bfa]/25 bg-[#090206]/95 shadow-[inset_0_0_30px_rgba(136,19,55,0.25)] select-none touch-none overflow-hidden">
-            <div
-              className="relative z-10 grid grid-cols-4 grid-rows-4 gap-2 w-full h-full"
-              onTouchStart={(e) => handleTouchStart(e, -1)}
-              onTouchEnd={handleTouchEnd}
-            >
+          <div className="relative mx-auto w-full max-w-[290px] sm:max-w-[340px] aspect-square p-3 rounded-2xl border border-[#a78bfa]/25 bg-[#090206]/95 shadow-[inset_0_0_30px_rgba(136,19,55,0.25)] select-none touch-manipulation overflow-hidden">
+            <div className="relative z-10 grid grid-cols-4 grid-rows-4 gap-2 w-full h-full">
               {tiles.map((tileValue, idx) => {
                 const isEmpty = tileValue === "";
                 const isCorrectInPlace = tileValue === SOLVED_TILES[idx];
@@ -1213,15 +1162,7 @@ export default function PuzzleExperience() {
                     type="button"
                     disabled={isOutOfTries}
                     onClick={() => moveTile(idx)}
-                    onTouchStart={(e) => {
-                      e.stopPropagation();
-                      handleTouchStart(e, idx);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      handleTouchEnd(e);
-                    }}
-                    className={`relative flex items-center justify-center w-full h-full rounded-xl font-cinzel text-lg sm:text-2xl font-bold select-none transition-colors ${
+                    className={`relative flex items-center justify-center w-full h-full rounded-xl font-cinzel text-lg sm:text-2xl font-bold select-none touch-manipulation transition-colors ${
                       isOutOfTries
                         ? "bg-gradient-to-b from-[#290712]/50 to-[#120308]/70 border border-white/10 text-white/30 cursor-not-allowed"
                         : isFifteenPuzzleSolved
