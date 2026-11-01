@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -33,9 +34,9 @@ const ICE_BLUE = "#93c5fd";
 const VIOLET = "#a78bfa";
 const GOLD = "#fbbf24";
 
-// Target Time/Date for the Clock Puzzle: 10.31 (October 31st)
-const TARGET_HOUR = 10;
-const TARGET_MINUTE = 31;
+// Target Time/Date for the Clock Puzzle: 07.18 (July 18)
+const TARGET_HOUR = 7;
+const TARGET_MINUTE = 18;
 
 // 1-minute (60-second) countdown constraint & daily limits
 const PUZZLE_TIME_LIMIT_SEC = 60;
@@ -125,6 +126,8 @@ function generateRandomSolvableTiles(previousTiles?: string[], shuffleSteps = 28
 type ClockMode = "realtime" | "stopwatch" | "rewinding" | "editable";
 
 export default function PuzzleExperience() {
+  const router = useRouter();
+
   // --- 15-PUZZLE STATE ---
   const [tiles, setTiles] = useState<string[]>(INITIAL_TILES);
   const touchStartRef = useRef<{ x: number; y: number; index: number } | null>(null);
@@ -381,7 +384,7 @@ export default function PuzzleExperience() {
 
       getDeviceFingerprint()
         .then((fp) =>
-          fetch(`/api/puzzle/winner?fp=${encodeURIComponent(fp)}`, {
+          fetch(`/api/puzzle/winner?fp=${encodeURIComponent(fp)}&solved=1`, {
             cache: "no-store",
           })
         )
@@ -415,7 +418,7 @@ export default function PuzzleExperience() {
     }
   }, [isAllSolved]);
 
-  // Handle #1 First Finisher form submission
+  // Handle #1 First Finisher form submission to Google Sheets (via Apps Script) & redirect to /timeportal
   const handleClaimFirstWinner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submittingWinner || winnerClaimed) return;
@@ -440,6 +443,7 @@ export default function PuzzleExperience() {
       const data = (await res.json()) as {
         claimed?: boolean;
         status?: string;
+        redirectTo?: string;
         message?: string;
       };
 
@@ -450,12 +454,10 @@ export default function PuzzleExperience() {
           data.message ??
             "Congratulations! Your details have been recorded as the #1 First Finisher."
         );
+        router.push(data.redirectTo || "/timeportal");
       } else if (res.status === 409 || data.status === "already_claimed") {
         setWinnerClaimed(true);
         setClaimedByMe(false);
-        setWinnerFeedback(
-          data.message ?? "Someone else has already claimed the #1 First Finisher spot!"
-        );
       } else {
         setWinnerFeedback(data.message ?? "Please check your details and try again.");
       }
@@ -1298,15 +1300,15 @@ export default function PuzzleExperience() {
               </p>
 
               <h3 className="mt-2 font-cinzel text-xl sm:text-2xl font-bold uppercase text-white">
-                When Shadows Awake
+                Where It Began
               </h3>
 
               <div className="mt-4 rounded-2xl border border-[#a78bfa]/20 bg-black/30 p-4 sm:p-5 text-xs sm:text-sm italic leading-relaxed text-[#f3e8ff]/90 font-serif">
-                &ldquo;Seek the night when lanterns glow, masks are worn, and whispers echo at the very end of the tenth moon.
+                &ldquo;Before the stage came alive and the journey began, eager voices gathered, each hoping to earn their place. It was the first step towards something unforgettable. When did it all begin?
                 <br />
                 <br />
                 Let the <span className="text-[#93c5fd] not-italic font-semibold">short hand mark the month</span>, and the{" "}
-                <span className="text-[#fcd88b] not-italic font-semibold">long hand mark the final night</span>.&rdquo;
+                <span className="text-[#fcd88b] not-italic font-semibold">long hand mark the first date</span>.&rdquo;
               </div>
 
               <button
@@ -1347,22 +1349,22 @@ export default function PuzzleExperience() {
               </div>
 
               <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-[#fcd88b]">
-                10.31 • October 31st Unlocked
+                07.18 • July 18 Unlocked
               </p>
 
               <h3 className="mt-1.5 font-cinzel text-xl sm:text-2xl font-bold uppercase text-white">
-                The Gate of Time Opens
+                {winnerClaimed && !claimedByMe ? "Successful!" : "The Gate of Time Opens"}
               </h3>
 
               <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[#f3e8ff]/80">
                 You solved the cipher and aligned the hands of time to{" "}
-                <span className="text-[#fcd88b] font-semibold">10.31 (October 31st)</span>!
+                <span className="text-[#fcd88b] font-semibold">07.18 (July 18)</span>!
               </p>
 
-              {/* --- FIRST FINISHER CLAIM SECTION --- */}
+              {/* --- FIRST FINISHER FORM (ONLY FOR THE #1 SOLVER) OR TIME PORTAL UNLOCK --- */}
               {winnerLoading ? (
                 <div className="mt-5 rounded-2xl border border-[#a78bfa]/25 bg-black/30 p-4 text-xs font-cinzel uppercase tracking-widest text-[#c4b5fd]">
-                  Checking First Finisher status...
+                  Checking status...
                 </div>
               ) : !winnerClaimed ? (
                 <form
@@ -1376,7 +1378,7 @@ export default function PuzzleExperience() {
                     </span>
                   </div>
                   <p className="text-[11px] text-[#e9d5ff]/75 mb-3.5 leading-relaxed">
-                    Enter your details below to be recorded as the #1 solver of The Chrono Cipher.
+                    Enter your details below to be recorded as the #1 solver and unlock the Time Portal.
                   </p>
 
                   <div className="space-y-2.5">
@@ -1435,28 +1437,27 @@ export default function PuzzleExperience() {
                     className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-5 py-2.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 disabled:opacity-50 transition-opacity cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5" />
-                    <span>{submittingWinner ? "Recording..." : "Claim #1 Finisher Spot"}</span>
+                    <span>{submittingWinner ? "Submitting..." : "Submit & Enter Time Portal"}</span>
                   </button>
                 </form>
-              ) : claimedByMe ? (
-                <div className="mt-5 rounded-2xl border border-[#fbbf24]/50 bg-[#fbbf24]/15 p-4 text-center">
-                  <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
-                    <Trophy className="h-4 w-4 text-[#fbbf24]" />
-                    <span>#1 First Finisher Recorded</span>
-                  </div>
-                  <p className="mt-1.5 text-xs text-[#f3e8ff]/90">
-                    {winnerFeedback ??
-                      "Your details have been locked in as the very first person to solve the puzzle!"}
-                  </p>
-                </div>
               ) : (
-                <div className="mt-5 rounded-2xl border border-[#a78bfa]/25 bg-black/35 p-4 text-center">
-                  <p className="font-cinzel text-[11px] uppercase tracking-[0.2em] text-[#c4b5fd]">
-                    First Finisher Spot Already Claimed
+                <div className="mt-5 rounded-2xl border border-[#fbbf24]/45 bg-[#fbbf24]/10 p-5 text-center space-y-4">
+                  <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
+                    <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
+                    <span>{claimedByMe ? "#1 First Finisher Recorded" : "Successful"}</span>
+                  </div>
+                  <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
+                    {claimedByMe
+                      ? "Your details have been recorded! The Time Portal is now unlocked."
+                      : "Congratulations on completing the puzzle and aligning the clock! You have unlocked the Time Portal."}
                   </p>
-                  <p className="mt-1 text-xs text-[#e9d5ff]/70">
-                    The #1 First Finisher submission has already been recorded and closed, but you have successfully unlocked the secret date!
-                  </p>
+                  <Link
+                    href="/timeportal"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-6 py-3 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 transition-opacity"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span>Unlock the Time Portal</span>
+                  </Link>
                 </div>
               )}
 

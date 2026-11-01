@@ -231,3 +231,36 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE() {
+  getMemoryStore().clear();
+
+  const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
+  if (dbUrl) {
+    try {
+      await fetch(`${dbUrl}/puzzle/daily.json`, {
+        method: "DELETE",
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      });
+    } catch {
+      // Ignore Firebase error
+    }
+  }
+
+  const response = NextResponse.json(
+    { reset: true, message: "All daily tries and shuffles have been reset." },
+    { status: 200, headers: { "Cache-Control": "no-store" } }
+  );
+
+  response.cookies.set({
+    name: COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
+}

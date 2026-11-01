@@ -248,6 +248,36 @@ export function writeMultiClientStorage(record: DailyPuzzleRecord): void {
 }
 
 /**
+ * Clears all client-side puzzle storage (localStorage, IndexedDB, CacheStorage)
+ * so daily tries and shuffles reset to 0 for testing.
+ */
+export async function clearMultiClientStorage(): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  } catch {
+    // Ignore localStorage error
+  }
+
+  try {
+    if (window.indexedDB) {
+      window.indexedDB.deleteDatabase(IDB_DB_NAME);
+    }
+  } catch {
+    // Ignore IDB error
+  }
+
+  try {
+    if ("caches" in window) {
+      await window.caches.delete(CACHE_NAME);
+    }
+  } catch {
+    // Ignore CacheStorage error
+  }
+}
+
+/**
  * Syncs the user's daily puzzle limit state with the server API
  * (which tracks by IP + Device Fingerprint + HttpOnly Cookie + Firebase).
  */

@@ -1,9 +1,69 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
+import {
+  TIMEPORTAL_UNLOCK_COOKIE,
+  getTimePortalUnlockToken,
+} from "@/src/lib/timeportalAccess.server";
 
 export const dynamic = "force-dynamic";
 
 const WINNER_COOKIE_NAME = "sd_puzzle_first_winner";
+const DASHBOARD_AUTH_COOKIE = "sd_dashboard_auth";
+const DASHBOARD_PASSWORD =
+  process.env.DASHBOARD_PASSWORD ||
+  process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ||
+  "sathsara2026";
+
+function attachTimePortalUnlockCookie(response: NextResponse): void {
+  response.cookies.set({
+    name: TIMEPORTAL_UNLOCK_COOKIE,
+    value: getTimePortalUnlockToken(),
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
+}
+
+function isDashboardAuthorized(request: Request): boolean {
+  const headerPassword = request.headers.get("x-dashboard-password")?.trim();
+  if (headerPassword && headerPassword === DASHBOARD_PASSWORD) {
+    return true;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const queryPassword = searchParams.get("password")?.trim();
+  if (queryPassword && queryPassword === DASHBOARD_PASSWORD) {
+    return true;
+  }
+
+  const cookieHeader = request.headers.get("cookie") || "";
+  const expectedToken = createHash("sha256")
+    .update(`dashboard-auth::${DASHBOARD_PASSWORD}`)
+    .digest("hex")
+    .slice(0, 32);
+
+  return cookieHeader
+    .split(";")
+    .map((c) => c.trim())
+    .includes(`${DASHBOARD_AUTH_COOKIE}=${expectedToken}`);
+}
+
+function attachDashboardAuthCookie(response: NextResponse): void {
+  const token = createHash("sha256")
+    .update(`dashboard-auth::${DASHBOARD_PASSWORD}`)
+    .digest("hex")
+    .slice(0, 32);
+
+  response.cookies.set({
+    name: DASHBOARD_AUTH_COOKIE,
+    value: token,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 12, // 12 hours
+  });
+}
 
 export interface FirstWinnerRecord {
   fullName: string;
@@ -79,19 +139,44 @@ async function writeFirebaseFirstWinner(record: FirstWinnerRecord): Promise<bool
   }
 }
 
-async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<void> {
-  const webhookUrl = process.env.PUZZLE_GOOGLE_SHEET_WEBHOOK_URL?.trim();
-  if (!webhookUrl) return;
+async function deleteFirebaseFirstWinner(): Promise<boolean> {
+  const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
+  if (!dbUrl) return true;
 
   try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(record),
-      signal: AbortSignal.timeout(4000),
+    const res = await fetch(`${dbUrl}/puzzle/firstWinner.json`, {
+      method: "DELETE",
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
     });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<boolean> {
+  const webhookUrl = (
+    process.env.PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
+    process.env.NEXT_PUBLIC_PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
+    process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
+    process.env.GOOGLE_SCRIPT_URL
+  )?.trim();
+
+  if (!webhookUrl) return false;
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(record),
+      signal: AbortSignal.timeout(10000),
+    });
+    return res.ok;
   } catch {
     // Ignore webhook network errors so primary submission still succeeds
+    return false;
   }
 }
 
@@ -148,13 +233,42 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format")?.toLowerCase();
   const isAdmin = searchParams.get("admin") === "1";
+  const isLogout = searchParams.get("logout") === "1";
   const fingerprint = searchParams.get("fp")?.trim() || "unknown-fp";
+
+  if (isLogout) {
+    const res = NextResponse.json(
+      { authenticated: false },
+      { status: 200, headers: { "Cache-Control": "no-store" } }
+    );
+    res.cookies.set({
+      name: DASHBOARD_AUTH_COOKIE,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+    return res;
+  }
+
+  if (format === "csv" || isAdmin) {
+    if (!isDashboardAuthorized(request)) {
+      return NextResponse.json(
+        {
+          authenticated: false,
+          message: "Invalid dashboard password.",
+        },
+        { status: 401, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+  }
 
   const winner = await getAuthoritativeFirstWinner();
 
   if (format === "csv") {
     const csvContent = buildExcelCsv(winner);
-    return new NextResponse(csvContent, {
+    const res = new NextResponse(csvContent, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
@@ -163,16 +277,21 @@ export async function GET(request: Request) {
         "Cache-Control": "no-store",
       },
     });
+    attachDashboardAuthCookie(res);
+    return res;
   }
 
   if (isAdmin) {
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
+        authenticated: true,
         claimed: Boolean(winner),
         winner,
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     );
+    attachDashboardAuthCookie(res);
+    return res;
   }
 
   const cookieHeader = request.headers.get("cookie") || "";
@@ -181,13 +300,19 @@ export async function GET(request: Request) {
   const claimedByCurrentVisitor =
     Boolean(winner) && (hasWinnerCookie || winner?.visitorId === visitorId);
 
-  return NextResponse.json(
+  const res = NextResponse.json(
     {
       claimed: Boolean(winner),
       claimedByCurrentVisitor,
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   );
+
+  if (searchParams.get("solved") === "1") {
+    attachTimePortalUnlockCookie(res);
+  }
+
+  return res;
 }
 
 export async function POST(request: Request) {
@@ -198,6 +323,7 @@ export async function POST(request: Request) {
         {
           claimed: true,
           status: "already_claimed",
+          redirectTo: "/timeportal",
           message:
             "Someone else has already claimed the #1 First Finisher spot!",
         },
@@ -272,6 +398,7 @@ export async function POST(request: Request) {
         {
           claimed: true,
           status: "already_claimed",
+          redirectTo: "/timeportal",
           message:
             "Someone else just claimed the #1 First Finisher spot moments ago!",
         },
@@ -281,12 +408,13 @@ export async function POST(request: Request) {
 
     globalForWinner.__sdPuzzleFirstWinner = record;
     await writeFirebaseFirstWinner(record);
-    void forwardToGoogleSheetWebhook(record);
+    await forwardToGoogleSheetWebhook(record);
 
     const response = NextResponse.json(
       {
         claimed: true,
         status: "claimed_by_you",
+        redirectTo: "/timeportal",
         message: "Congratulations! Your details have been recorded as the #1 First Finisher.",
       },
       { status: 201, headers: { "Cache-Control": "no-store" } }
@@ -300,6 +428,7 @@ export async function POST(request: Request) {
       path: "/",
       maxAge: 60 * 60 * 24 * 60,
     });
+    attachTimePortalUnlockCookie(response);
 
     return response;
   } catch {
@@ -308,4 +437,46 @@ export async function POST(request: Request) {
       { status: 400, headers: { "Cache-Control": "no-store" } }
     );
   }
+}
+
+export async function DELETE(request: Request) {
+  if (!isDashboardAuthorized(request)) {
+    return NextResponse.json(
+      { authenticated: false, message: "Unauthorized." },
+      { status: 401, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  globalForWinner.__sdPuzzleFirstWinner = null;
+  await deleteFirebaseFirstWinner();
+
+  const response = NextResponse.json(
+    {
+      reset: true,
+      claimed: false,
+      winner: null,
+      message: "First finisher record has been cleared.",
+    },
+    { status: 200, headers: { "Cache-Control": "no-store" } }
+  );
+
+  response.cookies.set({
+    name: WINNER_COOKIE_NAME,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  response.cookies.set({
+    name: TIMEPORTAL_UNLOCK_COOKIE,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
 }
