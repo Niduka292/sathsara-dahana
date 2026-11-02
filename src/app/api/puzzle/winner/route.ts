@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
+import fs from "fs";
+import path from "path";
 import {
   TIMEPORTAL_UNLOCK_COOKIE,
   getTimePortalUnlockToken,
@@ -79,6 +81,66 @@ const globalForWinner = globalThis as unknown as {
   __sdPuzzleFirstWinner?: FirstWinnerRecord | null;
 };
 
+// --- FILE SYSTEM PERSISTENCE (WORKS ACROSS LOCAL SERVER RESTARTS & RUNTIMES) ---
+function getStorageFilePaths(): string[] {
+  const paths: string[] = [];
+  try {
+    paths.push(path.join(process.cwd(), "src", "data", "puzzle-winner.json"));
+  } catch {
+    // Ignore cwd resolution
+  }
+  try {
+    const tmpDir = process.platform === "win32" ? process.cwd() : "/tmp";
+    paths.push(path.join(tmpDir, ".puzzle-winner-cache.json"));
+  } catch {
+    // Ignore tmp resolution
+  }
+  return paths;
+}
+
+function readLocalWinnerFile(): FirstWinnerRecord | null {
+  for (const filePath of getStorageFilePaths()) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(raw) as FirstWinnerRecord;
+        if (parsed && parsed.fullName && parsed.registrationNumber) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+  return null;
+}
+
+function writeLocalWinnerFile(record: FirstWinnerRecord): void {
+  for (const filePath of getStorageFilePaths()) {
+    try {
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(filePath, JSON.stringify(record, null, 2), "utf-8");
+    } catch {
+      // Ignore write errors (e.g. read-only filesystem on serverless)
+    }
+  }
+}
+
+function deleteLocalWinnerFile(): void {
+  for (const filePath of getStorageFilePaths()) {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch {
+      // Ignore unlink errors
+    }
+  }
+}
+
 function getClientIp(request: Request): string {
   const netlifyIp = request.headers.get("x-nf-client-connection-ip");
   if (netlifyIp) return netlifyIp.trim();
@@ -103,6 +165,7 @@ function computeVisitorId(request: Request, fingerprint = "unknown-fp"): string 
     .slice(0, 32);
 }
 
+// --- FIREBASE REALTIME DATABASE ---
 async function readFirebaseFirstWinner(): Promise<FirstWinnerRecord | null> {
   const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
   if (!dbUrl) return null;
@@ -155,14 +218,70 @@ async function deleteFirebaseFirstWinner(): Promise<boolean> {
   }
 }
 
-async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<boolean> {
-  const webhookUrl = (
+// --- GOOGLE APPS SCRIPT WEBHOOK (TWO-WAY SYNC WITH GOOGLE SHEET) ---
+function getGoogleSheetWebhookUrl(): string | null {
+  return (
     process.env.PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
     process.env.GOOGLE_SCRIPT_URL
-  )?.trim();
+  )?.trim() || null;
+}
 
+async function queryGoogleSheetWinner(): Promise<{ claimed: boolean; winner: FirstWinnerRecord | null } | null> {
+  const webhookUrl = getGoogleSheetWebhookUrl();
+  if (!webhookUrl) return null;
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "get_winner" }),
+      signal: AbortSignal.timeout(4500),
+    });
+
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      status?: string;
+      claimed?: boolean;
+      winner?: FirstWinnerRecord | null;
+    };
+
+    if (data && data.status === "success") {
+      if (data.claimed && data.winner && data.winner.fullName) {
+        return { claimed: true, winner: data.winner };
+      }
+      if (data.claimed === false) {
+        return { claimed: false, winner: null };
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function resetGoogleSheetWebhook(): Promise<boolean> {
+  const webhookUrl = getGoogleSheetWebhookUrl();
+  if (!webhookUrl) return true;
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "reset" }),
+      signal: AbortSignal.timeout(6000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<boolean> {
+  const webhookUrl = getGoogleSheetWebhookUrl();
   if (!webhookUrl) return false;
 
   try {
@@ -170,28 +289,51 @@ async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<b
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(record),
+      body: JSON.stringify({ action: "submit", ...record }),
       signal: AbortSignal.timeout(10000),
     });
     return res.ok;
   } catch {
-    // Ignore webhook network errors so primary submission still succeeds
     return false;
   }
 }
 
+// --- AUTHORITATIVE WINNER RETRIEVAL (CHECKS MEMORY, LOCAL FILE, FIREBASE, GOOGLE SHEET) ---
 async function getAuthoritativeFirstWinner(): Promise<FirstWinnerRecord | null> {
+  // 1. In-memory
+  if (globalForWinner.__sdPuzzleFirstWinner) {
+    return globalForWinner.__sdPuzzleFirstWinner;
+  }
+
+  // 2. Local disk file
+  const localWinner = readLocalWinnerFile();
+  if (localWinner) {
+    globalForWinner.__sdPuzzleFirstWinner = localWinner;
+    return localWinner;
+  }
+
+  // 3. Firebase
   const fbWinner = await readFirebaseFirstWinner();
   if (fbWinner) {
     globalForWinner.__sdPuzzleFirstWinner = fbWinner;
+    writeLocalWinnerFile(fbWinner);
     return fbWinner;
   }
-  return globalForWinner.__sdPuzzleFirstWinner ?? null;
+
+  // 4. Google Sheet Webhook
+  const sheetResult = await queryGoogleSheetWinner();
+  if (sheetResult && sheetResult.claimed && sheetResult.winner) {
+    globalForWinner.__sdPuzzleFirstWinner = sheetResult.winner;
+    writeLocalWinnerFile(sheetResult.winner);
+    void writeFirebaseFirstWinner(sheetResult.winner);
+    return sheetResult.winner;
+  }
+
+  return null;
 }
 
 function escapeCsvCell(value: string | number | null | undefined): string {
   const str = String(value ?? "");
-  // Prevent CSV formula injection and properly quote fields
   const sanitized = /^[=+\-@]/.test(str) ? `'${str}` : str;
   return `"${sanitized.replace(/"/g, '""')}"`;
 }
@@ -225,7 +367,6 @@ function buildExcelCsv(winner: FirstWinnerRecord | null): string {
     );
   }
 
-  // Prepend UTF-8 BOM (\uFEFF) so Microsoft Excel opens UTF-8 columns directly
   return `\uFEFF${rows.join("\r\n")}\r\n`;
 }
 
@@ -319,16 +460,18 @@ export async function POST(request: Request) {
   try {
     const existing = await getAuthoritativeFirstWinner();
     if (existing) {
-      return NextResponse.json(
+      const alreadyRes = NextResponse.json(
         {
           claimed: true,
           status: "already_claimed",
           redirectTo: "/timeportal",
           message:
-            "Someone else has already claimed the #1 First Finisher spot!",
+            "Someone else has already claimed the #1 First Finisher spot! The Time Portal is unlocked for you.",
         },
         { status: 409, headers: { "Cache-Control": "no-store" } }
       );
+      attachTimePortalUnlockCookie(alreadyRes);
+      return alreadyRes;
     }
 
     const body = (await request.json()) as {
@@ -390,23 +533,26 @@ export async function POST(request: Request) {
       visitorId,
     };
 
-    // Double-check Firebase right before writing
-    const raceCheck = await readFirebaseFirstWinner();
+    // Double-check race condition
+    const raceCheck = await getAuthoritativeFirstWinner();
     if (raceCheck) {
-      globalForWinner.__sdPuzzleFirstWinner = raceCheck;
-      return NextResponse.json(
+      const alreadyRes = NextResponse.json(
         {
           claimed: true,
           status: "already_claimed",
           redirectTo: "/timeportal",
           message:
-            "Someone else just claimed the #1 First Finisher spot moments ago!",
+            "Someone else just claimed the #1 First Finisher spot moments ago! The Time Portal is unlocked for you.",
         },
         { status: 409, headers: { "Cache-Control": "no-store" } }
       );
+      attachTimePortalUnlockCookie(alreadyRes);
+      return alreadyRes;
     }
 
+    // Persist across in-memory global, local disk file, Firebase, and Google Sheet
     globalForWinner.__sdPuzzleFirstWinner = record;
+    writeLocalWinnerFile(record);
     await writeFirebaseFirstWinner(record);
     await forwardToGoogleSheetWebhook(record);
 
@@ -447,15 +593,25 @@ export async function DELETE(request: Request) {
     );
   }
 
+  // 1. Clear memory
   globalForWinner.__sdPuzzleFirstWinner = null;
-  await deleteFirebaseFirstWinner();
+
+  // 2. Clear local file
+  deleteLocalWinnerFile();
+
+  // 3. Clear Firebase & Google Sheet in parallel
+  await Promise.allSettled([
+    deleteFirebaseFirstWinner(),
+    resetGoogleSheetWebhook(),
+  ]);
 
   const response = NextResponse.json(
     {
       reset: true,
       claimed: false,
       winner: null,
-      message: "First finisher record has been cleared.",
+      totalSubmissions: 0,
+      message: "First finisher record and submissions have been cleared.",
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   );

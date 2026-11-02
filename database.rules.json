@@ -29,7 +29,7 @@
       },
       "firstWinner": {
         ".read": true,
-        ".write": "!data.exists()"
+        ".write": true
       }
     }
   }

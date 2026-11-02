@@ -28,12 +28,21 @@ export default function AdminDashboardPage() {
   const [resetting, setResetting] = useState(false);
   const [winner, setWinner] = useState<FirstWinnerRecord | null>(null);
 
+  const [savedPassword, setSavedPassword] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("sd_admin_pwd") || "";
+    }
+    return "";
+  });
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
+
   const fetchWinner = useCallback(async (passwordHeader?: string) => {
     setLoading(true);
     try {
+      const activePassword = passwordHeader || savedPassword;
       const headers: Record<string, string> = {};
-      if (passwordHeader) {
-        headers["x-dashboard-password"] = passwordHeader;
+      if (activePassword) {
+        headers["x-dashboard-password"] = activePassword;
       }
 
       const res = await fetch("/api/puzzle/winner?admin=1", {
@@ -63,7 +72,7 @@ export default function AdminDashboardPage() {
       setLoading(false);
       setCheckingAuth(false);
     }
-  }, []);
+  }, [savedPassword]);
 
   useEffect(() => {
     void fetchWinner();
@@ -71,15 +80,20 @@ export default function AdminDashboardPage() {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password.trim() || submittingPassword) return;
+    const entered = password.trim();
+    if (!entered || submittingPassword) return;
 
     setSubmittingPassword(true);
     setAuthError(null);
 
-    const ok = await fetchWinner(password.trim());
+    const ok = await fetchWinner(entered);
     if (!ok) {
       setAuthError("Invalid dashboard password. Please try again.");
     } else {
+      setSavedPassword(entered);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("sd_admin_pwd", entered);
+      }
       setPassword("");
     }
     setSubmittingPassword(false);
@@ -91,20 +105,38 @@ export default function AdminDashboardPage() {
     } catch {
       // Ignore logout error
     }
+    setSavedPassword("");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("sd_admin_pwd");
+    }
     setAuthenticated(false);
     setWinner(null);
   };
 
   const handleResetPuzzleHistory = async () => {
     if (resetting) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to reset puzzle winner history and submissions back to 0? This will clear the leaderboard and Google Sheet."
+    );
+    if (!confirmed) return;
+
     setResetting(true);
+    setResetSuccessMessage(null);
     try {
+      const headers: Record<string, string> = {};
+      if (savedPassword) {
+        headers["x-dashboard-password"] = savedPassword;
+      }
+
       await Promise.all([
-        fetch("/api/puzzle/winner", { method: "DELETE", cache: "no-store" }),
-        fetch("/api/puzzle/daily", { method: "DELETE", cache: "no-store" }),
+        fetch("/api/puzzle/winner", { method: "DELETE", headers, cache: "no-store" }),
+        fetch("/api/puzzle/daily", { method: "DELETE", headers, cache: "no-store" }),
         clearMultiClientStorage(),
       ]);
       setWinner(null);
+      setResetSuccessMessage("History cleared: Submissions reset to 0 and Google Sheet cleared.");
+      setTimeout(() => setResetSuccessMessage(null), 4000);
+      await fetchWinner(savedPassword);
     } catch {
       // Ignore reset errors
     } finally {
@@ -247,6 +279,12 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         </div>
+
+        {resetSuccessMessage && (
+          <div className="mb-6 rounded-2xl border border-emerald-500/40 bg-emerald-950/60 p-4 text-center font-cinzel text-xs uppercase tracking-widest text-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+            {resetSuccessMessage}
+          </div>
+        )}
 
         {/* Winner Card */}
         <div className="rounded-3xl border border-[#a78bfa]/30 bg-gradient-to-b from-[#1f0610]/90 to-[#0a0207]/95 p-6 sm:p-8 shadow-[0_0_50px_rgba(159,18,57,0.25)]">
