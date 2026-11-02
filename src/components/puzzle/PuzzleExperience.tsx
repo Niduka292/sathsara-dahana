@@ -396,8 +396,12 @@ export default function PuzzleExperience() {
             } | null
           ) => {
             if (cancelled || !data) return;
+            const isWinnerInSession =
+              typeof window !== "undefined" &&
+              sessionStorage.getItem("sd_puzzle_i_am_winner") === "1";
             setWinnerClaimed(Boolean(data.claimed));
-            setClaimedByMe(Boolean(data.claimedByCurrentVisitor));
+            // Only true if this visitor specifically holds the winner auth cookie or session confirmation
+            setClaimedByMe(Boolean(data.claimed && (data.claimedByCurrentVisitor || isWinnerInSession)));
           }
         )
         .catch(() => {
@@ -447,6 +451,9 @@ export default function PuzzleExperience() {
       };
 
       if (res.status === 201 || data.status === "claimed_by_you") {
+        try {
+          sessionStorage.setItem("sd_puzzle_i_am_winner", "1");
+        } catch {}
         setWinnerClaimed(true);
         setClaimedByMe(true);
         setWinnerFeedback(
@@ -455,6 +462,9 @@ export default function PuzzleExperience() {
         );
         router.push(data.redirectTo || "/timeportal");
       } else if (res.status === 409 || data.status === "already_claimed") {
+        try {
+          sessionStorage.removeItem("sd_puzzle_i_am_winner");
+        } catch {}
         setWinnerClaimed(true);
         setClaimedByMe(false);
       } else {
@@ -1315,29 +1325,31 @@ export default function PuzzleExperience() {
               </div>
 
               <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-[#fcd88b]">
-                {winnerClaimed && !claimedByMe
-                  ? "Time Portal Unlocked"
-                  : claimedByMe
-                  ? "#1 First Finisher"
-                  : "07.18 • July 18 Unlocked"}
+                {claimedByMe
+                  ? "#1 FIRST FINISHER"
+                  : winnerClaimed
+                  ? "07.18 • JULY 18 UNLOCKED"
+                  : "07.18 • JULY 18 UNLOCKED"}
               </p>
 
               <h3 className="mt-1.5 font-cinzel text-xl sm:text-2xl font-bold uppercase text-white">
-                {winnerClaimed && !claimedByMe
-                  ? "Time Portal Unlocked"
-                  : claimedByMe
-                  ? "Winner Recorded"
-                  : "You Are The First Winner!"}
+                {claimedByMe
+                  ? "WINNER RECORDED"
+                  : winnerClaimed
+                  ? "TIME PORTAL UNLOCKED"
+                  : "YOU ARE THE FIRST WINNER!"}
               </h3>
 
               <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[#f3e8ff]/80">
-                {winnerClaimed && !claimedByMe ? (
-                  <>
-                    Congratulations on solving the puzzle! The Time Portal is now unlocked for you. Step through the gate into the memories.
-                  </>
-                ) : claimedByMe ? (
+                {claimedByMe ? (
                   <>
                     Your details have been recorded as the #1 First Finisher! The Time Portal is now unlocked.
+                  </>
+                ) : winnerClaimed ? (
+                  <>
+                    Congratulations! You solved the cipher and aligned the hands of time to{" "}
+                    <span className="text-[#fcd88b] font-semibold">07.18 (July 18)</span>.
+                    The Time Portal is now unlocked for you.
                   </>
                 ) : (
                   <>
@@ -1427,23 +1439,40 @@ export default function PuzzleExperience() {
                     <span>{submittingWinner ? "Submitting..." : "Submit & Enter Time Portal"}</span>
                   </button>
                 </form>
-              ) : (
+              ) : claimedByMe ? (
+                /* --- THE WINNER'S POPUP (KEPT EXACTLY AS IT IS) --- */
                 <div className="mt-5 rounded-2xl border border-[#fbbf24]/45 bg-[#fbbf24]/10 p-5 text-center space-y-4">
                   <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
                     <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
-                    <span>{claimedByMe ? "#1 First Finisher Recorded" : "Time Portal Unlocked"}</span>
+                    <span>#1 FIRST FINISHER RECORDED</span>
                   </div>
                   <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
-                    {claimedByMe
-                      ? "Your details have been recorded! The Time Portal is now unlocked."
-                      : "The Time Portal is now unlocked for you. Click below to visit the portal."}
+                    Your details have been recorded! The Time Portal is now unlocked.
                   </p>
                   <Link
                     href="/timeportal"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-6 py-3 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 transition-opacity"
                   >
                     <Sparkles className="h-4 w-4" />
-                    <span>Visit the Time Portal</span>
+                    <span>VISIT THE TIME PORTAL</span>
+                  </Link>
+                </div>
+              ) : (
+                /* --- NON-WINNERS POPUP (ONLY UNLOCKING THE TIME PORTAL, ZERO WINNER MENTIONS) --- */
+                <div className="mt-5 rounded-2xl border border-[#fbbf24]/45 bg-[#fbbf24]/10 p-5 text-center space-y-4">
+                  <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
+                    <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
+                    <span>TIME PORTAL UNLOCKED</span>
+                  </div>
+                  <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
+                    The cipher has been solved and the Time Portal is now unlocked. Click below to enter the portal.
+                  </p>
+                  <Link
+                    href="/timeportal"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-6 py-3 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 transition-opacity"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    <span>VISIT THE TIME PORTAL</span>
                   </Link>
                 </div>
               )}

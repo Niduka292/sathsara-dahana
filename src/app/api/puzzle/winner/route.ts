@@ -437,9 +437,8 @@ export async function GET(request: Request) {
 
   const cookieHeader = request.headers.get("cookie") || "";
   const hasWinnerCookie = cookieHeader.includes(`${WINNER_COOKIE_NAME}=1`);
-  const visitorId = computeVisitorId(request, fingerprint);
-  const claimedByCurrentVisitor =
-    Boolean(winner) && (hasWinnerCookie || winner?.visitorId === visitorId);
+  // Only the specific browser that submitted the winning form carries the HttpOnly winner cookie
+  const claimedByCurrentVisitor = Boolean(winner) && hasWinnerCookie;
 
   const res = NextResponse.json(
     {
