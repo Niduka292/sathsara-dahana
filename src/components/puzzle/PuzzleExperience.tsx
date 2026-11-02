@@ -575,12 +575,37 @@ export default function PuzzleExperience() {
       const emptyRow = Math.floor(emptyIndex / GRID_SIZE);
       const emptyCol = emptyIndex % GRID_SIZE;
 
-      const isAdjacent = Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1;
-      if (!isAdjacent) return;
+      // Allow moves if the tapped tile shares the same row or column as the blank space (single tile or chunk)
+      if (row !== emptyRow && col !== emptyCol) return;
 
       const next = [...tiles];
-      next[emptyIndex] = next[index];
-      next[index] = "";
+
+      if (row === emptyRow) {
+        // Shift tiles horizontally along the row towards the empty space
+        if (col < emptyCol) {
+          for (let c = emptyCol; c > col; c--) {
+            next[row * GRID_SIZE + c] = next[row * GRID_SIZE + (c - 1)];
+          }
+        } else {
+          for (let c = emptyCol; c < col; c++) {
+            next[row * GRID_SIZE + c] = next[row * GRID_SIZE + (c + 1)];
+          }
+        }
+        next[row * GRID_SIZE + col] = "";
+      } else {
+        // Shift tiles vertically along the column towards the empty space
+        if (row < emptyRow) {
+          for (let r = emptyRow; r > row; r--) {
+            next[r * GRID_SIZE + col] = next[(r - 1) * GRID_SIZE + col];
+          }
+        } else {
+          for (let r = emptyRow; r < row; r++) {
+            next[r * GRID_SIZE + col] = next[(r + 1) * GRID_SIZE + col];
+          }
+        }
+        next[row * GRID_SIZE + col] = "";
+      }
+
       setTiles(next);
 
       // Start the 30-second stopwatch on the user's first valid move
