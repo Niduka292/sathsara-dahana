@@ -112,36 +112,18 @@ export default function AsteroidNewsPopup() {
 
           <div id="asteroid-news-description" className={styles.newsBody}>
             <p>
-              Astronomers are reporting the close approach of asteroid{" "}
-              <strong className="font-semibold text-white">2026 UA1</strong>, a
-              near-Earth object that passed approximately{" "}
-              <strong className="font-semibold text-white">
-                221,500 kilometres
-              </strong>{" "}
-              from Earth&apos;s centre on{" "}
-              <strong className="font-semibold text-white">October 23</strong>.
-              The object passed closer to Earth than the Moon&apos;s average
-              orbital distance, drawing attention to the importance of
-              monitoring near-Earth asteroids.
-            </p>
-            <p>
-              Available tracking information indicates that the encounter did
-              not pose a known impact threat to Earth. Although close approaches
-              of this kind are not unprecedented, scientists continue to study
-              such objects to improve their understanding of asteroid
-              trajectories and the potential risks posed by near-Earth objects.
+              Following the close sub-lunar flyby of asteroid{" "}
+              <strong className="font-semibold text-white">2026 UA1</strong> on{" "}
+              <strong className="font-semibold text-white">October 23</strong>, global observatories detected an unprecedented gravitational rift.
             </p>
 
             <div className={styles.anomalyBox}>
               <div className={styles.anomalyHeader}>
                 <AlertTriangle size={13} aria-hidden="true" />
-                <span>Monitoring Anomaly</span>
+                <span>Temporal Distortion Detected</span>
               </div>
               <p>
-                Several astronomical monitoring systems begin reporting
-                unexplained timestamp discrepancies following the encounter.
-                Researchers are investigating the irregularities, although no
-                connection to the asteroid has been established.
+                The cosmic encounter has warped local spacetime, triggering localized timeline fractures and opening access points that make temporal navigation possible.
               </p>
             </div>
           </div>

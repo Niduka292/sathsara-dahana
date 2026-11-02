@@ -3,24 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  Clock,
-  Compass,
-  RotateCcw,
-  Zap,
-  Globe,
-  Cpu,
-  Layers,
-  Terminal,
-  History,
-  Radio,
-} from "lucide-react";
-import VortexBackground from "../ui/VortexBackground";
+import { ArrowLeft, Calendar, RotateCcw } from "lucide-react";
 
 export type TimeEra = "past" | "near-past" | "present" | "near-future" | "future";
 
@@ -28,14 +11,17 @@ interface EraMetadata {
   id: TimeEra;
   label: string;
   rangeLabel: string;
+  buildVersion: string;
   designParadigm: string;
   tagline: string;
   description: string;
-  accentColor: string;
-  secondaryColor: string;
+  stabilityRating: string;
+  threatRating: string;
+  frequencyMhz: string;
   features: string[];
   artifactTitle: string;
   artifactQuote: string;
+  ditherCells: { name: string; state: string; code: string }[];
 }
 
 const ERA_CONFIG: Record<TimeEra, EraMetadata> = {
@@ -43,98 +29,166 @@ const ERA_CONFIG: Record<TimeEra, EraMetadata> = {
     id: "past",
     label: "THE DEEP PAST",
     rangeLabel: "Before 2023",
-    designParadigm: "Web 1.0 • Classic 90s OS Bevel & CRT Terminal",
-    tagline: "Dial-Up Echoes & Pixel Horizons",
+    buildVersion: "SYS_BUILD // 0.11a-LEGACY_WIREFRAME",
+    designParadigm: "BLUE_MATRIX // RAW_CRT_VECTOR_GRID [PRE-2023]",
+    tagline: "UNCOMPILED ARCHIVAL ECHOES",
     description:
-      "You have arrived in the foundational era of the digital web. Interfaces are built from tactile 3D bevelled gray chrome, bitmap monospace fonts, phosphor CRT scanlines, and classic window title bars.",
-    accentColor: "#00ff66",
-    secondaryColor: "#000080",
+      "Temporal coordinate locked prior to 2023. The Blue Matrix wireframe reconstructs early copper-wire transmissions in raw 1-bit Bayer dither and unshaded vector geometry. Multiple texture nodes remain uncompiled.",
+    stabilityRating: "■■■■□□□□□□",
+    threatRating: "★★☆☆☆",
+    frequencyMhz: "14.400 MHz",
     features: [
-      "3D Outset/Inset Classic Bevel Chrome",
-      "CRT Phosphor Scanlines & Monospace Typography",
-      "ChronoNavigator 4.0 Address Bar & Hit Counter",
+      "1-BIT BAYER DITHER RASTERIZATION",
+      "UNSHADED CRT VECTOR CATHODE MESH",
+      "RAW MEMORY DUMP // SECTOR 1998-2022",
     ],
-    artifactTitle: "ARCHIVE_LOG_1998.TXT",
+    artifactTitle: "ARCHIVE_LOG_1998.RAW // SECTOR_01",
     artifactQuote:
       "Before algorithms shaped the stream, every melody was shared across copper wires and glowing cathode-ray tubes.",
+    ditherCells: [
+      { name: "MODULATION", state: "1-BIT_RAW", code: "0x001" },
+      { name: "ATKINSON", state: "LEGACY", code: "0x008" },
+      { name: "BAYER_2X2", state: "COARSE", code: "0x01B" },
+      { name: "SIERRA_SYNC", state: "MISSING", code: "0x000" },
+    ],
   },
   "near-past": {
     id: "near-past",
     label: "THE NEAR PAST",
     rangeLabel: "2023 – Yesterday",
-    designParadigm: "Early-2020s Neo-Brutalist Bento & Analog Warmth",
-    tagline: "Recent Memories Cast in Amber",
+    buildVersion: "SYS_BUILD // 0.28b-ARCHIVE_DOSSIER",
+    designParadigm: "BLUE_MATRIX // SUBJECT_DOSSIER_WIREFRAME [2023–2026]",
+    tagline: "RECENT MEMORY TRACE IN BLUEPRINT",
     description:
-      "You are revisiting the recent chapters of 2023–2026. The interface transforms into an editorial Neo-Brutalist Bento layout with warm amber tones, crisp 2px structural borders, hard offset shadows, and tactile archival cards.",
-    accentColor: "#f59e0b",
-    secondaryColor: "#fb7185",
+      "Revisiting recent temporal chapters (2023–Yesterday). The unfinished Matrix interface mounts rehearsal telemetry, biometric dither scans, and acoustic stage schematics recorded before the current anchor date.",
+    stabilityRating: "■■■■■■■□□□",
+    threatRating: "★★★☆☆",
+    frequencyMhz: "184.200 MHz",
     features: [
-      "Neo-Brutalist Hard Offset Shadows & 2px Borders",
-      "Modular Bento Grid Architecture",
-      "Warm Analog Amber & Archival Editorial Typography",
+      "ACOUSTIC REHEARSAL WAVEFORM BUFFER",
+      "ATKINSON BIOMETRIC DITHER SCANNER",
+      "STAGE BLUEPRINT WIREFRAME OVERLAY",
     ],
-    artifactTitle: "Rehearsal Tape • Faculty of Applied Sciences",
+    artifactTitle: "REHEARSAL_TAPE_FAS.RAW // SECTOR_02",
     artifactQuote:
       "Every late-night rehearsal between 2023 and today laid the foundation for the stage that now awaits.",
+    ditherCells: [
+      { name: "MODULATION", state: "ARCHIVED", code: "0x02A" },
+      { name: "ATKINSON", state: "DITHER_4B", code: "0x03C" },
+      { name: "BAYER_MATRIX", state: "LOCKED", code: "0x04E" },
+      { name: "SIERRA_SYNC", state: "PARTIAL", code: "0x05F" },
+    ],
   },
   present: {
     id: "present",
     label: "THE PRESENT",
     rangeLabel: "Today • Current Temporal Anchor",
-    designParadigm: "Sathsara Dahana 2026 • Cosmic Vortex & Astrolabe Glass",
-    tagline: "Where Every Note Echoes Through Time",
+    buildVersion: "SYS_BUILD // 0.42b-ORIGIN_SYNC",
+    designParadigm: "BLUE_MATRIX // LIVE_STAGE_WIREFRAME [0-POINT_ANCHOR]",
+    tagline: "WHERE EVERY NOTE ECHOES IN THE MATRIX",
     description:
-      "You are anchored in the exact present moment. The portal resonates with the signature Sathsara Dahana cosmic aesthetic—deep space starlight, sacred astrolabe geometry, Cinzel serif typography, and luminous blue-violet glass.",
-    accentColor: "#60a5fa",
-    secondaryColor: "#a78bfa",
+      "Anchored in the exact present coordinate. The Blue Matrix prototype streams real-time harmonic telemetry from the Sathsara Dahana stage while asteroid 2026 UA1 phase-locks the sub-lunar corridor.",
+    stabilityRating: "■■■■■■■■■□",
+    threatRating: "★★★☆☆",
+    frequencyMhz: "221.500 MHz",
     features: [
-      "Cosmic Particle Vortex & Sacred Astrolabe Rings",
-      "Cinematic Cinzel Typography & Starlight Glow",
-      "Deep-Space Translucent Glassmorphism",
+      "0-POINT TEMPORAL ANCHOR SYNCHRONIZATION",
+      "SUB-LUNAR ASTEROID 2026 UA1 TELEMETRY",
+      "LIVE HARMONIC OSCILLOSCOPE BUS (07.18)",
     ],
-    artifactTitle: "The Living Stage • Present Day",
+    artifactTitle: "LIVE_STAGE_NODE.RAW // 07.18_ORIGIN",
     artifactQuote:
-      "Past and future converge right here. The curtain rises on the present symphony.",
+      "Past and future converge right here. The curtain rises on the present symphony inside the blue wireframe grid.",
+    ditherCells: [
+      { name: "MODULATION", state: "ACTIVE", code: "0x07A" },
+      { name: "ATKINSON", state: "DITHER_8B", code: "0x08B" },
+      { name: "BAYER_MATRIX", state: "SYNCED", code: "0x09C" },
+      { name: "SIERRA_SYNC", state: "LIVE_BUS", code: "0x0AD" },
+    ],
   },
   "near-future": {
     id: "near-future",
     label: "THE NEAR FUTURE",
     rangeLabel: "Tomorrow – End of 2028",
-    designParadigm: "2027–2028 Spatial Computing • Aurora Frosted Glass",
-    tagline: "Weightless Depth & Luminous Horizons",
+    buildVersion: "SYS_BUILD // 0.74rc-SPATIAL_MESH",
+    designParadigm: "BLUE_MATRIX // SPATIAL_PROJECTION_GRID [2026–2028]",
+    tagline: "UNRENDERED HORIZONS & SPATIAL VECTORS",
     description:
-      "Welcome to the late-2020s spatial web. Flat screens have dissolved into depth-aware translucent glass panes floating in an aurora lightfield, with specular rim lighting and fluid ambient intelligence.",
-    accentColor: "#34d399",
-    secondaryColor: "#38bdf8",
+      "Projected into the 2026–2028 near-future corridor. Future stage broadcasts appear as multi-layered isometric wireframe planes and uncompiled spatial shaders suspended in the blue digital rain.",
+    stabilityRating: "■■■■■■□□□□",
+    threatRating: "★★★★☆",
+    frequencyMhz: "443.000 MHz",
     features: [
-      "Spatial Computing Floating Glass Panes",
-      "Specular Rim Highlights & Aurora Mesh Lightfields",
-      "Zero-Gravity Depth Layers & Ambient Motion",
+      "ISOMETRIC SPATIAL WIREFRAME PLANES",
+      "PREDICTIVE HARMONIC ECHO PROJECTION",
+      "UNCOMPILED HOLOGRAPHIC SHADER NODES [X]",
     ],
-    artifactTitle: "Spatial Echo • 2027–2028 Broadcast",
+    artifactTitle: "SPATIAL_ECHO_2028.RAW // SECTOR_04",
     artifactQuote:
-      "The songs performed tonight still ripple outward, suspended in weightless spatial harmony across the years ahead.",
+      "The songs performed tonight still ripple outward, suspended in raw wireframe geometry across the years ahead.",
+    ditherCells: [
+      { name: "MODULATION", state: "PREDICTIVE", code: "0x11A" },
+      { name: "ATKINSON", state: "SPATIAL", code: "0x12F" },
+      { name: "BAYER_MATRIX", state: "DRAFT_MESH", code: "0x14C" },
+      { name: "SIERRA_SYNC", state: "UNCOMPILED", code: "0x19E" },
+    ],
   },
   future: {
     id: "future",
     label: "THE FAR FUTURE",
     rangeLabel: "After 2028 (2029 & Beyond)",
-    designParadigm: "Post-2028 Quantum Cyber-HUD • Neural Holography",
-    tagline: "Beyond the Event Horizon",
+    buildVersion: "SYS_BUILD // 0.99x-SINGULARITY_RAW",
+    designParadigm: "BLUE_MATRIX // QUANTUM_LATTICE_PROTOTYPE [2029+]",
+    tagline: "BEYOND THE WIREFRAME EVENT HORIZON",
     description:
-      "You have breached the post-2028 temporal boundary. Traditional web layouts are replaced by a high-frequency Quantum Neural HUD featuring chamfered geometric frames, neon cyan-magenta telemetry, and a live singularity core.",
-    accentColor: "#00f5d4",
-    secondaryColor: "#ff2a85",
+      "Breached the post-2028 boundary. The interface operates in raw quantum lattice debug mode—rendering hyper-dense concentric wireframe singularities, tachyon phase anomalies, and deep-time harmonic logs.",
+    stabilityRating: "■■■□□□□□□□",
+    threatRating: "★★★★★",
+    frequencyMhz: "998.750 MHz",
     features: [
-      "Chamfered Polygon HUD Frames & Laser Grid",
-      "Bioluminescent Cyan/Magenta Quantum Telemetry",
-      "Multi-Axis Singularity Core Visualizer",
+      "HYPER-DENSE TOROIDAL SINGULARITY MESH",
+      "TACHYON CAUSALITY BYPASS TELEMETRY",
+      "DEEP-TIME QUANTUM MEMORY LATTICE",
     ],
-    artifactTitle: "QUANTUM_MEMORY_NODE // 2029+",
+    artifactTitle: "QUANTUM_MEMORY_NODE // 2029+_RAW",
     artifactQuote:
-      "Decades from now, the frequencies of Sathsara Dahana remain encoded in the quantum lattice of time.",
+      "Decades from now, the frequencies of Sathsara Dahana remain encoded in the blue wireframe lattice of time.",
+    ditherCells: [
+      { name: "MODULATION", state: "OVERDRIVE", code: "0xFF1" },
+      { name: "ATKINSON", state: "QUANTUM", code: "0xFF4" },
+      { name: "BAYER_MATRIX", state: "HYPER_GRID", code: "0xFF8" },
+      { name: "SIERRA_SYNC", state: "PARADOX", code: "0xFFF" },
+    ],
   },
 };
+
+/** Fictional Temporal Direction Models for the "Model selection - Temporal Direction" input */
+const TEMPORAL_MODELS = [
+  {
+    id: "RETRO-VORTEX-09",
+    code: "CHRONO_DRIFT // RETRO-SYNTH v0.9",
+    direction: "RETROGRADE_VECTOR [⏪ -Δt]",
+    status: "EXPERIMENTAL",
+  },
+  {
+    id: "TACHYON-FOLD-X2",
+    code: "TACHYON_FOLD // CAUSALITY-BYPASS",
+    direction: "PROGRADE_VECTOR [⏩ +Δt]",
+    status: "UNSTABLE",
+  },
+  {
+    id: "UA1-SINGULARITY",
+    code: "ASTEROID_2026_UA1 // EINSTEIN-ROSEN",
+    direction: "SUB_LUNAR_PHASE_LOCK [◈ 0-PT]",
+    status: "CALIBRATING",
+  },
+  {
+    id: "KERR-B34-SHIFT",
+    code: "KERR_METRIC //SUBJECT_A-34_BRIDGE",
+    direction: "ORTHOGONAL_TIMELINE [⧖ ±Ψ]",
+    status: "WIREFRAME_ONLY",
+  },
+] as const;
 
 /** Formats a Date object as local YYYY-MM-DD */
 function getTodayDateString(now = new Date()): string {
@@ -161,73 +215,124 @@ export function resolveEraFromDate(dateStr: string, todayStr: string): TimeEra {
   return "future";
 }
 
-/** Validation rules for the 3 Chrono-Calibration questions */
-const QUESTIONS = [
-  {
-    id: "q1",
-    label: "Chrono Calibration I • Temporal Unit",
-    question: "How many minutes are in one hour?",
-    placeholder: "Enter the number of minutes...",
-    hint: "A standard hour on the astrolabe dial.",
-    validate: (val: string) => {
-      const normalized = val.trim().toLowerCase();
-      return normalized === "60" || normalized === "sixty";
-    },
-  },
-  {
-    id: "q2",
-    label: "Chrono Calibration II • Harmonic Identity",
-    question: "What is the two-word name of this musical celebration?",
-    placeholder: "e.g. Sathsara ...",
-    hint: "Look at the emblem of our musical journey through time.",
-    validate: (val: string) => {
-      const normalized = val.trim().toLowerCase().replace(/\s+/g, " ");
-      return normalized === "sathsara dahana";
-    },
-  },
-  {
-    id: "q3",
-    label: "Chrono Calibration III • Celestial Cycle",
-    question: "How many months are in a calendar year?",
-    placeholder: "Enter the number of months...",
-    hint: " matches the Roman numerals around the grand clock.",
-    validate: (val: string) => {
-      const normalized = val.trim().toLowerCase();
-      return normalized === "12" || normalized === "twelve";
-    },
-  },
-] as const;
+/** Blue Matrix Digital Rain Background Canvas */
+function BlueMatrixRain() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    const fontSize = 14;
+    const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン2026UA1HEXΔΨΩ";
+    let columns = 0;
+    let drops: number[] = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    let lastTime = 0;
+    const draw = (time: number) => {
+      animationFrameId = requestAnimationFrame(draw);
+      if (time - lastTime < 45) return;
+      lastTime = time;
+
+      ctx.fillStyle = "rgba(1, 6, 15, 0.14)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // Bright cyan-white head, electric blue trail
+        ctx.fillStyle = Math.random() > 0.88 ? "#e0f2fe" : "#0ea5e9";
+        ctx.fillText(char, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-0 opacity-30"
+    />
+  );
+}
+
+/** Corner node squares matching the wireframe reference image */
+function WireframeCorners() {
+  return (
+    <>
+      <span className="pointer-events-none absolute -top-[3px] -left-[3px] h-1.5 w-1.5 bg-[#7dd3fc] shadow-[0_0_8px_#38bdf8]" />
+      <span className="pointer-events-none absolute -top-[3px] -right-[3px] h-1.5 w-1.5 bg-[#7dd3fc] shadow-[0_0_8px_#38bdf8]" />
+      <span className="pointer-events-none absolute -bottom-[3px] -left-[3px] h-1.5 w-1.5 bg-[#7dd3fc] shadow-[0_0_8px_#38bdf8]" />
+      <span className="pointer-events-none absolute -bottom-[3px] -right-[3px] h-1.5 w-1.5 bg-[#7dd3fc] shadow-[0_0_8px_#38bdf8]" />
+    </>
+  );
+}
 
 export default function TimePortalExperience() {
-  const [todayStr, setTodayStr] = useState<string>("2026-10-29");
-  const [answers, setAnswers] = useState<{ q1: string; q2: string; q3: string }>({
-    q1: "",
-    q2: "",
-    q3: "",
-  });
-  const [touched, setTouched] = useState<{ q1: boolean; q2: boolean; q3: boolean; date: boolean }>({
-    q1: false,
-    q2: false,
-    q3: false,
-    date: false,
-  });
-  const [targetDate, setTargetDate] = useState<string>("");
+  const [todayStr, setTodayStr] = useState<string>("2026-11-01");
+
+  // 6 Interface Inputs from Reference Specification:
+  // 1. Username - Temporal Identity / User ID
+  // 2. Password - Access Key
+  // 3. Time Jump Year - Destination Year
+  // 4. Time Jump Month - Destination Month
+  // 5. Time Jump Date - Destination Day
+  // 6. Model selection - Temporal Direction
+  const [username, setUsername] = useState<string>("SUBJECT_A-34");
+  const [password, setPassword] = useState<string>("UA1-221500");
+  const [jumpYear, setJumpYear] = useState<string>("2026");
+  const [jumpMonth, setJumpMonth] = useState<string>("10");
+  const [jumpDay, setJumpDay] = useState<string>("23");
+  const [selectedModel, setSelectedModel] = useState<string>(TEMPORAL_MODELS[0].id);
+
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Transition & Active Era state
   const [isWarping, setIsWarping] = useState(false);
   const [warpDisplayYear, setWarpDisplayYear] = useState<string>("2026");
-  const [warpDisplayDate, setWarpDisplayDate] = useState<string>("2026-10-29");
-  const [warpFromDate, setWarpFromDate] = useState<string>("2026-10-29");
-  const [warpToDate, setWarpToDate] = useState<string>("2026-10-29");
+  const [warpDisplayDate, setWarpDisplayDate] = useState<string>("2026-11-01");
+  const [warpFromDate, setWarpFromDate] = useState<string>("2026-11-01");
+  const [warpToDate, setWarpToDate] = useState<string>("2026-11-01");
   const [activeEra, setActiveEra] = useState<TimeEra | null>(null);
   const [travelledDate, setTravelledDate] = useState<string>("");
   const warpIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const today = getTodayDateString(new Date());
+    const now = new Date();
+    const today = getTodayDateString(now);
     setTodayStr(today);
-    setTargetDate(today);
+    setJumpYear(String(now.getFullYear()));
+    setJumpMonth(String(now.getMonth() + 1).padStart(2, "0"));
+    setJumpDay(String(now.getDate()).padStart(2, "0"));
     setWarpDisplayDate(today);
     setWarpDisplayYear(today.slice(0, 4));
   }, []);
@@ -240,25 +345,74 @@ export default function TimePortalExperience() {
     };
   }, []);
 
-  const validation = useMemo(() => {
-    const q1Valid = QUESTIONS[0].validate(answers.q1);
-    const q2Valid = QUESTIONS[1].validate(answers.q2);
-    const q3Valid = QUESTIONS[2].validate(answers.q3);
-    const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(targetDate) && !Number.isNaN(Date.parse(targetDate));
-    const allValid = q1Valid && q2Valid && q3Valid && dateValid;
-    const validCount = [q1Valid, q2Valid, q3Valid].filter(Boolean).length;
+  // Compose YYYY-MM-DD from the 3 date inputs
+  const composedDateResult = useMemo(() => {
+    const y = Number(jumpYear.trim());
+    const m = Number(jumpMonth.trim());
+    const d = Number(jumpDay.trim());
 
-    return { q1Valid, q2Valid, q3Valid, dateValid, allValid, validCount };
-  }, [answers, targetDate]);
+    const yearValid = Number.isInteger(y) && y >= 100 && y <= 9999;
+    const monthValid = Number.isInteger(m) && m >= 1 && m <= 12;
+    const maxDaysInMonth = yearValid && monthValid ? new Date(y, m, 0).getDate() : 31;
+    const dayValid = Number.isInteger(d) && d >= 1 && d <= maxDaysInMonth;
+
+    const dateValid = yearValid && monthValid && dayValid;
+    const formatted = dateValid
+      ? `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`
+      : "";
+
+    return { yearValid, monthValid, dayValid, dateValid, formatted };
+  }, [jumpYear, jumpMonth, jumpDay]);
+
+  const validation = useMemo(() => {
+    const usernameValid = username.trim().length >= 2;
+    const passwordValid = password.trim().length >= 2;
+    const modelValid = TEMPORAL_MODELS.some((m) => m.id === selectedModel);
+    const { yearValid, monthValid, dayValid, dateValid, formatted } = composedDateResult;
+    const allValid = usernameValid && passwordValid && dateValid && modelValid;
+
+    const validCount = [
+      usernameValid,
+      passwordValid,
+      yearValid,
+      monthValid,
+      dayValid,
+      modelValid,
+    ].filter(Boolean).length;
+
+    return {
+      usernameValid,
+      passwordValid,
+      yearValid,
+      monthValid,
+      dayValid,
+      dateValid,
+      modelValid,
+      allValid,
+      validCount,
+      targetDate: formatted,
+    };
+  }, [username, password, selectedModel, composedDateResult]);
 
   const previewEra = useMemo(() => {
-    if (!validation.dateValid) return null;
-    return resolveEraFromDate(targetDate, todayStr);
-  }, [targetDate, todayStr, validation.dateValid]);
+    if (!validation.dateValid || !validation.targetDate) return null;
+    return resolveEraFromDate(validation.targetDate, todayStr);
+  }, [validation.dateValid, validation.targetDate, todayStr]);
+
+  const currentModelMeta = useMemo(
+    () => TEMPORAL_MODELS.find((m) => m.id === selectedModel) ?? TEMPORAL_MODELS[0],
+    [selectedModel]
+  );
+
+  const applyPresetDate = (dateStr: string) => {
+    const [y, m, d] = dateStr.split("-");
+    if (y) setJumpYear(y);
+    if (m) setJumpMonth(m);
+    if (d) setJumpDay(d);
+  };
 
   const triggerTimeWarp = (destinationDate: string) => {
     const nextEra = resolveEraFromDate(destinationDate, todayStr);
-    // Start from the previously visited date if available, otherwise today's date
     const previousDate = travelledDate || todayStr;
     const startYear = Number(previousDate.slice(0, 4)) || new Date().getFullYear();
     const endYear = Number(destinationDate.slice(0, 4)) || startYear;
@@ -268,7 +422,6 @@ export default function TimePortalExperience() {
     const startMs = new Date(sY, (sM || 1) - 1, sD || 1).getTime();
     const endMs = new Date(eY, (eM || 1) - 1, eD || 1).getTime();
 
-    // Initialize odometer immediately at the previous date/year before ticking
     setWarpFromDate(previousDate);
     setWarpToDate(destinationDate);
     setWarpDisplayYear(String(startYear));
@@ -310,13 +463,12 @@ export default function TimePortalExperience() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
-    setTouched({ q1: true, q2: true, q3: true, date: true });
 
-    if (!validation.allValid) {
+    if (!validation.allValid || !validation.targetDate) {
       return;
     }
 
-    triggerTimeWarp(targetDate);
+    triggerTimeWarp(validation.targetDate);
   };
 
   const handleResetToOrigin = () => {
@@ -335,7 +487,7 @@ export default function TimePortalExperience() {
   }, [travelledDate]);
 
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden selection:bg-blue-500/30 selection:text-white">
+    <div className="relative min-h-screen w-full overflow-x-hidden selection:bg-sky-500/30 selection:text-sky-100">
       {/* ===================================================================== */}
       {/* COMMON TIME-TRAVEL WORMHOLE TRANSITION OVERLAY                        */}
       {/* ===================================================================== */}
@@ -347,9 +499,8 @@ export default function TimePortalExperience() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
-            className="fixed inset-0 z-[300] flex flex-col items-center justify-center overflow-hidden bg-[#02040d]"
+            className="fixed inset-0 z-[300] flex flex-col items-center justify-center overflow-hidden bg-[#01050d] font-mono"
           >
-            {/* Radial Warp Streaks & Expanding Astrolabe Rings */}
             <div className="relative flex items-center justify-center w-full h-full">
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <motion.div
@@ -358,62 +509,47 @@ export default function TimePortalExperience() {
                   animate={{
                     scale: [0.15, 1.8, 4.8],
                     opacity: [0, 0.9, 0],
-                    rotate: i % 2 === 0 ? 240 : -240,
+                    rotate: i % 2 === 0 ? 180 : -180,
                   }}
                   transition={{
-                    duration: 1.8,
-                    delay: i * 0.18,
+                    duration: 1.7,
+                    delay: i * 0.16,
                     repeat: Infinity,
                     ease: "easeIn",
                   }}
-                  className="absolute w-64 h-64 rounded-full border-2 pointer-events-none"
+                  className="absolute w-64 h-64 border border-[#38bdf8] pointer-events-none"
                   style={{
-                    borderColor:
-                      i % 3 === 0 ? "#60a5fa" : i % 3 === 1 ? "#a78bfa" : "#fbbf24",
                     boxShadow:
-                      i % 2 === 0
-                        ? "0 0 50px rgba(96,165,250,0.6), inset 0 0 30px rgba(167,139,250,0.4)"
-                        : "0 0 50px rgba(251,191,36,0.5)",
+                      "0 0 35px rgba(56,189,248,0.55), inset 0 0 25px rgba(14,165,233,0.35)",
                   }}
                 />
               ))}
 
-              {/* High-Speed Starlight Tunnel Rays */}
+              {/* Central Blue Matrix Wireframe Odometer */}
               <motion.div
-                animate={{ rotate: 360, scale: [0.9, 1.35, 0.9] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[680px] h-[680px] rounded-full opacity-50 pointer-events-none"
-                style={{
-                  background:
-                    "conic-gradient(from 0deg, transparent 0deg, rgba(96,165,250,0.45) 20deg, transparent 40deg, rgba(167,139,250,0.5) 120deg, transparent 150deg, rgba(251,191,36,0.45) 240deg, transparent 280deg, rgba(56,189,248,0.5) 330deg, transparent 360deg)",
-                  filter: "blur(18px)",
-                }}
-              />
-
-              {/* Central Chrono Odometer */}
-              <motion.div
-                initial={{ scale: 0.7, opacity: 0 }}
-                animate={{ scale: [0.85, 1.06, 1], opacity: 1 }}
-                className="relative z-10 flex flex-col items-center text-center px-6 py-8 rounded-3xl bg-black/65 border border-white/20 backdrop-blur-2xl shadow-[0_0_90px_rgba(96,165,250,0.5)]"
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="relative z-10 flex flex-col items-center text-center px-8 py-7 bg-[#020816]/95 border border-[#38bdf8] shadow-[0_0_80px_rgba(56,189,248,0.5)]"
               >
-                <span className="font-cinzel text-[10px] sm:text-xs uppercase tracking-[0.45em] text-blue-300 mb-2">
-                  Traversing Temporal Continuum
+                <WireframeCorners />
+                <span className="text-[10px] uppercase tracking-[0.35em] text-[#7dd3fc] mb-2">
+                  {`// EXECUTING_VECTOR: ${currentModelMeta.id}`}
                 </span>
-                <div className="font-cinzel text-5xl sm:text-7xl font-bold tracking-[0.18em] text-white text-glow tabular-nums">
+                <div className="text-5xl sm:text-7xl font-bold tracking-[0.18em] text-[#e0f2fe] drop-shadow-[0_0_20px_rgba(56,189,248,0.9)] tabular-nums">
                   {warpDisplayYear}
                 </div>
-                <div className="mt-2 text-sm sm:text-base font-mono tracking-[0.22em] text-blue-200 tabular-nums">
+                <div className="mt-2 text-sm sm:text-base tracking-[0.25em] text-[#38bdf8] tabular-nums">
                   {warpDisplayDate}
                 </div>
-                <div className="mt-2.5 text-[11px] sm:text-xs font-mono tracking-[0.2em] text-amber-300">
-                  {warpFromDate} → {warpToDate}
+                <div className="mt-2 text-[11px] tracking-[0.2em] text-[#7dd3fc]/80">
+                  {warpFromDate} &gt;&gt;&gt; {warpToDate}
                 </div>
-                <div className="mt-5 w-48 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="mt-4 w-56 h-2 border border-[#38bdf8]/60 bg-[#01050d] p-0.5">
                   <motion.div
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "100%" }}
-                    transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
-                    className="w-full h-full bg-gradient-to-r from-blue-400 via-violet-400 to-amber-300"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2.1, ease: "linear" }}
+                    className="h-full bg-[#38bdf8] shadow-[0_0_12px_#38bdf8]"
                   />
                 </div>
               </motion.div>
@@ -423,376 +559,738 @@ export default function TimePortalExperience() {
       </AnimatePresence>
 
       {/* ===================================================================== */}
-      {/* VIEW 1: STARTING INTERFACE (CURRENT SATHSARA DAHANA COSMIC THEME)     */}
+      {/* VIEW 1: BLUE MATRIX / UNFINISHED WIREFRAME PROTOTYPE INTERFACE        */}
       {/* ===================================================================== */}
       {!activeEra && (
-        <div className="relative min-h-screen w-full bg-[#02040d]/90 text-white py-10 sm:py-14 px-4 sm:px-6 flex flex-col justify-between">
-          <VortexBackground />
+        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
+          {/* Blue Matrix Rain Background */}
+          <BlueMatrixRain />
 
-          {/* Ambient Glows matching Introduction & Puzzle */}
-          <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-            <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[130px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[140px]" />
-          </div>
+          {/* CRT Scanlines & Phosphor Blue Vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-10 opacity-25"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.45) 0px, rgba(0, 0, 0, 0.45) 1px, transparent 1px, transparent 3px)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-10"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.12) 0%, rgba(2, 8, 23, 0.65) 70%, rgba(1, 4, 10, 0.92) 100%)",
+            }}
+          />
 
-          {/* Top Navigation Bar */}
-          <header className="relative z-10 container mx-auto max-w-6xl flex items-center justify-between">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-cinzel uppercase tracking-[0.25em] text-white/80 hover:bg-white/10 hover:border-blue-400/50 hover:text-white transition-all backdrop-blur-xl"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-blue-400" />
-              <span>Return Home</span>
-            </Link>
-
-            <div className="flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-950/30 px-4 py-1.5 text-[11px] font-cinzel uppercase tracking-[0.25em] text-blue-200 backdrop-blur-xl">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>Current Date: {travelledDate || todayStr}</span>
-            </div>
-          </header>
-
-          {/* Main Content Grid */}
-          <main className="relative z-10 container mx-auto max-w-6xl my-8 sm:my-12">
-            <div className="text-center mb-10 sm:mb-12">
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-cinzel text-[10px] sm:text-xs uppercase tracking-[0.45em] text-[#a78bfa] text-glow-violet block mb-3"
-              >
-                Sathsara Dahana • Temporal Gateway
-              </motion.span>
-              <motion.h1
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="font-cinzel text-3xl sm:text-5xl md:text-6xl font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-400 drop-shadow-[0_0_25px_rgba(59,130,246,0.35)]"
-              >
-                The Time Portal
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="mt-3 max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-blue-100/65 font-light leading-relaxed"
-              >
-                Calibrate the three harmonic locks below and select your destination date. Once all three answers are verified, the portal will open and reshape itself into your target era.
-              </motion.p>
+          {/* Main Outer Prototype Blueprint Container */}
+          <div className="relative z-20 mx-auto w-full max-w-6xl space-y-3">
+            {/* Top Raw Metadata Strip (like "FIGMA ... KRONA" / "DITHERING ALGORITHMS ... DITHERTONE PRO" in reference) */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#7dd3fc]">
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-1.5 border border-[#38bdf8]/50 bg-[#031024]/80 px-2.5 py-1 text-[#bae6fd] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors"
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  <span>EXIT_NODE</span>
+                </Link>
+                <span>{"SYS_BUILD // 0.42b-UNFINISHED"}</span>
+              </div>
+              <span className="hidden md:inline text-[#38bdf8]/70">
+                {"MATRIX_BLUE_WIREFRAME // EXPERIMENTAL_PORTAL"}
+              </span>
+              <span className="text-[#38bdf8]">
+                ANCHOR_DATE: {travelledDate || todayStr}
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Left Column: Interactive Astrolabe Portal Visualizer */}
-              <div className="lg:col-span-5 flex flex-col items-center justify-center">
-                <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
-                  {/* Outer Glow */}
-                  <div
-                    className={`absolute inset-4 rounded-full blur-[55px] transition-all duration-700 ${
-                      validation.allValid
-                        ? "bg-amber-400/30 scale-105"
-                        : "bg-blue-500/20 scale-95"
-                    }`}
-                  />
+            {/* Primary Wireframe Frame */}
+            <div className="relative border border-[#38bdf8]/75 bg-[#020a18]/90 shadow-[0_0_50px_rgba(14,165,233,0.22),inset_0_0_35px_rgba(14,165,233,0.08)]">
+              <WireframeCorners />
 
-                  {/* Spinning Ring 1 */}
-                  <motion.svg
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: validation.allValid ? 20 : 60,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    viewBox="0 0 300 300"
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <circle
-                      cx="150"
-                      cy="150"
-                      r="140"
-                      fill="none"
-                      stroke={validation.q1Valid ? "#fbbf24" : "#93c5fd"}
-                      strokeOpacity="0.45"
-                      strokeWidth="1.5"
-                      strokeDasharray="6 6"
-                    />
-                    <circle
-                      cx="150"
-                      cy="150"
-                      r="128"
-                      fill="none"
-                      stroke="#93c5fd"
-                      strokeOpacity="0.2"
-                      strokeWidth="1"
-                    />
-                  </motion.svg>
-
-                  {/* Spinning Ring 2 */}
-                  <motion.svg
-                    animate={{ rotate: -360 }}
-                    transition={{
-                      duration: validation.allValid ? 15 : 45,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    viewBox="0 0 300 300"
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <circle
-                      cx="150"
-                      cy="150"
-                      r="104"
-                      fill="none"
-                      stroke={validation.q2Valid ? "#fbbf24" : "#a78bfa"}
-                      strokeOpacity="0.55"
-                      strokeWidth="1.5"
-                    />
-                    {[0, 60, 120, 180, 240, 300].map((deg) => (
-                      <circle
-                        key={deg}
-                        cx="150"
-                        cy="46"
-                        r="4"
-                        fill={validation.q2Valid ? "#fbbf24" : "#a78bfa"}
-                        transform={`rotate(${deg} 150 150)`}
-                      />
-                    ))}
-                  </motion.svg>
-
-                  {/* Spinning Ring 3 */}
-                  <motion.svg
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: validation.allValid ? 10 : 30,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    viewBox="0 0 300 300"
-                    className="absolute inset-0 w-full h-full"
-                  >
-                    <circle
-                      cx="150"
-                      cy="150"
-                      r="74"
-                      fill="none"
-                      stroke={validation.q3Valid ? "#fbbf24" : "#60a5fa"}
-                      strokeOpacity="0.65"
-                      strokeWidth="2"
-                      strokeDasharray="16 8"
-                    />
-                  </motion.svg>
-
-                  {/* Center Portal Core */}
-                  <div className="relative z-10 flex flex-col items-center justify-center w-36 h-36 rounded-full bg-[#05091a]/90 border border-white/15 backdrop-blur-xl shadow-[0_0_40px_rgba(59,130,246,0.3)] text-center p-3">
-                    <span className="font-cinzel text-[9px] uppercase tracking-[0.3em] text-blue-300/70">
-                      Locks Engaged
-                    </span>
-                    <span className="font-cinzel text-2xl sm:text-3xl font-bold text-white mt-1">
-                      {validation.validCount} / 3
-                    </span>
-                    <span
-                      className={`mt-1.5 text-[9px] font-cinzel uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full border ${
-                        validation.allValid
-                          ? "border-amber-400/50 bg-amber-400/15 text-amber-200"
-                          : "border-white/10 bg-white/5 text-white/50"
-                      }`}
-                    >
-                      {validation.allValid ? "Portal Ready" : "Calibrating"}
-                    </span>
-                  </div>
+              {/* Frame Header Row ("PROJECT #1406 /// TRENDS #2026" style) */}
+              <div className="grid grid-cols-12 border-b border-[#38bdf8]/65 text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+                <div className="col-span-7 sm:col-span-5 px-3 py-2 border-r border-[#38bdf8]/65 flex items-center justify-between text-[#e0f2fe] font-bold">
+                  <span>PROJECT #2026-UA1</span>
+                  <span className="text-[9px] px-1.5 py-0.5 border border-[#38bdf8]/60 bg-[#38bdf8]/15 text-[#7dd3fc]">
+                    WIP_PROTOTYPE
+                  </span>
                 </div>
-
-                {/* Live Destination Era Preview Pill */}
-                {previewEra && (
-                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-3.5 backdrop-blur-xl text-center max-w-xs w-full">
-                    <p className="text-[10px] font-cinzel uppercase tracking-[0.3em] text-blue-300/70">
-                      Target Coordinate Preview
-                    </p>
-                    <p className="mt-1 font-cinzel text-sm font-bold uppercase tracking-[0.18em] text-amber-300">
-                      {ERA_CONFIG[previewEra].label}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-white/55">
-                      {ERA_CONFIG[previewEra].rangeLabel}
-                    </p>
-                  </div>
-                )}
+                <div className="col-span-5 sm:col-span-4 px-3 py-2 sm:border-r border-[#38bdf8]/65 flex items-center justify-between text-[#38bdf8]">
+                  <span>{"///"}</span>
+                  <span>SUBJECT A-34</span>
+                </div>
+                <div className="hidden sm:flex sm:col-span-3 px-3 py-2 items-center justify-between text-[#7dd3fc]">
+                  <span>MEM_LOCK: {validation.validCount}/6</span>
+                  <span className="inline-flex gap-1">
+                    <span className="px-1 border border-[#38bdf8] text-[9px]">M</span>
+                    <span className="px-1 border border-[#38bdf8] bg-[#38bdf8] text-[#01050c] text-[9px] font-bold">
+                      TX
+                    </span>
+                  </span>
+                </div>
               </div>
 
-              {/* Right Column: 3 Validated Questions + Date Input Form */}
-              <div className="lg:col-span-7">
-                <form
-                  onSubmit={handleSubmit}
-                  noValidate
-                  className="rounded-3xl border border-white/15 bg-white/[0.04] p-6 sm:p-8 backdrop-blur-2xl shadow-[0_0_60px_rgba(2,4,13,0.8)] space-y-5"
-                >
-                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                    <div>
-                      <h2 className="font-cinzel text-base sm:text-lg font-bold uppercase tracking-[0.2em] text-white">
-                        Temporal Calibration Console
-                      </h2>
-                      <p className="text-xs text-blue-200/60 mt-0.5">
-                        Answer all 3 security questions and choose your destination date.
-                      </p>
-                    </div>
-                    <Compass className="w-6 h-6 text-blue-400 shrink-0" />
-                  </div>
+              {/* Main 2-Column Blueprint Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                {/* ========================================================= */}
+                {/* LEFT COLUMN: 3D WIREFRAME ROOM, GLOBE, UNFINISHED BLOCKS  */}
+                {/* ========================================================= */}
+                <div className="lg:col-span-6 border-b lg:border-b-0 lg:border-r border-[#38bdf8]/65 flex flex-col justify-between">
+                  {/* Top Split: Unfinished Placeholder Viewport + Wireframe Globe */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-[#38bdf8]/65">
+                    {/* Left Sub-Box: 3D Perspective Wireframe Tunnel with [X] Unfinished Nodes */}
+                    <div className="sm:col-span-7 relative p-3 border-b sm:border-b-0 sm:border-r border-[#38bdf8]/65 min-h-[210px] flex flex-col justify-between overflow-hidden bg-[#010612]">
+                      <div className="flex items-center justify-between text-[9px] tracking-[0.18em] text-[#7dd3fc]/80 z-10">
+                        <span>{"VIEWPORT_01 // 3D_TUNNEL"}</span>
+                        <span className="text-[#38bdf8]">[WIREFRAME_ONLY]</span>
+                      </div>
 
-                  {/* 3 Validated Questions */}
-                  <div className="space-y-4">
-                    {QUESTIONS.map((q, index) => {
-                      const key = q.id as keyof typeof answers;
-                      const value = answers[key];
-                      const isFieldValid =
-                        index === 0
-                          ? validation.q1Valid
-                          : index === 1
-                          ? validation.q2Valid
-                          : validation.q3Valid;
-                      const showError = (touched[key] || submitAttempted) && !isFieldValid;
+                      {/* 3D Perspective Room Grid SVG (Matches Center Panel of Reference) */}
+                      <svg
+                        viewBox="0 0 320 180"
+                        className="w-full h-40 my-1 overflow-visible"
+                        aria-hidden="true"
+                      >
+                        {/* Outer & Inner Perspective Rectangles */}
+                        <rect
+                          x="4"
+                          y="4"
+                          width="312"
+                          height="172"
+                          fill="none"
+                          stroke="#38bdf8"
+                          strokeOpacity="0.6"
+                          strokeWidth="1"
+                        />
+                        <rect
+                          x="36"
+                          y="24"
+                          width="248"
+                          height="132"
+                          fill="none"
+                          stroke="#38bdf8"
+                          strokeOpacity="0.35"
+                          strokeWidth="0.75"
+                        />
+                        <rect
+                          x="68"
+                          y="44"
+                          width="184"
+                          height="92"
+                          fill="none"
+                          stroke="#38bdf8"
+                          strokeOpacity="0.4"
+                          strokeWidth="0.75"
+                        />
+                        <rect
+                          x="100"
+                          y="64"
+                          width="120"
+                          height="52"
+                          fill="rgba(14,165,233,0.06)"
+                          stroke="#7dd3fc"
+                          strokeOpacity="0.7"
+                          strokeWidth="1"
+                        />
 
-                      return (
-                        <div
-                          key={q.id}
-                          className={`rounded-2xl border p-4 transition-all ${
-                            isFieldValid
-                              ? "border-emerald-400/45 bg-emerald-950/15"
-                              : showError
-                              ? "border-rose-500/50 bg-rose-950/15"
-                              : "border-white/10 bg-black/35"
-                          }`}
+                        {/* Perspective Diagonal Rays */}
+                        <line x1="4" y1="4" x2="100" y2="64" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+                        <line x1="316" y1="4" x2="220" y2="64" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+                        <line x1="4" y1="176" x2="100" y2="116" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+                        <line x1="316" y1="176" x2="220" y2="116" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+
+                        {/* Mid-Grid Rays */}
+                        <line x1="160" y1="4" x2="160" y2="64" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+                        <line x1="160" y1="116" x2="160" y2="176" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+                        <line x1="4" y1="90" x2="100" y2="90" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+                        <line x1="220" y1="90" x2="316" y2="90" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+
+                        {/* Unfinished Placeholder [X] Boxes (like Panel 1 top-left) */}
+                        <g stroke="#7dd3fc" strokeWidth="1">
+                          <rect x="20" y="130" width="24" height="24" fill="#010816" />
+                          <line x1="20" y1="130" x2="44" y2="154" />
+                          <line x1="44" y1="130" x2="20" y2="154" />
+
+                          <rect x="272" y="22" width="24" height="24" fill="#010816" />
+                          <line x1="272" y1="22" x2="296" y2="46" />
+                          <line x1="296" y1="22" x2="272" y2="46" />
+                        </g>
+
+                        {/* Dithered Anomaly Core in Center */}
+                        <ellipse
+                          cx="160"
+                          cy="78"
+                          rx="38"
+                          ry="13"
+                          fill="rgba(56,189,248,0.22)"
+                          stroke="#e0f2fe"
+                          strokeWidth="1"
+                          strokeDasharray="3 2"
+                        />
+                        <ellipse
+                          cx="160"
+                          cy="104"
+                          rx="30"
+                          ry="9"
+                          fill="rgba(14,165,233,0.15)"
+                          stroke="#38bdf8"
+                          strokeWidth="1"
+                        />
+                        <text
+                          x="160"
+                          y="93"
+                          textAnchor="middle"
+                          fill="#e0f2fe"
+                          fontSize="8"
+                          letterSpacing="2"
                         >
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
-                            <span className="font-cinzel text-[10px] uppercase tracking-[0.28em] text-blue-300/80">
-                              {q.label}
-                            </span>
-                            {isFieldValid ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-cinzel uppercase tracking-wider text-emerald-300">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Verified
-                              </span>
-                            ) : showError ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-cinzel uppercase tracking-wider text-rose-300">
-                                <AlertCircle className="w-3.5 h-3.5" />
-                                Invalid Answer
-                              </span>
-                            ) : null}
-                          </div>
+                          {validation.targetDate || "UNSET_COORD"}
+                        </text>
+                      </svg>
 
-                          <label
-                            htmlFor={`portal-${q.id}`}
-                            className="block text-xs sm:text-sm font-medium text-white mb-2"
-                          >
-                            {q.question}
-                          </label>
+                      <div className="flex items-center justify-between text-[9px] tracking-[0.15em] text-[#38bdf8]/80 z-10">
+                        <span>ERR_SHADER_04: UNCOMPILED</span>
+                        <span>FPS: 24.0</span>
+                      </div>
+                    </div>
 
-                          <input
-                            id={`portal-${q.id}`}
-                            type="text"
-                            value={value}
-                            onChange={(e) =>
-                              setAnswers((prev) => ({ ...prev, [key]: e.target.value }))
-                            }
-                            onBlur={() =>
-                              setTouched((prev) => ({ ...prev, [key]: true }))
-                            }
-                            placeholder={q.placeholder}
-                            autoComplete="off"
-                            className="w-full rounded-xl border border-white/15 bg-[#050816]/90 px-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-white/30 focus:border-blue-400 focus:outline-none transition-colors"
-                          />
-
-                          {showError && (
-                            <p className="mt-1.5 text-[11px] text-rose-300/90">
-                              Hint: {q.hint}
-                            </p>
-                          )}
+                    {/* Right Sub-Box: Wireframe Sphere Globe (Matches Panel 1 Top-Right) */}
+                    <div className="sm:col-span-5 p-3 flex flex-col justify-between bg-[#010816]">
+                      <div>
+                        <div className="text-[11px] font-bold tracking-[0.2em] text-[#e0f2fe]">
+                          PORTAL
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="text-[10px] tracking-[0.2em] text-[#38bdf8]">
+                          #2026_UA1
+                        </div>
+                        <div className="mt-1.5 space-y-0.5 text-[8px] tracking-[0.15em] text-[#7dd3fc]/70 uppercase">
+                          <p>GLOBAL_MESH: RAW</p>
+                          <p>TEXTURE_PASS: NONE</p>
+                          <p>TEMPORAL_LOCK: {validation.allValid ? "READY" : "PENDING"}</p>
+                        </div>
+                      </div>
 
-                  {/* Destination Date Selector (Input #4) */}
-                  <div className="rounded-2xl border border-blue-400/25 bg-blue-950/15 p-4">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="font-cinzel text-[10px] uppercase tracking-[0.28em] text-amber-300">
-                        Chrono Coordinate IV • Target Date
-                      </span>
-                      <span className="text-[10px] font-cinzel uppercase tracking-wider text-blue-200/70">
-                        Any Date Allowed
-                      </span>
-                    </div>
+                      {/* Rotating Wireframe Sphere SVG */}
+                      <div className="my-2 flex items-center justify-center">
+                        <motion.svg
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+                          viewBox="0 0 120 120"
+                          className="w-28 h-28"
+                          aria-hidden="true"
+                        >
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="52"
+                            fill="none"
+                            stroke="#38bdf8"
+                            strokeWidth="1.2"
+                          />
+                          {[42, 28, 14].map((rx) => (
+                            <ellipse
+                              key={`v-${rx}`}
+                              cx="60"
+                              cy="60"
+                              rx={rx}
+                              ry="52"
+                              fill="none"
+                              stroke="#38bdf8"
+                              strokeOpacity="0.65"
+                              strokeWidth="0.8"
+                            />
+                          ))}
+                          {[38, 22, 8].map((ry) => (
+                            <ellipse
+                              key={`h-${ry}`}
+                              cx="60"
+                              cy="60"
+                              rx="52"
+                              ry={ry}
+                              fill="none"
+                              stroke="#7dd3fc"
+                              strokeOpacity="0.55"
+                              strokeWidth="0.8"
+                            />
+                          ))}
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="4"
+                            fill="#e0f2fe"
+                          />
+                        </motion.svg>
+                      </div>
 
-                    <label
-                      htmlFor="portal-target-date"
-                      className="block text-xs sm:text-sm font-medium text-white mb-2"
-                    >
-                      Select or enter the date you wish to travel to:
-                    </label>
-
-                    <div className="relative">
-                      <input
-                        id="portal-target-date"
-                        type="date"
-                        value={targetDate}
-                        onChange={(e) => {
-                          setTargetDate(e.target.value);
-                          setTouched((prev) => ({ ...prev, date: true }));
-                        }}
-                        className="w-full rounded-xl border border-white/20 bg-[#050816]/90 px-4 py-2.5 text-xs sm:text-sm text-white focus:border-amber-400 focus:outline-none transition-colors [color-scheme:dark]"
-                      />
-                    </div>
-
-                    {/* Quick Preset Era Coordinates for fast testing */}
-                    <div className="mt-3">
-                      <span className="block text-[10px] font-cinzel uppercase tracking-[0.22em] text-white/45 mb-2">
-                        Quick Era Coordinate Presets:
-                      </span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[
-                          { label: "Past (1999)", date: "1999-12-31" },
-                          { label: "Near Past (2024)", date: "2024-06-15" },
-                          { label: "Present (Today)", date: todayStr },
-                          { label: "Near Future (2027)", date: "2027-08-20" },
-                          { label: "Future (2035)", date: "2035-01-01" },
-                        ].map((preset) => (
-                          <button
-                            key={preset.label}
-                            type="button"
-                            onClick={() => setTargetDate(preset.date)}
-                            className={`rounded-lg border px-2.5 py-1 text-[10px] font-cinzel uppercase tracking-wider transition-all cursor-pointer ${
-                              targetDate === preset.date
-                                ? "border-amber-400/70 bg-amber-400/20 text-amber-200"
-                                : "border-white/10 bg-white/5 text-white/65 hover:border-white/30 hover:text-white"
-                            }`}
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between text-[8px] tracking-[0.15em] text-[#7dd3fc] border-t border-[#38bdf8]/40 pt-1">
+                        <span>1999</span>
+                        <span>----</span>
+                        <span>{jumpYear || "2026"}</span>
+                        <span>----</span>
+                        <span>2035</span>
                       </div>
                     </div>
                   </div>
 
-                  {submitAttempted && !validation.allValid && (
-                    <div className="rounded-xl border border-rose-500/40 bg-rose-950/30 px-4 py-2.5 text-xs text-rose-200 text-center">
-                      Please answer all 3 calibration questions correctly and choose a valid date to unlock the Time Portal.
-                    </div>
-                  )}
+                  {/* Middle Strip: 4 Sub-Module Dither Cells (Matches Panel 2 middle row) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-[#38bdf8]/65 bg-[#010714]">
+                    {[
+                      { name: "MODULATION", state: "ACTIVE", code: "0x01A" },
+                      { name: "ATKINSON", state: "DITHER_8B", code: "0x02F" },
+                      { name: "BAYER_MATRIX", state: "RAW_GRID", code: "0x04C" },
+                      { name: "SIERRA_SYNC", state: "UNFINISHED", code: "0x09E" },
+                    ].map((cell, idx) => (
+                      <div
+                        key={cell.name}
+                        className={`p-2.5 flex flex-col justify-between border-[#38bdf8]/50 ${
+                          idx < 3 ? "sm:border-r" : ""
+                        } ${idx % 2 === 0 ? "border-r sm:border-r" : ""} ${
+                          idx < 2 ? "border-b sm:border-b-0" : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-[8px] text-[#7dd3fc]/70">
+                          <span>{cell.code}</span>
+                          <span className="h-1.5 w-1.5 bg-[#38bdf8]" />
+                        </div>
 
-                  <button
-                    type="submit"
-                    className={`w-full rounded-full py-3.5 px-6 font-cinzel text-xs sm:text-sm font-bold uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-                      validation.allValid
-                        ? "bg-gradient-to-r from-blue-600 via-violet-600 to-amber-500 text-white shadow-[0_0_35px_rgba(139,92,246,0.5)] hover:scale-[1.01]"
-                        : "bg-white/10 border border-white/15 text-white/60 hover:bg-white/15"
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Initiate Time Travel</span>
-                  </button>
-                </form>
+                        {/* Dithered Scan Portrait / Reticle Placeholder */}
+                        <div className="my-2 h-14 border border-dashed border-[#38bdf8]/45 bg-[#020c20] relative flex items-center justify-center overflow-hidden">
+                          <div
+                            className="absolute inset-0 opacity-35"
+                            style={{
+                              backgroundImage:
+                                "radial-gradient(#38bdf8 1px, transparent 1px)",
+                              backgroundSize: "4px 4px",
+                            }}
+                          />
+                          <span className="relative z-10 text-[9px] tracking-[0.15em] text-[#bae6fd] bg-[#01050c]/85 px-1.5 py-0.5 border border-[#38bdf8]/50">
+                            {cell.state}
+                          </span>
+                        </div>
+
+                        <div className="border border-[#38bdf8]/60 py-0.5 text-center text-[9px] tracking-[0.18em] text-[#e0f2fe] bg-[#38bdf8]/10">
+                          {cell.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bottom Strip: Sine-Wave Oscilloscope & Hex Telemetry (Matches Panel 2 & 3 bottom) */}
+                  <div className="p-3 bg-[#010612] flex flex-col justify-between">
+                    <div className="flex items-center justify-between text-[9px] tracking-[0.2em] text-[#7dd3fc] mb-1.5">
+                      <span>{"// HARMONIC_WAVEFORM_OSCILLOSCOPE"}</span>
+                      <span>FREQ: 221.500 MHz</span>
+                    </div>
+
+                    <div className="relative border border-[#38bdf8]/60 bg-[#01050d] p-2">
+                      <svg viewBox="0 0 400 64" className="w-full h-14 overflow-visible">
+                        {/* Background Oscilloscope Grid */}
+                        {[0, 16, 32, 48, 64].map((y) => (
+                          <line
+                            key={`gy-${y}`}
+                            x1="0"
+                            y1={y}
+                            x2="400"
+                            y2={y}
+                            stroke="#38bdf8"
+                            strokeOpacity="0.22"
+                            strokeWidth="0.7"
+                          />
+                        ))}
+                        {[0, 50, 100, 150, 200, 250, 300, 350, 400].map((x) => (
+                          <line
+                            key={`gx-${x}`}
+                            x1={x}
+                            y1="0"
+                            x2={x}
+                            y2="64"
+                            stroke="#38bdf8"
+                            strokeOpacity="0.22"
+                            strokeWidth="0.7"
+                          />
+                        ))}
+                        {/* Primary Glowing Sine Wave */}
+                        <path
+                          d="M 0 32 Q 25 4, 50 32 T 100 32 T 150 32 T 200 32 T 250 32 T 300 32 T 350 32 T 400 32"
+                          fill="none"
+                          stroke="#e0f2fe"
+                          strokeWidth="1.8"
+                          style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
+                        />
+                        {/* Secondary Phase-Shifted Wave */}
+                        <path
+                          d="M 0 32 Q 25 60, 50 32 T 100 32 T 150 32 T 200 32 T 250 32 T 300 32 T 350 32 T 400 32"
+                          fill="none"
+                          stroke="#38bdf8"
+                          strokeOpacity="0.6"
+                          strokeWidth="1"
+                          strokeDasharray="3 2"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Raw Hex/Numeric Dump Row */}
+                    <div className="mt-2 grid grid-cols-6 sm:grid-cols-10 gap-1 text-[8px] sm:text-[9px] tracking-[0.14em] text-[#38bdf8]/85 tabular-nums">
+                      {[
+                        "48 69",
+                        "00084",
+                        "76 63",
+                        "077 88",
+                        "24450",
+                        "43 45",
+                        "331 09",
+                        "2026U",
+                        "A1 07",
+                        "18 00",
+                      ].map((hex, i) => (
+                        <span key={i} className="truncate">
+                          {hex}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ========================================================= */}
+                {/* RIGHT COLUMN: 6 TABULAR WIREFRAME INPUTS + EXECUTION      */}
+                {/* ========================================================= */}
+                <div className="lg:col-span-6 flex flex-col justify-between bg-[#020917]">
+                  <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full justify-between">
+                    <div>
+                      {/* Section Header Banner */}
+                      <div className="px-4 py-2.5 border-b border-[#38bdf8]/65 bg-[#38bdf8]/10 flex items-center justify-between">
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-[#e0f2fe]">
+                          {"// TEMPORAL_INTERFACE_INPUTS [RAW_FORM]"}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-[0.18em] text-[#7dd3fc]">
+                          STATUS: {validation.allValid ? "LOCKED_IN" : "INCOMPLETE"}
+                        </span>
+                      </div>
+
+                      {/* 6 Tabular Input Rows styled after "// DESIGNER_ ... VASILCHENKO OLGA" */}
+                      <div className="divide-y divide-[#38bdf8]/55">
+                        {/* 1. Username - Temporal Identity / User ID */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <label
+                            htmlFor="tp-username"
+                            className="sm:col-span-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc] flex flex-col"
+                          >
+                            <span className="font-bold text-[#e0f2fe]">{"// USERNAME_"}</span>
+                            <span className="text-[9px] text-[#38bdf8]/75">
+                              Temporal Identity / User ID
+                            </span>
+                          </label>
+                          <div className="sm:col-span-7 flex items-center gap-2">
+                            <input
+                              id="tp-username"
+                              type="text"
+                              value={username}
+                              onChange={(e) => setUsername(e.target.value)}
+                              placeholder="e.g. SUBJECT_A-34"
+                              autoComplete="off"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs uppercase tracking-[0.15em] text-[#e0f2fe] placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                            />
+                            <span
+                              className={`text-[9px] px-1.5 py-1 border ${
+                                validation.usernameValid
+                                  ? "border-[#38bdf8] bg-[#38bdf8]/20 text-[#e0f2fe]"
+                                  : "border-rose-500/60 bg-rose-950/40 text-rose-300"
+                              }`}
+                            >
+                              {validation.usernameValid ? "OK" : "ERR"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 2. Password - Access Key */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <label
+                            htmlFor="tp-password"
+                            className="sm:col-span-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc] flex flex-col"
+                          >
+                            <span className="font-bold text-[#e0f2fe]">{"// PASSWORD_"}</span>
+                            <span className="text-[9px] text-[#38bdf8]/75">
+                              Access Key
+                            </span>
+                          </label>
+                          <div className="sm:col-span-7 flex items-center gap-2">
+                            <input
+                              id="tp-password"
+                              type="password"
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="ENTER ACCESS KEY"
+                              autoComplete="off"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                            />
+                            <span
+                              className={`text-[9px] px-1.5 py-1 border ${
+                                validation.passwordValid
+                                  ? "border-[#38bdf8] bg-[#38bdf8]/20 text-[#e0f2fe]"
+                                  : "border-rose-500/60 bg-rose-950/40 text-rose-300"
+                              }`}
+                            >
+                              {validation.passwordValid ? "KEY" : "ERR"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 3. Time Jump Year - Destination Year */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <label
+                            htmlFor="tp-year"
+                            className="sm:col-span-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc] flex flex-col"
+                          >
+                            <span className="font-bold text-[#e0f2fe]">{"// TIME_JUMP_YEAR_"}</span>
+                            <span className="text-[9px] text-[#38bdf8]/75">
+                              Destination Year (YYYY)
+                            </span>
+                          </label>
+                          <div className="sm:col-span-7 flex items-center gap-2">
+                            <input
+                              id="tp-year"
+                              type="number"
+                              min={100}
+                              max={9999}
+                              value={jumpYear}
+                              onChange={(e) => setJumpYear(e.target.value)}
+                              placeholder="2026"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                            />
+                            <span
+                              className={`text-[9px] px-1.5 py-1 border ${
+                                validation.yearValid
+                                  ? "border-[#38bdf8] bg-[#38bdf8]/20 text-[#e0f2fe]"
+                                  : "border-rose-500/60 bg-rose-950/40 text-rose-300"
+                              }`}
+                            >
+                              YR
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 4. Time Jump Month - Destination Month */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <label
+                            htmlFor="tp-month"
+                            className="sm:col-span-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc] flex flex-col"
+                          >
+                            <span className="font-bold text-[#e0f2fe]">{"// TIME_JUMP_MONTH_"}</span>
+                            <span className="text-[9px] text-[#38bdf8]/75">
+                              Destination Month (01–12)
+                            </span>
+                          </label>
+                          <div className="sm:col-span-7 flex items-center gap-2">
+                            <input
+                              id="tp-month"
+                              type="number"
+                              min={1}
+                              max={12}
+                              value={jumpMonth}
+                              onChange={(e) => setJumpMonth(e.target.value)}
+                              placeholder="10"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                            />
+                            <span
+                              className={`text-[9px] px-1.5 py-1 border ${
+                                validation.monthValid
+                                  ? "border-[#38bdf8] bg-[#38bdf8]/20 text-[#e0f2fe]"
+                                  : "border-rose-500/60 bg-rose-950/40 text-rose-300"
+                              }`}
+                            >
+                              MO
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 5. Time Jump Date - Destination Day */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <label
+                            htmlFor="tp-day"
+                            className="sm:col-span-5 text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc] flex flex-col"
+                          >
+                            <span className="font-bold text-[#e0f2fe]">{"// TIME_JUMP_DATE_"}</span>
+                            <span className="text-[9px] text-[#38bdf8]/75">
+                              Destination Day (01–31)
+                            </span>
+                          </label>
+                          <div className="sm:col-span-7 flex items-center gap-2">
+                            <input
+                              id="tp-day"
+                              type="number"
+                              min={1}
+                              max={31}
+                              value={jumpDay}
+                              onChange={(e) => setJumpDay(e.target.value)}
+                              placeholder="23"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                            />
+                            <span
+                              className={`text-[9px] px-1.5 py-1 border ${
+                                validation.dayValid
+                                  ? "border-[#38bdf8] bg-[#38bdf8]/20 text-[#e0f2fe]"
+                                  : "border-rose-500/60 bg-rose-950/40 text-rose-300"
+                              }`}
+                            >
+                              DY
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 6. Model selection - Temporal Direction (Fictional Models) */}
+                        <div className="px-4 py-3 space-y-2 hover:bg-[#38bdf8]/[0.05] transition-colors">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <label
+                              htmlFor="tp-model"
+                              className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc]"
+                            >
+                              <span className="font-bold text-[#e0f2fe]">
+                                {"// MODEL_SELECTION_"}
+                              </span>{" "}
+                              <span className="text-[9px] text-[#38bdf8]/75">
+                                (Temporal Direction)
+                              </span>
+                            </label>
+                            <span className="text-[9px] uppercase tracking-[0.16em] text-[#38bdf8]">
+                              {currentModelMeta.direction}
+                            </span>
+                          </div>
+
+                          <select
+                            id="tp-model"
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            className="w-full border border-[#38bdf8]/70 bg-[#01050d] px-3 py-2 text-xs uppercase tracking-[0.14em] text-[#e0f2fe] focus:border-[#e0f2fe] focus:outline-none cursor-pointer"
+                          >
+                            {TEMPORAL_MODELS.map((m) => (
+                              <option key={m.id} value={m.id} className="bg-[#01050d] text-[#e0f2fe]">
+                                {`${m.code} — ${m.direction}`}
+                              </option>
+                            ))}
+                          </select>
+
+                          {/* Wireframe Quick Model Matrix Pills */}
+                          <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {TEMPORAL_MODELS.map((m) => {
+                              const active = selectedModel === m.id;
+                              return (
+                                <button
+                                  key={m.id}
+                                  type="button"
+                                  onClick={() => setSelectedModel(m.id)}
+                                  className={`px-2 py-1 text-left border text-[9px] uppercase tracking-[0.12em] transition-colors cursor-pointer truncate ${
+                                    active
+                                      ? "border-[#e0f2fe] bg-[#38bdf8]/25 text-[#e0f2fe] font-bold shadow-[0_0_10px_rgba(56,189,248,0.35)]"
+                                      : "border-[#38bdf8]/35 bg-[#01050d]/80 text-[#7dd3fc]/70 hover:border-[#38bdf8]"
+                                  }`}
+                                >
+                                  {active ? "■ " : "□ "}
+                                  {m.id}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Live Diagnostic Readout Rows (Matching Panel 1 & Panel 3 telemetry rows) */}
+                        <div className="grid grid-cols-12 items-center px-4 py-2 text-[10px] uppercase tracking-[0.18em]">
+                          <span className="col-span-5 text-[#7dd3fc]">{"// TARGET_ERA_"}</span>
+                          <span className="col-span-7 text-right font-bold text-[#e0f2fe]">
+                            {previewEra ? ERA_CONFIG[previewEra].label : "INVALID_COORDINATE"}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-12 items-center px-4 py-2 text-[10px] uppercase tracking-[0.18em]">
+                          <span className="col-span-5 text-[#7dd3fc]">{"// STABILITY_"}</span>
+                          <span className="col-span-7 text-right text-[#38bdf8] tracking-[0.25em]">
+                            ■■■■■■□□□□ <span className="text-[9px] text-[#e0f2fe]">UNSTABLE</span>
+                          </span>
+                        </div>
+
+                        {/* Debug Quick Era Coordinate Presets */}
+                        <div className="px-4 py-2.5 bg-[#010612]">
+                          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.18em] text-[#7dd3fc]/80 mb-1.5">
+                            <span>{"// QUICK_TEST_COORDINATES [DEBUG]:"}</span>
+                            <span>{validation.targetDate || "----"}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              { label: "PAST [1999]", date: "1999-12-31" },
+                              { label: "NEAR_PAST [2024]", date: "2024-06-15" },
+                              { label: "PRESENT [TODAY]", date: todayStr },
+                              { label: "NEAR_FUT [2027]", date: "2027-08-20" },
+                              { label: "FAR_FUT [2035]", date: "2035-01-01" },
+                            ].map((preset) => (
+                              <button
+                                key={preset.label}
+                                type="button"
+                                onClick={() => applyPresetDate(preset.date)}
+                                className={`px-2 py-1 border text-[9px] uppercase tracking-[0.14em] transition-colors cursor-pointer ${
+                                  validation.targetDate === preset.date
+                                    ? "border-[#e0f2fe] bg-[#38bdf8] text-[#01050c] font-bold"
+                                    : "border-[#38bdf8]/45 bg-[#020a18] text-[#7dd3fc] hover:border-[#38bdf8] hover:text-[#e0f2fe]"
+                                }`}
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Error Banner if Invalid */}
+                    {submitAttempted && !validation.allValid && (
+                      <div className="mx-4 mt-2 border border-rose-500/70 bg-rose-950/40 px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-rose-200">
+                        {"ERR_INVALID_PARAMS // VERIFY USERNAME, ACCESS_KEY & VALID CALENDAR DATE."}
+                      </div>
+                    )}
+
+                    {/* Bottom Execution Block (Styled like Panel 1's oversized "TRENDS" + directional chevrons) */}
+                    <div className="p-4 border-t border-[#38bdf8]/65 bg-[#010612] space-y-2.5">
+                      <button
+                        type="submit"
+                        className="group relative w-full border-2 border-[#7dd3fc] bg-[#021024] hover:bg-[#38bdf8] text-[#e0f2fe] hover:text-[#01050c] py-3.5 px-5 transition-all shadow-[0_0_25px_rgba(56,189,248,0.35)] hover:shadow-[0_0_40px_rgba(56,189,248,0.75)] cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] tracking-[0.25em] uppercase opacity-80">
+                            [EXEC_WARP]
+                          </span>
+                          <span className="text-lg sm:text-2xl font-black tracking-[0.28em] uppercase">
+                            TIME JUMP
+                          </span>
+                          <span className="text-xs tracking-[0.2em] font-bold">
+                            &gt;&gt;&gt;&gt;
+                          </span>
+                        </div>
+                      </button>
+
+                      {/* Decorative Wireframe Wedge Bar (like bottom of Panel 1) */}
+                      <div className="grid grid-cols-4 gap-2 pt-0.5" aria-hidden="true">
+                        {[0, 1, 2, 3].map((idx) => (
+                          <div
+                            key={idx}
+                            className="h-3 border border-[#38bdf8]/50 bg-[linear-gradient(90deg,rgba(56,189,248,0.35)_0%,rgba(56,189,248,0.05)_100%)] flex items-center justify-end pr-1"
+                          >
+                            <span className="h-1.5 w-1 bg-[#7dd3fc]" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
-          </main>
 
-          <footer className="relative z-10 text-center text-[11px] font-cinzel uppercase tracking-[0.3em] text-white/35">
-            Sathsara Dahana 2026 • Temporal Navigation System
-          </footer>
+            {/* Bottom Raw Prototype Footer */}
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
+              <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
+              <span>WARNING: UI_SHELL_INCOMPLETE [WIREFRAME_DEBUG_ENABLED]</span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -805,8 +1303,10 @@ export default function TimePortalExperience() {
           travelledDate={travelledDate}
           formattedDate={formattedTravelledDate}
           todayStr={todayStr}
+          operatorId={username}
+          temporalModel={currentModelMeta.code}
           onSelectNewDate={(nextDate) => {
-            setTargetDate(nextDate);
+            applyPresetDate(nextDate);
             triggerTimeWarp(nextDate);
           }}
           onReturnToOrigin={handleResetToOrigin}
@@ -817,7 +1317,7 @@ export default function TimePortalExperience() {
 }
 
 /* ========================================================================= */
-/* ERA-SPECIFIC WEB DESIGN DESTINATION COMPONENT                             */
+/* ERA-SPECIFIC BLUE MATRIX WIREFRAME DESTINATION COMPONENT                  */
 /* ========================================================================= */
 
 interface EraDestinationProps {
@@ -825,8 +1325,189 @@ interface EraDestinationProps {
   travelledDate: string;
   formattedDate: string;
   todayStr: string;
+  operatorId: string;
+  temporalModel: string;
   onSelectNewDate: (date: string) => void;
   onReturnToOrigin: () => void;
+}
+
+/** Era-specific 3D wireframe SVG schematic rendered inside the primary viewport */
+function EraWireframeSchematic({
+  era,
+  travelledDate,
+}: {
+  era: TimeEra;
+  travelledDate: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 360 200"
+      className="w-full h-48 my-1 overflow-visible"
+      aria-hidden="true"
+    >
+      {/* Common 3D Perspective Room Wireframe (Matches Center Reference Panel) */}
+      <rect
+        x="4"
+        y="4"
+        width="352"
+        height="192"
+        fill="none"
+        stroke="#38bdf8"
+        strokeOpacity="0.65"
+        strokeWidth="1"
+      />
+      <rect
+        x="40"
+        y="26"
+        width="280"
+        height="148"
+        fill="none"
+        stroke="#38bdf8"
+        strokeOpacity="0.35"
+        strokeWidth="0.75"
+      />
+      <rect
+        x="76"
+        y="48"
+        width="208"
+        height="104"
+        fill="none"
+        stroke="#38bdf8"
+        strokeOpacity="0.4"
+        strokeWidth="0.75"
+      />
+      <rect
+        x="112"
+        y="70"
+        width="136"
+        height="60"
+        fill="rgba(14,165,233,0.06)"
+        stroke="#7dd3fc"
+        strokeOpacity="0.75"
+        strokeWidth="1"
+      />
+
+      {/* Perspective Corner Diagonal Rays */}
+      <line x1="4" y1="4" x2="112" y2="70" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+      <line x1="356" y1="4" x2="248" y2="70" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+      <line x1="4" y1="196" x2="112" y2="130" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+      <line x1="356" y1="196" x2="248" y2="130" stroke="#38bdf8" strokeOpacity="0.55" strokeWidth="1" />
+
+      {/* Mid-Grid Rays */}
+      <line x1="180" y1="4" x2="180" y2="70" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+      <line x1="180" y1="130" x2="180" y2="196" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+      <line x1="4" y1="100" x2="112" y2="100" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+      <line x1="248" y1="100" x2="356" y2="100" stroke="#38bdf8" strokeOpacity="0.3" strokeDasharray="2 3" />
+
+      {/* Unfinished Placeholder [X] Boxes (like Reference Panel 1 top-left) */}
+      <g stroke="#7dd3fc" strokeWidth="1">
+        <rect x="18" y="148" width="26" height="26" fill="#010816" />
+        <line x1="18" y1="148" x2="44" y2="174" />
+        <line x1="44" y1="148" x2="18" y2="174" />
+
+        <rect x="314" y="20" width="26" height="26" fill="#010816" />
+        <line x1="314" y1="20" x2="340" y2="46" />
+        <line x1="340" y1="20" x2="314" y2="46" />
+      </g>
+
+      {/* ERA-SPECIFIC CENTRAL WIREFRAME OBJECT */}
+      {era === "past" && (
+        /* Deep Past: Low-Poly CRT Terminal & Magnetic Tape Spools */
+        <g stroke="#e0f2fe" strokeWidth="1.1" fill="rgba(56,189,248,0.12)">
+          <rect x="135" y="68" width="90" height="58" />
+          <rect x="143" y="75" width="74" height="40" fill="#01050d" stroke="#38bdf8" />
+          <circle cx="163" cy="95" r="10" fill="none" stroke="#7dd3fc" strokeDasharray="2 2" />
+          <circle cx="197" cy="95" r="10" fill="none" stroke="#7dd3fc" strokeDasharray="2 2" />
+          <line x1="163" y1="85" x2="197" y2="85" stroke="#e0f2fe" />
+          <polygon points="125,134 235,134 245,146 115,146" fill="rgba(14,165,233,0.18)" stroke="#38bdf8" />
+        </g>
+      )}
+
+      {era === "near-past" && (
+        /* Near Past: Circuit Board Schematic & Acoustic Stage Blueprint (Reference Panel 3) */
+        <g stroke="#e0f2fe" strokeWidth="1" fill="none">
+          <rect x="132" y="66" width="96" height="68" fill="rgba(14,165,233,0.1)" stroke="#38bdf8" />
+          <rect x="162" y="82" width="36" height="36" fill="#010816" stroke="#e0f2fe" strokeWidth="1.4" />
+          <line x1="162" y1="118" x2="198" y2="82" stroke="#7dd3fc" />
+          {/* Circuit Traces */}
+          <polyline points="132,80 150,80 162,90" stroke="#7dd3fc" />
+          <polyline points="228,85 210,85 198,95" stroke="#7dd3fc" />
+          <polyline points="132,115 148,115 162,106" stroke="#7dd3fc" />
+          <polyline points="228,118 212,118 198,108" stroke="#7dd3fc" />
+          <circle cx="150" cy="80" r="2.5" fill="#e0f2fe" />
+          <circle cx="210" cy="85" r="2.5" fill="#e0f2fe" />
+          <circle cx="148" cy="115" r="2.5" fill="#e0f2fe" />
+          <circle cx="212" cy="118" r="2.5" fill="#e0f2fe" />
+        </g>
+      )}
+
+      {era === "present" && (
+        /* Present: Dual Harmonic Vortex & Asteroid 2026 UA1 Core (Reference Panel 2) */
+        <g>
+          <ellipse
+            cx="180"
+            cy="84"
+            rx="46"
+            ry="16"
+            fill="rgba(56,189,248,0.22)"
+            stroke="#e0f2fe"
+            strokeWidth="1.2"
+            strokeDasharray="3 2"
+          />
+          <ellipse
+            cx="180"
+            cy="116"
+            rx="38"
+            ry="12"
+            fill="rgba(14,165,233,0.18)"
+            stroke="#38bdf8"
+            strokeWidth="1.1"
+          />
+          <circle cx="180" cy="100" r="22" fill="none" stroke="#7dd3fc" strokeDasharray="2 2" />
+          <circle cx="180" cy="100" r="4" fill="#e0f2fe" />
+        </g>
+      )}
+
+      {era === "near-future" && (
+        /* Near Future: Isometric Spatial Floating Wireframe Layers */
+        <g stroke="#e0f2fe" strokeWidth="1" fill="rgba(56,189,248,0.1)">
+          <polygon points="180,58 236,80 180,102 124,80" />
+          <polygon points="180,78 236,100 180,122 124,100" stroke="#7dd3fc" />
+          <polygon points="180,98 236,120 180,142 124,120" stroke="#38bdf8" />
+          <line x1="180" y1="58" x2="180" y2="142" stroke="#e0f2fe" strokeDasharray="2 2" />
+        </g>
+      )}
+
+      {era === "future" && (
+        /* Far Future: Hyper-Dense Quantum Torus & Singularity Lattice */
+        <g stroke="#e0f2fe" fill="none">
+          <circle cx="180" cy="100" r="42" stroke="#38bdf8" strokeWidth="1" strokeDasharray="4 2" />
+          <circle cx="180" cy="100" r="30" stroke="#7dd3fc" strokeWidth="1" />
+          <ellipse cx="180" cy="100" rx="42" ry="15" stroke="#e0f2fe" strokeWidth="1.1" />
+          <ellipse cx="180" cy="100" rx="15" ry="42" stroke="#e0f2fe" strokeWidth="1.1" />
+          <polygon
+            points="180,64 216,100 180,136 144,100"
+            stroke="#38bdf8"
+            strokeWidth="1"
+            fill="rgba(56,189,248,0.15)"
+          />
+          <circle cx="180" cy="100" r="5" fill="#e0f2fe" />
+        </g>
+      )}
+
+      {/* Coordinate Stamp Overlay */}
+      <text
+        x="180"
+        y="186"
+        textAnchor="middle"
+        fill="#e0f2fe"
+        fontSize="8.5"
+        letterSpacing="2.5"
+      >
+        {`COORD_LOCK // ${travelledDate} [${era.toUpperCase()}]`}
+      </text>
+    </svg>
+  );
 }
 
 function EraDestinationInterface({
@@ -834,524 +1515,456 @@ function EraDestinationInterface({
   travelledDate,
   formattedDate,
   todayStr,
+  operatorId,
+  temporalModel,
   onSelectNewDate,
   onReturnToOrigin,
 }: EraDestinationProps) {
   const [quickDate, setQuickDate] = useState(travelledDate);
   const meta = ERA_CONFIG[era];
+  const destinationYear = travelledDate.slice(0, 4) || "2026";
 
   useEffect(() => {
     setQuickDate(travelledDate);
   }, [travelledDate]);
 
-  /* ----------------------------------------------------------------------- */
-  /* 1. PAST ERA (BEFORE 2023) — WEB 1.0 / 90s RETRO OS & CRT TERMINAL       */
-  /* ----------------------------------------------------------------------- */
-  if (era === "past") {
-    return (
-      <div className="min-h-screen w-full bg-[#004f4f] text-black font-mono p-3 sm:p-6 relative overflow-hidden">
-        {/* CRT Scanline Overlay */}
-        <div
-          className="pointer-events-none fixed inset-0 z-40 opacity-20"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 1px, transparent 1px, transparent 3px)",
-          }}
-        />
+  return (
+    <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
+      {/* Unified Blue Matrix Rain Background across ALL eras */}
+      <BlueMatrixRain />
 
-        <div className="max-w-5xl mx-auto relative z-10 space-y-4">
-          {/* Classic Windows 95/98 Outer Window Frame */}
-          <div className="bg-[#c0c0c0] border-2 border-t-white border-l-white border-r-[#202020] border-b-[#202020] shadow-[4px_4px_0px_#000000]">
-            {/* Classic Navy Title Bar */}
-            <div className="bg-gradient-to-r from-[#000080] to-[#1084d0] text-white px-3 py-1.5 flex items-center justify-between font-bold text-xs sm:text-sm">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-[#00ff66]" />
-                <span>ChronoNavigator 4.0 — [Era: {meta.label} ({travelledDate})]</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={onReturnToOrigin}
-                  className="bg-[#c0c0c0] text-black px-2 py-0.5 text-xs font-bold border border-t-white border-l-white border-r-black border-b-black cursor-pointer active:border-t-black"
-                >
-                  X
-                </button>
-              </div>
+      {/* CRT Scanlines & Phosphor Blue Vignette */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-10 opacity-25"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.45) 0px, rgba(0, 0, 0, 0.45) 1px, transparent 1px, transparent 3px)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-10"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.12) 0%, rgba(2, 8, 23, 0.65) 70%, rgba(1, 4, 10, 0.92) 100%)",
+        }}
+      />
+
+      {/* Main Outer Prototype Blueprint Container */}
+      <div className="relative z-20 mx-auto w-full max-w-6xl space-y-3">
+        {/* Top Raw Metadata Strip */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.22em] uppercase text-[#7dd3fc]">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onReturnToOrigin}
+              className="inline-flex items-center gap-1.5 border border-[#38bdf8]/60 bg-[#031024]/85 px-2.5 py-1 text-[#e0f2fe] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>RETURN_TO_INPUT_MATRIX</span>
+            </button>
+            <span>{meta.buildVersion}</span>
+          </div>
+          <span className="hidden md:inline text-[#38bdf8]/80">
+            {meta.designParadigm}
+          </span>
+          <span className="text-[#e0f2fe] font-bold">
+            {`ACTIVE_NODE: ${travelledDate}`}
+          </span>
+        </div>
+
+        {/* Primary Wireframe Blueprint Frame */}
+        <div className="relative border border-[#38bdf8]/75 bg-[#020a18]/90 shadow-[0_0_50px_rgba(14,165,233,0.22),inset_0_0_35px_rgba(14,165,233,0.08)]">
+          <WireframeCorners />
+
+          {/* Frame Header Row ("PROJECT #2026-UA1 /// SUBJECT A-34" style) */}
+          <div className="grid grid-cols-12 border-b border-[#38bdf8]/65 text-[10px] sm:text-xs uppercase tracking-[0.2em]">
+            <div className="col-span-7 sm:col-span-5 px-3 py-2 border-r border-[#38bdf8]/65 flex items-center justify-between text-[#e0f2fe] font-bold">
+              <span>{`ERA // ${meta.label}`}</span>
+              <span className="text-[9px] px-1.5 py-0.5 border border-[#38bdf8]/60 bg-[#38bdf8]/15 text-[#7dd3fc]">
+                UNFINISHED_UI
+              </span>
             </div>
-
-            {/* Classic Browser Menu & URL Bar */}
-            <div className="px-3 py-2 border-b border-[#808080] space-y-2 text-xs">
-              <div className="flex flex-wrap items-center gap-4 text-black/80">
-                <span className="underline">F</span>ile
-                <span className="underline">E</span>dit
-                <span className="underline">V</span>iew
-                <span className="underline">G</span>o
-                <span className="underline">B</span>ookmarks
-                <span className="ml-auto font-bold text-[#000080]">
-                  [WEB 1.0 ARCHIVE MODE: PRE-2023]
+            <div className="col-span-5 sm:col-span-4 px-3 py-2 sm:border-r border-[#38bdf8]/65 flex items-center justify-between text-[#38bdf8]">
+              <span>{"///"}</span>
+              <span className="truncate">{`OP: ${operatorId}`}</span>
+            </div>
+            <div className="hidden sm:flex sm:col-span-3 px-3 py-2 items-center justify-between text-[#7dd3fc]">
+              <span>{`YEAR: ${destinationYear}`}</span>
+              <span className="inline-flex gap-1">
+                <span className="px-1 border border-[#38bdf8] text-[9px]">M</span>
+                <span className="px-1 border border-[#38bdf8] bg-[#38bdf8] text-[#01050c] text-[9px] font-bold">
+                  TX
                 </span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <span className="font-bold">Location:</span>
-                <div className="flex-1 bg-white border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white px-2 py-1 text-[#000080] truncate">
-                  http://www.sathsaradahana.org/timeportal/archive/{travelledDate}/index.html
+              </span>
+            </div>
+          </div>
+
+          {/* Main 2-Column Blueprint Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12">
+            {/* ============================================================= */}
+            {/* LEFT COLUMN: ERA 3D WIREFRAME ROOM, GLOBE, DITHER, WAVEFORM    */}
+            {/* ============================================================= */}
+            <div className="lg:col-span-6 border-b lg:border-b-0 lg:border-r border-[#38bdf8]/65 flex flex-col justify-between">
+              {/* Top Split: Era 3D Wireframe Tunnel + Rotating Meridian Sphere */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 border-b border-[#38bdf8]/65">
+                <div className="sm:col-span-7 relative p-3 border-b sm:border-b-0 sm:border-r border-[#38bdf8]/65 min-h-[225px] flex flex-col justify-between overflow-hidden bg-[#010612]">
+                  <div className="flex items-center justify-between text-[9px] tracking-[0.18em] text-[#7dd3fc]/80 z-10">
+                    <span>{`SCHEMATIC // ${era.toUpperCase()}`}</span>
+                    <span className="text-[#38bdf8]">[RAW_MESH]</span>
+                  </div>
+
+                  <EraWireframeSchematic era={era} travelledDate={travelledDate} />
+
+                  <div className="flex items-center justify-between text-[9px] tracking-[0.15em] text-[#38bdf8]/80 z-10">
+                    <span>TEXTURE_SHADER: UNCOMPILED</span>
+                    <span>{`WINDOW: ${meta.rangeLabel.toUpperCase()}`}</span>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={onReturnToOrigin}
-                  className="bg-[#c0c0c0] px-3 py-1 font-bold border-2 border-t-white border-l-white border-r-black border-b-black hover:bg-[#d4d4d4] cursor-pointer"
-                >
-                  &lt;&lt; Back to 2026 Portal
-                </button>
+
+                {/* Right Sub-Box: Wireframe Sphere & Biometric Dither Block */}
+                <div className="sm:col-span-5 p-3 flex flex-col justify-between bg-[#010816]">
+                  <div>
+                    <div className="text-[11px] font-bold tracking-[0.2em] text-[#e0f2fe]">
+                      {meta.label}
+                    </div>
+                    <div className="text-[10px] tracking-[0.18em] text-[#38bdf8]">
+                      {`#${destinationYear}_NODE`}
+                    </div>
+                    <div className="mt-1.5 space-y-0.5 text-[8px] tracking-[0.15em] text-[#7dd3fc]/75 uppercase">
+                      <p>{`RANGE: ${meta.rangeLabel}`}</p>
+                      <p>RENDER_MODE: WIREFRAME</p>
+                      <p>CAUSALITY: LOCKED</p>
+                    </div>
+                  </div>
+
+                  {/* Rotating Wireframe Sphere SVG */}
+                  <div className="my-2 flex items-center justify-center">
+                    <motion.svg
+                      animate={{ rotate: era === "past" ? -360 : 360 }}
+                      transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+                      viewBox="0 0 120 120"
+                      className="w-28 h-28"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r="52"
+                        fill="none"
+                        stroke="#38bdf8"
+                        strokeWidth="1.2"
+                      />
+                      {[42, 28, 14].map((rx) => (
+                        <ellipse
+                          key={`ev-${rx}`}
+                          cx="60"
+                          cy="60"
+                          rx={rx}
+                          ry="52"
+                          fill="none"
+                          stroke="#38bdf8"
+                          strokeOpacity="0.65"
+                          strokeWidth="0.8"
+                        />
+                      ))}
+                      {[38, 22, 8].map((ry) => (
+                        <ellipse
+                          key={`eh-${ry}`}
+                          cx="60"
+                          cy="60"
+                          rx="52"
+                          ry={ry}
+                          fill="none"
+                          stroke="#7dd3fc"
+                          strokeOpacity="0.55"
+                          strokeWidth="0.8"
+                        />
+                      ))}
+                      <circle cx="60" cy="60" r="4" fill="#e0f2fe" />
+                    </motion.svg>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[8px] tracking-[0.15em] text-[#7dd3fc] border-t border-[#38bdf8]/40 pt-1">
+                    <span>1998</span>
+                    <span>----</span>
+                    <span className="text-[#e0f2fe] font-bold">{destinationYear}</span>
+                    <span>----</span>
+                    <span>2035</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle Strip: 4 Era-Specific Sub-Module Dither Cells (Matches Panel 2 middle row) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 border-b border-[#38bdf8]/65 bg-[#010714]">
+                {meta.ditherCells.map((cell, idx) => (
+                  <div
+                    key={cell.name}
+                    className={`p-2.5 flex flex-col justify-between border-[#38bdf8]/50 ${
+                      idx < 3 ? "sm:border-r" : ""
+                    } ${idx % 2 === 0 ? "border-r sm:border-r" : ""} ${
+                      idx < 2 ? "border-b sm:border-b-0" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-[8px] text-[#7dd3fc]/70">
+                      <span>{cell.code}</span>
+                      <span className="h-1.5 w-1.5 bg-[#38bdf8]" />
+                    </div>
+
+                    <div className="my-2 h-14 border border-dashed border-[#38bdf8]/45 bg-[#020c20] relative flex items-center justify-center overflow-hidden">
+                      <div
+                        className="absolute inset-0 opacity-35"
+                        style={{
+                          backgroundImage: "radial-gradient(#38bdf8 1px, transparent 1px)",
+                          backgroundSize: "4px 4px",
+                        }}
+                      />
+                      <span className="relative z-10 text-[9px] tracking-[0.15em] text-[#bae6fd] bg-[#01050c]/85 px-1.5 py-0.5 border border-[#38bdf8]/50">
+                        {cell.state}
+                      </span>
+                    </div>
+
+                    <div className="border border-[#38bdf8]/60 py-0.5 text-center text-[9px] tracking-[0.18em] text-[#e0f2fe] bg-[#38bdf8]/10">
+                      {cell.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom Strip: Sine-Wave Oscilloscope & Hex Telemetry (Matches Panel 2 & 3 bottom) */}
+              <div className="p-3 bg-[#010612] flex flex-col justify-between">
+                <div className="flex items-center justify-between text-[9px] tracking-[0.2em] text-[#7dd3fc] mb-1.5">
+                  <span>{"// ERA_HARMONIC_OSCILLOSCOPE"}</span>
+                  <span>{`FREQ: ${meta.frequencyMhz}`}</span>
+                </div>
+
+                <div className="relative border border-[#38bdf8]/60 bg-[#01050d] p-2">
+                  <svg viewBox="0 0 400 64" className="w-full h-14 overflow-visible">
+                    {[0, 16, 32, 48, 64].map((y) => (
+                      <line
+                        key={`egy-${y}`}
+                        x1="0"
+                        y1={y}
+                        x2="400"
+                        y2={y}
+                        stroke="#38bdf8"
+                        strokeOpacity="0.22"
+                        strokeWidth="0.7"
+                      />
+                    ))}
+                    {[0, 50, 100, 150, 200, 250, 300, 350, 400].map((x) => (
+                      <line
+                        key={`egx-${x}`}
+                        x1={x}
+                        y1="0"
+                        x2={x}
+                        y2="64"
+                        stroke="#38bdf8"
+                        strokeOpacity="0.22"
+                        strokeWidth="0.7"
+                      />
+                    ))}
+                    <path
+                      d="M 0 32 Q 25 4, 50 32 T 100 32 T 150 32 T 200 32 T 250 32 T 300 32 T 350 32 T 400 32"
+                      fill="none"
+                      stroke="#e0f2fe"
+                      strokeWidth="1.8"
+                      style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
+                    />
+                    <path
+                      d="M 0 32 Q 25 60, 50 32 T 100 32 T 150 32 T 200 32 T 250 32 T 300 32 T 350 32 T 400 32"
+                      fill="none"
+                      stroke="#38bdf8"
+                      strokeOpacity="0.6"
+                      strokeWidth="1"
+                      strokeDasharray="3 2"
+                    />
+                  </svg>
+                </div>
+
+                <div className="mt-2 grid grid-cols-5 sm:grid-cols-10 gap-1 text-[8px] sm:text-[9px] tracking-[0.14em] text-[#38bdf8]/85 tabular-nums">
+                  {[
+                    destinationYear,
+                    "00084",
+                    "76 63",
+                    "077 88",
+                    "24450",
+                    "43 45",
+                    "331 09",
+                    "2026U",
+                    "A1 07",
+                    "18 00",
+                  ].map((hex, i) => (
+                    <span key={i} className="truncate">
+                      {hex}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Inner Document Viewport */}
-            <div className="m-3 bg-[#00140a] text-[#00ff66] border-2 border-t-[#404040] border-l-[#404040] border-r-white border-b-white p-5 sm:p-8 space-y-6">
-              {/* Retro Banner */}
-              <div className="border-2 border-dashed border-[#00ff66] p-3 text-center bg-[#002612]">
-                <p className="text-xs uppercase tracking-widest text-[#ffff00]">
-                  *** TEMPORAL DISPLACEMENT CONFIRMED • ERA: {meta.rangeLabel.toUpperCase()} ***
-                </p>
-                <h1 className="text-2xl sm:text-4xl font-bold mt-2 text-white">
-                  {meta.label}: {formattedDate}
-                </h1>
-                <p className="text-xs sm:text-sm text-[#00ff66]/80 mt-1">
-                  {meta.designParadigm}
-                </p>
-              </div>
+            {/* ============================================================= */}
+            {/* RIGHT COLUMN: SUBJECT / ERA DOSSIER & TELEMETRY (PANEL 1 & 3) */}
+            {/* ============================================================= */}
+            <div className="lg:col-span-6 flex flex-col justify-between bg-[#020917]">
+              <div>
+                {/* Dossier Section Header */}
+                <div className="px-4 py-2.5 border-b border-[#38bdf8]/65 bg-[#38bdf8]/10 flex items-center justify-between">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-[#e0f2fe]">
+                    {`// TEMPORAL_DOSSIER: ${meta.label}`}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-[0.18em] text-[#7dd3fc]">
+                    DISPLACEMENT: CONFIRMED
+                  </span>
+                </div>
 
-              {/* 2-Column Web 1.0 Table Layout */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Left Sidebar Table Cell */}
-                <div className="border-2 border-[#00ff66]/60 p-4 bg-black/50 space-y-4">
-                  <div className="text-xs font-bold uppercase bg-[#00ff66] text-black px-2 py-1">
-                    :: SYSTEM STATUS ::
+                {/* Tabular Wireframe Rows (Styled like Reference Panel 1 & Panel 3) */}
+                <div className="divide-y divide-[#38bdf8]/55 text-[10px] sm:text-xs uppercase tracking-[0.18em]">
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// OPERATOR_ID_"}</span>
+                    <span className="col-span-7 text-right font-bold text-[#e0f2fe] truncate">
+                      {operatorId}
+                    </span>
                   </div>
-                  <div className="text-xs space-y-2">
-                    <p>&gt; DATE: {travelledDate}</p>
-                    <p>&gt; ERA: BEFORE 2023</p>
-                    <p>&gt; DISPLAY: VGA 640x480</p>
-                    <p>&gt; AUDIO: MIDI SYNTH</p>
+
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// INCEPT_DATE_"}</span>
+                    <span className="col-span-7 text-right font-bold text-[#e0f2fe]">
+                      { `${travelledDate} (${formattedDate})` }
+                    </span>
                   </div>
-                  <div className="border border-[#00ff66]/40 p-2 text-center">
-                    <span className="text-[10px] block text-white/70">VISITOR COUNTER</span>
-                    <span className="font-bold text-lg tracking-widest text-[#ffff00]">
-                      [001998]
+
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// ERA_WINDOW_"}</span>
+                    <span className="col-span-7 text-right text-[#38bdf8]">
+                      {meta.rangeLabel}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// DIRECTION_MODEL_"}</span>
+                    <span className="col-span-7 text-right text-[#bae6fd] truncate">
+                      {temporalModel}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// STABILITY_"}</span>
+                    <span className="col-span-7 text-right text-[#38bdf8] tracking-[0.22em]">
+                      {meta.stabilityRating}{" "}
+                      <span className="text-[9px] text-[#e0f2fe]">UNSTABLE</span>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-12 items-center px-4 py-2.5">
+                    <span className="col-span-5 text-[#7dd3fc]">{"// THREAT_LEVEL_"}</span>
+                    <span className="col-span-7 text-right text-[#e0f2fe] tracking-[0.25em]">
+                      {meta.threatRating}
                     </span>
                   </div>
                 </div>
 
-                {/* Main Content Cell */}
-                <div className="md:col-span-2 border-2 border-[#00ff66]/60 p-4 bg-black/50 space-y-4">
-                  <div className="text-xs font-bold uppercase bg-[#00ff66] text-black px-2 py-1">
-                    :: {meta.artifactTitle} ::
+                {/* Era Narrative & Unfinished Blueprint Specification Block */}
+                <div className="p-4 border-t border-b border-[#38bdf8]/65 bg-[#010612] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] uppercase tracking-[0.2em] px-2 py-0.5 border border-[#38bdf8]/60 bg-[#38bdf8]/15 text-[#7dd3fc]">
+                      {meta.designParadigm}
+                    </span>
+                    <span className="text-[9px] tracking-[0.18em] text-[#38bdf8]">
+                      [RAW_BUFFER]
+                    </span>
                   </div>
-                  <p className="text-sm leading-relaxed text-[#b8ffd4]">
+
+                  <h1 className="text-lg sm:text-2xl font-black uppercase tracking-[0.2em] text-[#e0f2fe] drop-shadow-[0_0_12px_rgba(56,189,248,0.45)]">
+                    {meta.tagline}
+                  </h1>
+
+                  <p className="text-xs leading-relaxed text-[#bae6fd]/85 tracking-[0.06em]">
                     {meta.description}
                   </p>
-                  <blockquote className="border-l-4 border-[#ffff00] pl-3 py-1 text-xs italic text-[#ffff00]">
-                    &ldquo;{meta.artifactQuote}&rdquo;
-                  </blockquote>
-                  <div className="space-y-1 pt-2">
-                    <p className="text-xs font-bold text-white uppercase">
-                      Era Web Design Characteristics:
+
+                  {/* Era Wireframe Spec Rows */}
+                  <div className="grid grid-cols-1 gap-1.5 pt-1">
+                    {meta.features.map((feat, idx) => (
+                      <div
+                        key={feat}
+                        className="flex items-center justify-between border border-[#38bdf8]/45 bg-[#020a18] px-3 py-1.5 text-[10px] tracking-[0.15em] text-[#e0f2fe]"
+                      >
+                        <span>{`■ SPEC_0${idx + 1}: ${feat}`}</span>
+                        <span className="text-[9px] text-[#38bdf8]">[ACTIVE]</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Intercepted Era Artifact Box */}
+                  <div className="border border-dashed border-[#7dd3fc]/70 bg-[#020c20]/90 p-3 space-y-1">
+                    <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-[#7dd3fc]">
+                      <span>{`// ${meta.artifactTitle}`}</span>
+                      <span>DECRYPTED</span>
+                    </div>
+                    <p className="text-xs italic text-[#e0f2fe] leading-relaxed">
+                      &ldquo;{meta.artifactQuote}&rdquo;
                     </p>
-                    <ul className="text-xs space-y-1 list-disc list-inside text-[#00ff66]">
-                      {meta.features.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
                   </div>
                 </div>
               </div>
 
-              {/* Jump to Another Date Bar */}
-              <EraDateSwitcher
-                quickDate={quickDate}
-                todayStr={todayStr}
-                onChangeDate={setQuickDate}
-                onTravel={() => onSelectNewDate(quickDate)}
-                onReturn={onReturnToOrigin}
-                variant="past"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* 2. NEAR PAST ERA (2023 – PRESENT) — NEO-BRUTALIST BENTO & ANALOG ARCHIVE*/
-  /* ----------------------------------------------------------------------- */
-  if (era === "near-past") {
-    return (
-      <div className="min-h-screen w-full bg-[#161311] text-[#fef3c7] p-4 sm:p-8">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Top Editorial Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#211c18] border-2 border-amber-400 p-4 shadow-[6px_6px_0px_#f59e0b]">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold uppercase tracking-wider text-black">
-                <History className="w-3.5 h-3.5" />
-                {meta.label}
-              </span>
-              <span className="font-mono text-xs sm:text-sm text-amber-200/80">
-                {meta.rangeLabel} • {formattedDate}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={onReturnToOrigin}
-              className="rounded-xl bg-amber-400 px-4 py-2 text-xs font-bold uppercase tracking-wider text-black border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-y-0.5 transition-transform cursor-pointer"
-            >
-              Return to Portal
-            </button>
-          </div>
-
-          {/* Bento Grid Layout (2023-2025 Web Design Trend) */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* Hero Bento Tile */}
-            <div className="md:col-span-8 rounded-3xl bg-[#241e1a] border-2 border-amber-400/80 p-6 sm:p-8 shadow-[8px_8px_0px_#d97706] flex flex-col justify-between">
-              <div>
-                <span className="inline-block font-mono text-xs uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/40 px-3 py-1 rounded-md">
-                  {meta.designParadigm}
-                </span>
-                <h1 className="font-cinzel text-3xl sm:text-5xl font-bold text-white mt-4 leading-tight">
-                  {meta.tagline}
-                </h1>
-                <p className="mt-4 text-sm sm:text-base text-amber-100/80 leading-relaxed">
-                  {meta.description}
-                </p>
-              </div>
-              <div className="mt-6 pt-4 border-t border-amber-400/20 flex flex-wrap gap-2">
-                {meta.features.map((f) => (
-                  <span
-                    key={f}
-                    className="rounded-lg bg-black/40 border border-amber-400/40 px-3 py-1.5 text-xs font-mono text-amber-200"
+              {/* Bottom Oversized Era Banner (Matches Panel 1 "TRENDS" + Wireframe Wedges) */}
+              <div className="p-4 bg-[#010612] space-y-2.5">
+                <div className="border-2 border-[#7dd3fc] bg-[#021024] px-4 py-3 flex items-center justify-between shadow-[0_0_25px_rgba(56,189,248,0.25)]">
+                  <span className="text-[10px] tracking-[0.22em] text-[#7dd3fc]">
+                    {`NODE_${destinationYear}`}
+                  </span>
+                  <span className="text-base sm:text-xl font-black tracking-[0.26em] text-[#e0f2fe] uppercase">
+                    {meta.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onReturnToOrigin}
+                    className="border border-[#38bdf8] bg-[#38bdf8] text-[#01050c] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] hover:bg-[#e0f2fe] transition-colors cursor-pointer"
                   >
-                    ✦ {f}
-                  </span>
-                ))}
+                    RECONFIGURE
+                  </button>
+                </div>
+
+                {/* Decorative Wireframe Wedge Bar */}
+                <div className="grid grid-cols-4 gap-2 pt-0.5" aria-hidden="true">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div
+                      key={idx}
+                      className="h-3 border border-[#38bdf8]/50 bg-[linear-gradient(90deg,rgba(56,189,248,0.35)_0%,rgba(56,189,248,0.05)_100%)] flex items-center justify-end pr-1"
+                    >
+                      <span className="h-1.5 w-1 bg-[#7dd3fc]" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-
-            {/* Analog Dial Bento Tile */}
-            <div className="md:col-span-4 rounded-3xl bg-gradient-to-br from-amber-500 to-rose-500 text-black border-2 border-black p-6 shadow-[8px_8px_0px_#f59e0b] flex flex-col items-center justify-center text-center">
-              <Radio className="w-12 h-12 mb-3 stroke-[2.2]" />
-              <span className="font-mono text-xs font-bold uppercase tracking-widest">
-                ARCHIVAL TIMESTAMP
-              </span>
-              <p className="font-cinzel text-3xl font-black mt-2">{travelledDate}</p>
-              <p className="mt-3 text-xs font-medium bg-black/15 px-3 py-1.5 rounded-full">
-                2023 – Present Memory Window
-              </p>
-            </div>
-
-            {/* Quote Bento Tile */}
-            <div className="md:col-span-12 rounded-3xl bg-[#1e1916] border-2 border-rose-400/70 p-6 shadow-[6px_6px_0px_#fb7185]">
-              <p className="font-mono text-xs uppercase tracking-widest text-rose-300">
-                {meta.artifactTitle}
-              </p>
-              <p className="mt-2 font-serif text-lg sm:text-xl italic text-white">
-                &ldquo;{meta.artifactQuote}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          <EraDateSwitcher
-            quickDate={quickDate}
-            todayStr={todayStr}
-            onChangeDate={setQuickDate}
-            onTravel={() => onSelectNewDate(quickDate)}
-            onReturn={onReturnToOrigin}
-            variant="near-past"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* 3. PRESENT ERA (TODAY) — SATHSARA DAHANA 2026 COSMIC VORTEX THEME       */
-  /* ----------------------------------------------------------------------- */
-  if (era === "present") {
-    return (
-      <div className="relative min-h-screen w-full bg-[#02040d]/90 text-white p-4 sm:p-8">
-        <VortexBackground />
-        <div className="relative z-10 max-w-5xl mx-auto space-y-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-full border border-white/15 bg-white/5 px-6 py-3.5 backdrop-blur-2xl shadow-[0_0_40px_rgba(59,130,246,0.15)]">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="font-cinzel text-xs uppercase tracking-[0.3em] text-blue-300">
-                {meta.label} • {formattedDate}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={onReturnToOrigin}
-              className="rounded-full border border-blue-400/40 bg-blue-500/15 px-4 py-1.5 font-cinzel text-[11px] uppercase tracking-[0.25em] text-blue-100 hover:bg-blue-500/25 transition-colors cursor-pointer"
-            >
-              Recalibrate Portal
-            </button>
-          </div>
-
-          <div className="rounded-3xl border border-white/15 bg-white/[0.04] p-8 sm:p-12 backdrop-blur-2xl text-center shadow-[0_0_70px_rgba(59,130,246,0.2)]">
-            <span className="font-cinzel text-xs uppercase tracking-[0.4em] text-[#a78bfa] text-glow-violet">
-              {meta.designParadigm}
-            </span>
-            <h1 className="mt-3 font-cinzel text-4xl sm:text-6xl font-bold uppercase text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-400">
-              {meta.tagline}
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-sm sm:text-base text-blue-100/75 leading-relaxed">
-              {meta.description}
-            </p>
-
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-              {meta.features.map((f) => (
-                <div
-                  key={f}
-                  className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-blue-100/85 font-cinzel tracking-wider"
-                >
-                  <Sparkles className="w-4 h-4 text-amber-400 mb-2" />
-                  {f}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5">
-              <p className="font-cinzel text-xs uppercase tracking-[0.3em] text-amber-300">
-                {meta.artifactTitle}
-              </p>
-              <p className="mt-2 font-serif italic text-base text-white/90">
-                &ldquo;{meta.artifactQuote}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          <EraDateSwitcher
-            quickDate={quickDate}
-            todayStr={todayStr}
-            onChangeDate={setQuickDate}
-            onTravel={() => onSelectNewDate(quickDate)}
-            onReturn={onReturnToOrigin}
-            variant="present"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* 4. NEAR FUTURE ERA (PRESENT – END OF 2028) — SPATIAL COMPUTING GLASS    */
-  /* ----------------------------------------------------------------------- */
-  if (era === "near-future") {
-    return (
-      <div className="relative min-h-screen w-full bg-[#06101e] text-white p-4 sm:p-8 overflow-hidden">
-        {/* Aurora Spatial Lightfield Mesh */}
-        <div className="pointer-events-none fixed inset-0 z-0">
-          <div className="absolute -top-20 left-1/4 w-[650px] h-[650px] rounded-full bg-emerald-400/20 blur-[150px]" />
-          <div className="absolute top-1/3 right-10 w-[550px] h-[550px] rounded-full bg-sky-400/20 blur-[150px]" />
-          <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] rounded-full bg-indigo-500/20 blur-[150px]" />
-        </div>
-
-        <div className="relative z-10 max-w-5xl mx-auto space-y-8">
-          {/* Floating Spatial Pill Top Bar */}
-          <div className="mx-auto flex flex-wrap items-center justify-between gap-4 rounded-full bg-white/[0.12] border border-white/30 px-6 py-3 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.4)]">
-            <div className="flex items-center gap-3">
-              <Layers className="w-4 h-4 text-emerald-300" />
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200">
-                {meta.label} • {formattedDate}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={onReturnToOrigin}
-              className="rounded-full bg-white/20 hover:bg-white/30 border border-white/30 px-4 py-1.5 text-xs font-medium tracking-wider text-white transition-all cursor-pointer"
-            >
-              Exit Spatial View
-            </button>
-          </div>
-
-          {/* Spatial Computing Glass Window */}
-          <div className="rounded-[36px] bg-white/[0.09] border border-white/30 p-8 sm:p-12 backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_2px_rgba(255,255,255,0.45)] space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-3 max-w-2xl">
-                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 border border-emerald-300/40 px-3.5 py-1 text-xs font-medium text-emerald-200">
-                  <Globe className="w-3.5 h-3.5" />
-                  {meta.designParadigm}
-                </span>
-                <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white">
-                  {meta.tagline}
-                </h1>
-                <p className="text-sm sm:text-base text-white/80 leading-relaxed">
-                  {meta.description}
-                </p>
-              </div>
-
-              {/* Floating Spatial Orb */}
-              <motion.div
-                animate={{ y: [-8, 8, -8] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                className="mx-auto md:mx-0 w-36 h-36 rounded-full bg-gradient-to-tr from-emerald-400/40 via-sky-300/40 to-indigo-400/50 border border-white/50 backdrop-blur-2xl shadow-[0_0_60px_rgba(52,211,153,0.45),inset_0_0_30px_rgba(255,255,255,0.5)] flex flex-col items-center justify-center text-center p-4 shrink-0"
-              >
-                <span className="text-[10px] uppercase tracking-widest text-white/80">
-                  SPATIAL OS
-                </span>
-                <span className="text-lg font-bold text-white mt-1">{travelledDate}</span>
-                <span className="text-[10px] text-emerald-200 mt-0.5">2027–2028</span>
-              </motion.div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {meta.features.map((f) => (
-                <div
-                  key={f}
-                  className="rounded-3xl bg-white/[0.08] border border-white/25 p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] text-xs sm:text-sm text-white/90"
-                >
-                  {f}
-                </div>
-              ))}
-            </div>
-
-            <div className="rounded-3xl bg-gradient-to-r from-emerald-500/15 via-sky-500/15 to-indigo-500/15 border border-white/25 p-6">
-              <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">
-                {meta.artifactTitle}
-              </p>
-              <p className="mt-2 text-base sm:text-lg font-light text-white">
-                &ldquo;{meta.artifactQuote}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          <EraDateSwitcher
-            quickDate={quickDate}
-            todayStr={todayStr}
-            onChangeDate={setQuickDate}
-            onTravel={() => onSelectNewDate(quickDate)}
-            onReturn={onReturnToOrigin}
-            variant="near-future"
-          />
-        </div>
-      </div>
-    );
-  }
-
-  /* ----------------------------------------------------------------------- */
-  /* 5. FAR FUTURE ERA (AFTER 2028) — QUANTUM CYBER-HOLOGRAPHIC HUD          */
-  /* ----------------------------------------------------------------------- */
-  return (
-    <div className="relative min-h-screen w-full bg-[#02010a] text-[#00f5d4] font-mono p-4 sm:p-8 overflow-hidden">
-      {/* Quantum Laser Grid Background */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-20"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(0,245,212,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,42,133,0.2) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }}
-      />
-
-      <div className="relative z-10 max-w-6xl mx-auto space-y-6">
-        {/* Cyber HUD Header */}
-        <div className="border border-[#00f5d4]/60 bg-[#050314]/90 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-[0_0_30px_rgba(0,245,212,0.2)]">
-          <div className="flex items-center gap-3">
-            <Cpu className="w-5 h-5 text-[#ff2a85] animate-pulse" />
-            <span className="text-xs sm:text-sm font-bold uppercase tracking-[0.3em] text-white">
-              {`${meta.label} // NODE: ${travelledDate}`}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={onReturnToOrigin}
-            className="border border-[#ff2a85] bg-[#ff2a85]/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-[#ff2a85] hover:bg-[#ff2a85]/30 transition-colors cursor-pointer"
-          >
-            [DISENGAGE QUANTUM LINK]
-          </button>
-        </div>
-
-        {/* Main Holographic HUD Frame */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 border border-[#00f5d4]/50 bg-[#060318]/90 p-6 sm:p-8 shadow-[0_0_50px_rgba(0,245,212,0.15)] space-y-6 relative">
-            <div className="inline-flex items-center gap-2 border border-[#ff2a85]/60 bg-[#ff2a85]/10 px-3 py-1 text-[11px] uppercase tracking-[0.25em] text-[#ff2a85]">
-              <Zap className="w-3.5 h-3.5" />
-              {meta.designParadigm}
-            </div>
-
-            <h1 className="font-cinzel text-3xl sm:text-5xl font-bold uppercase tracking-wider text-white drop-shadow-[0_0_20px_rgba(0,245,212,0.5)]">
-              {meta.tagline}
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#a8fff2]/80 leading-relaxed">
-              {meta.description}
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              {meta.features.map((f, i) => (
-                <div
-                  key={f}
-                  className="border border-[#00f5d4]/40 bg-black/60 p-3.5 text-xs text-white"
-                >
-                  <span className="text-[10px] text-[#ff2a85] block mb-1">
-                    SYS_SPEC_0{i + 1}
-                  </span>
-                  {f}
-                </div>
-              ))}
-            </div>
-
-            <div className="border-l-4 border-[#00f5d4] bg-[#00f5d4]/10 p-4">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-[#00f5d4]">
-                {meta.artifactTitle}
-              </p>
-              <p className="mt-1.5 text-sm text-white">
-                &ldquo;{meta.artifactQuote}&rdquo;
-              </p>
-            </div>
-          </div>
-
-          {/* Quantum Singularity Core Telemetry */}
-          <div className="lg:col-span-4 border border-[#ff2a85]/50 bg-[#060318]/90 p-6 flex flex-col items-center justify-center text-center relative">
-            <div className="relative w-44 h-44 flex items-center justify-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 rounded-full border-2 border-dashed border-[#00f5d4]"
-              />
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-4 rounded-full border-2 border-[#ff2a85]"
-              />
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#00f5d4]/30 to-[#ff2a85]/40 border border-white/50 flex flex-col items-center justify-center shadow-[0_0_40px_#00f5d4]">
-                <span className="text-[9px] text-white/70">ERA &gt; 2028</span>
-                <span className="text-sm font-bold text-white mt-0.5">
-                  {travelledDate}
-                </span>
-              </div>
-            </div>
-            <p className="mt-4 text-xs uppercase tracking-[0.25em] text-[#00f5d4]">
-              QUANTUM TELEMETRY: LOCKED
-            </p>
-            <p className="mt-1 text-[11px] text-white/60">{formattedDate}</p>
           </div>
         </div>
 
+        {/* Shared Blue Matrix Wireframe Coordinate Switcher */}
         <EraDateSwitcher
           quickDate={quickDate}
           todayStr={todayStr}
           onChangeDate={setQuickDate}
           onTravel={() => onSelectNewDate(quickDate)}
           onReturn={onReturnToOrigin}
-          variant="future"
         />
+
+        {/* Bottom Raw Prototype Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
+          <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
+          <span>WARNING: UI_SHELL_INCOMPLETE [WIREFRAME_DEBUG_ENABLED]</span>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ========================================================================= */
-/* SHARED DESTINATION BAR TO TEST OTHER DATES / ERAS INSTANTLY               */
+/* SHARED BLUE MATRIX WIREFRAME COORDINATE SWITCHER BAR                      */
 /* ========================================================================= */
 
 function EraDateSwitcher({
@@ -1360,49 +1973,41 @@ function EraDateSwitcher({
   onChangeDate,
   onTravel,
   onReturn,
-  variant,
 }: {
   quickDate: string;
   todayStr: string;
   onChangeDate: (d: string) => void;
   onTravel: () => void;
   onReturn: () => void;
-  variant: TimeEra;
 }) {
   const presets = [
-    { label: "Past (1999)", date: "1999-12-31" },
-    { label: "Near Past (2024)", date: "2024-06-15" },
-    { label: "Present (Today)", date: todayStr },
-    { label: "Near Future (2027)", date: "2027-08-20" },
-    { label: "Future (2035)", date: "2035-01-01" },
+    { label: "PAST [1999]", date: "1999-12-31" },
+    { label: "NEAR_PAST [2024]", date: "2024-06-15" },
+    { label: "PRESENT [TODAY]", date: todayStr },
+    { label: "NEAR_FUT [2027]", date: "2027-08-20" },
+    { label: "FAR_FUT [2035]", date: "2035-01-01" },
   ];
 
-  const containerStyle =
-    variant === "past"
-      ? "border-2 border-[#00ff66] bg-black p-4 text-[#00ff66]"
-      : variant === "near-past"
-      ? "rounded-2xl border-2 border-amber-400 bg-[#211c18] p-5 text-amber-100 shadow-[6px_6px_0px_#f59e0b]"
-      : variant === "present"
-      ? "rounded-3xl border border-white/15 bg-white/5 p-5 text-white backdrop-blur-2xl"
-      : variant === "near-future"
-      ? "rounded-3xl border border-white/30 bg-white/10 p-5 text-white backdrop-blur-3xl"
-      : "border border-[#00f5d4]/60 bg-[#050314]/90 p-5 text-[#00f5d4]";
-
   return (
-    <div className={containerStyle}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-            <Calendar className="w-4 h-4" />
-            <span>Jump to Another Temporal Coordinate</span>
+    <div className="relative border border-[#38bdf8]/75 bg-[#020a18]/90 p-4 text-[#bae6fd] shadow-[0_0_30px_rgba(14,165,233,0.18)]">
+      <WireframeCorners />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] text-[#e0f2fe]">
+            <Calendar className="w-3.5 h-3.5 text-[#38bdf8]" />
+            <span>{"// JUMP_TO_ANOTHER_TEMPORAL_COORDINATE [WIREFRAME_BUS]"}</span>
           </div>
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap gap-1.5">
             {presets.map((p) => (
               <button
                 key={p.label}
                 type="button"
                 onClick={() => onChangeDate(p.date)}
-                className="px-2.5 py-1 text-[10px] uppercase tracking-wider border border-current/30 hover:border-current rounded cursor-pointer transition-colors"
+                className={`px-2.5 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.16em] border transition-colors cursor-pointer ${
+                  quickDate === p.date
+                    ? "border-[#e0f2fe] bg-[#38bdf8] text-[#01050c] font-bold"
+                    : "border-[#38bdf8]/45 bg-[#010612] text-[#7dd3fc] hover:border-[#38bdf8] hover:text-[#e0f2fe]"
+                }`}
               >
                 {p.label}
               </button>
@@ -1415,22 +2020,22 @@ function EraDateSwitcher({
             type="date"
             value={quickDate}
             onChange={(e) => onChangeDate(e.target.value)}
-            className="rounded-lg border border-current/40 bg-black/50 px-3 py-2 text-xs text-white [color-scheme:dark]"
+            className="border border-[#38bdf8]/65 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.16em] text-[#e0f2fe] [color-scheme:dark] focus:border-[#e0f2fe] focus:outline-none"
           />
           <button
             type="button"
             onClick={onTravel}
-            className="rounded-lg bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer"
+            className="border border-[#7dd3fc] bg-[#38bdf8] text-[#01050c] hover:bg-[#e0f2fe] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] transition-colors cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.4)]"
           >
-            Time Warp
+            TIME JUMP &gt;&gt;&gt;
           </button>
           <button
             type="button"
             onClick={onReturn}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-current/40 px-3 py-2 text-xs uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 border border-[#38bdf8]/60 bg-[#010612] px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-[#7dd3fc] hover:border-[#e0f2fe] hover:text-[#e0f2fe] transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
+            <span>INPUT_FORM</span>
           </button>
         </div>
       </div>
