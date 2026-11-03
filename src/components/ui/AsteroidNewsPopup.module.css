@@ -485,24 +485,90 @@
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 640px) {
+  .dialog {
+    width: min(340px, calc(100vw - 40px));
+    max-height: calc(100dvh - 48px);
+    border-radius: 18px;
+  }
+  .close {
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+  }
+  .clock {
+    top: -32px;
+    right: -76px;
+    width: 210px;
+    height: 210px;
+  }
   .content {
-    padding: 24px 20px 14px;
+    padding: 18px 16px 12px;
   }
   .eyebrow {
-    font-size: 8px;
+    padding: 5px 10px;
+    gap: 6px;
+    font-size: 7.5px;
     letter-spacing: 0.16em;
   }
+  .kicker {
+    margin: 12px 0 5px;
+    font-size: 8.5px;
+    letter-spacing: 0.15em;
+  }
+  .title {
+    font-size: 24px;
+  }
   .metrics {
-    gap: 6px 8px;
+    gap: 5px 6px;
+    margin: 10px 0;
+  }
+  .metrics li {
+    padding: 3px 8px;
+    font-size: 9.5px;
   }
   .newsBody {
-    padding: 12px 13px;
-    font-size: 12px;
+    margin-top: 10px;
+    padding: 10px 11px;
+    border-radius: 11px;
+    font-size: 11px;
+    line-height: 1.52;
+  }
+  .anomalyBox {
+    margin-top: 9px;
+    border-radius: 9px;
+    font-size: 10.5px;
+    line-height: 1.5;
+  }
+  .anomalyTopBar {
+    padding: 6px 10px;
+  }
+  .anomalyHeader {
+    font-size: 8.5px;
+    letter-spacing: 0.11em;
+    gap: 5px;
+  }
+  .bulletinBadge {
+    padding: 1.5px 5px;
+    font-size: 7.5px;
+  }
+  .bulletinLead {
+    padding: 8px 10px 9px;
+  }
+  .dateline {
+    font-size: 8.5px;
+  }
+  .cta {
+    min-height: 38px;
+    margin-top: 12px;
+    border-radius: 10px;
+    font-size: 11px;
   }
   .ticketFooter {
-    justify-content: center;
-    padding: 14px 20px;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-size: 7px;
   }
 }
 
