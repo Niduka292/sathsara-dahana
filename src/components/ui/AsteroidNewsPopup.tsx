@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AlertTriangle, Calendar, Orbit, Radio, X } from "lucide-react";
+import { Calendar, Newspaper, Orbit, Radio, X } from "lucide-react";
 import styles from "./AsteroidNewsPopup.module.css";
 
 // Survives client-side navigation, but resets on a full page refresh.
@@ -118,12 +118,15 @@ export default function AsteroidNewsPopup() {
             </p>
 
             <div className={styles.anomalyBox}>
-              <div className={styles.anomalyHeader}>
-                <AlertTriangle size={13} aria-hidden="true" />
-                <span>Temporal Distortion Detected</span>
+              <div className={styles.anomalyTopBar}>
+                <div className={styles.anomalyHeader}>
+                  <Newspaper size={13} aria-hidden="true" />
+                  <span>Temporal Distortion Detected</span>
+                </div>
+                <span className={styles.bulletinBadge}>Press Wire</span>
               </div>
-              <p>
-                The cosmic encounter has warped local spacetime, triggering localized timeline fractures and opening access points that make temporal navigation possible.
+              <p className={styles.bulletinLead}>
+                <span className={styles.dateline}>OBSERVATORY BRIEF —</span> The cosmic encounter has warped local spacetime, triggering localized timeline fractures and opening access points that make temporal navigation possible.
               </p>
             </div>
           </div>
