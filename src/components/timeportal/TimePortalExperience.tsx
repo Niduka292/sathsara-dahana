@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Calendar, RotateCcw } from "lucide-react";
+import { ArrowLeft, Calendar, Lock, RotateCcw } from "lucide-react";
 
 export type TimeEra = "past" | "near-past" | "present" | "near-future" | "future";
 
@@ -297,21 +297,24 @@ function WireframeCorners() {
   );
 }
 
+// Toggle to hide/lock the interactive Time Portal interface while it is still in the making
+const IS_PORTAL_LOCKED = true;
+
 export default function TimePortalExperience() {
   const [todayStr, setTodayStr] = useState<string>("2026-11-01");
 
-  // 6 Interface Inputs from Reference Specification:
+  // 6 Interface Inputs from Reference Specification (cleared of default/placeholder values):
   // 1. Username - Temporal Identity / User ID
   // 2. Password - Access Key
   // 3. Time Jump Year - Destination Year
   // 4. Time Jump Month - Destination Month
   // 5. Time Jump Date - Destination Day
   // 6. Model selection - Temporal Direction
-  const [username, setUsername] = useState<string>("SUBJECT_A-34");
-  const [password, setPassword] = useState<string>("UA1-221500");
-  const [jumpYear, setJumpYear] = useState<string>("2026");
-  const [jumpMonth, setJumpMonth] = useState<string>("10");
-  const [jumpDay, setJumpDay] = useState<string>("23");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [jumpYear, setJumpYear] = useState<string>("");
+  const [jumpMonth, setJumpMonth] = useState<string>("");
+  const [jumpDay, setJumpDay] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>(TEMPORAL_MODELS[0].id);
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -330,9 +333,6 @@ export default function TimePortalExperience() {
     const now = new Date();
     const today = getTodayDateString(now);
     setTodayStr(today);
-    setJumpYear(String(now.getFullYear()));
-    setJumpMonth(String(now.getMonth() + 1).padStart(2, "0"));
-    setJumpDay(String(now.getDate()).padStart(2, "0"));
     setWarpDisplayDate(today);
     setWarpDisplayYear(today.slice(0, 4));
   }, []);
@@ -559,9 +559,161 @@ export default function TimePortalExperience() {
       </AnimatePresence>
 
       {/* ===================================================================== */}
+      {/* LOCKED / COMING SOON MATRIX VIEW (PUBLIC GATEWAY IN THE MAKING)       */}
+      {/* ===================================================================== */}
+      {IS_PORTAL_LOCKED && (
+        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-4 sm:px-6 flex flex-col justify-between overflow-hidden">
+          {/* Blue Matrix Rain Background */}
+          <BlueMatrixRain />
+
+          {/* CRT Scanlines & Phosphor Blue Vignette */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-10 opacity-25"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.45) 0px, rgba(0, 0, 0, 0.45) 1px, transparent 1px, transparent 3px)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-10"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 48%, rgba(14, 165, 233, 0.14) 0%, rgba(2, 8, 23, 0.72) 68%, rgba(1, 4, 10, 0.95) 100%)",
+            }}
+          />
+
+          {/* Subtle Background Blueprint Grid */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed inset-0 z-10 opacity-15"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(56, 189, 248, 0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.18) 1px, transparent 1px)",
+              backgroundSize: "56px 56px",
+            }}
+          />
+
+          {/* Top Matrix Status Bar */}
+          <div className="relative z-20 mx-auto w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#7dd3fc]">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 border border-[#38bdf8]/50 bg-[#031024]/80 px-2.5 py-1 text-[#bae6fd] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>EXIT_NODE</span>
+              </Link>
+              <span>{"SYS_BUILD // 0.42b-LOCKED"}</span>
+            </div>
+            <span className="hidden md:inline text-[#38bdf8]/70">
+              {"MATRIX_BLUE_WIREFRAME // TEMPORAL_GATEWAY"}
+            </span>
+            <span className="text-[#38bdf8]">
+              STATUS: IN_DEVELOPMENT
+            </span>
+          </div>
+
+          {/* Center Coming Soon Matrix Wireframe Terminal */}
+          <div className="relative z-20 my-auto mx-auto w-full max-w-[300px] sm:max-w-xl py-4 sm:py-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="relative border border-[#38bdf8]/80 bg-[#020a18]/80 sm:bg-[#020a18]/92 shadow-[0_0_50px_rgba(14,165,233,0.25),inset_0_0_30px_rgba(14,165,233,0.1)] backdrop-blur-sm sm:backdrop-blur-md"
+            >
+              <WireframeCorners />
+
+              {/* Terminal Header Strip */}
+              <div className="flex items-center justify-between border-b border-[#38bdf8]/65 bg-[#38bdf8]/10 px-3 py-1.5 sm:px-4 sm:py-2.5 text-[8px] sm:text-xs uppercase tracking-[0.18em] sm:tracking-[0.22em]">
+                <span className="font-bold text-[#e0f2fe] truncate">
+                  {"PROJECT #2026-UA1 /// TIME_PORTAL"}
+                </span>
+                <span className="border border-[#38bdf8]/60 bg-[#38bdf8]/15 px-1.5 py-0.5 text-[7px] sm:text-[9px] text-[#7dd3fc] shrink-0 ml-2">
+                  LOCKED
+                </span>
+              </div>
+
+              {/* Terminal Body */}
+              <div className="px-4 py-5 sm:px-10 sm:py-12 text-center flex flex-col items-center">
+                {/* Lock & Wireframe Ring */}
+                <div className="relative mb-3 sm:mb-6 flex h-12 w-12 sm:h-20 sm:w-20 items-center justify-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 border border-dashed border-[#38bdf8]/60 rounded-full"
+                  />
+                  <div className="absolute inset-1.5 sm:inset-2 border border-[#38bdf8]/40 bg-[#031229]/90 shadow-[0_0_20px_rgba(56,189,248,0.35)] flex items-center justify-center">
+                    <Lock className="h-4 w-4 sm:h-7 sm:w-7 text-[#7dd3fc] animate-pulse" />
+                  </div>
+                </div>
+
+                <p className="text-[8px] sm:text-xs uppercase tracking-[0.28em] sm:tracking-[0.35em] text-[#38bdf8] mb-1 sm:mb-2">
+                  {"// TEMPORAL_GATEWAY_STATUS //"}
+                </p>
+
+                <h1 className="text-xl sm:text-5xl font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#e0f2fe] drop-shadow-[0_0_22px_rgba(56,189,248,0.75)]">
+                  COMING SOON
+                </h1>
+
+                <div className="my-3 sm:my-5 h-[1px] w-28 sm:w-40 bg-gradient-to-r from-transparent via-[#38bdf8]/75 to-transparent" />
+
+                <p className="max-w-md text-[10px] sm:text-sm leading-relaxed tracking-[0.1em] sm:tracking-[0.12em] text-[#bae6fd]/90">
+                  Temporal coordinates are still stabilizing. Public transit remains locked until phase alignment is complete.
+                </p>
+
+                <p className="mt-2 sm:mt-2.5 text-[8px] sm:text-[10px] uppercase tracking-[0.18em] sm:tracking-[0.22em] text-[#7dd3fc]/65">
+                  {"[ CALIBRATION_IN_PROGRESS // STAND_BY ]"}
+                </p>
+
+                {/* Animated Wireframe Progress Bar */}
+                <div className="mt-3.5 sm:mt-6 w-full max-w-[210px] sm:max-w-xs border border-[#38bdf8]/60 bg-[#01050d] p-1">
+                  <div className="flex items-center justify-between text-[7px] sm:text-[8px] uppercase tracking-[0.2em] text-[#7dd3fc] px-1 mb-0.5 sm:mb-1">
+                    <span>COMPILER_SYNC</span>
+                    <span>LOCKED</span>
+                  </div>
+                  <div className="h-1 sm:h-1.5 w-full bg-[#020c1b] overflow-hidden">
+                    <motion.div
+                      animate={{ x: ["-100%", "100%"] }}
+                      transition={{ duration: 2.6, repeat: Infinity, ease: "linear" }}
+                      className="h-full w-1/2 bg-gradient-to-r from-transparent via-[#38bdf8] to-transparent shadow-[0_0_10px_#38bdf8]"
+                    />
+                  </div>
+                </div>
+
+                {/* Return Home Action */}
+                <div className="mt-4 sm:mt-8">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 border border-[#7dd3fc] bg-[#021024] hover:bg-[#38bdf8] text-[#e0f2fe] hover:text-[#01050c] px-4 py-1.5 sm:px-6 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.24em] transition-all shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.7)]"
+                  >
+                    <ArrowLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span>RETURN HOME</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Terminal Footer Strip */}
+              <div className="border-t border-[#38bdf8]/50 bg-[#010612] px-3 py-1.5 sm:px-4 sm:py-2 flex items-center justify-between text-[8px] sm:text-[9px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#38bdf8]/75">
+                <span>PUBLIC_ACCESS: RESTRICTED</span>
+                <span>{todayStr}</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Bottom Raw Prototype Footer */}
+          <div className="relative z-20 mx-auto w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
+            <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
+            <span>PORTAL_INTERFACE_LOCKED // COMING_SOON</span>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
       {/* VIEW 1: BLUE MATRIX / UNFINISHED WIREFRAME PROTOTYPE INTERFACE        */}
       {/* ===================================================================== */}
-      {!activeEra && (
+      {!IS_PORTAL_LOCKED && !activeEra && (
         <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
           {/* Blue Matrix Rain Background */}
           <BlueMatrixRain />
@@ -989,9 +1141,8 @@ export default function TimePortalExperience() {
                               type="text"
                               value={username}
                               onChange={(e) => setUsername(e.target.value)}
-                              placeholder="e.g. SUBJECT_A-34"
                               autoComplete="off"
-                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs uppercase tracking-[0.15em] text-[#e0f2fe] placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs uppercase tracking-[0.15em] text-[#e0f2fe] focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
                             />
                             <span
                               className={`text-[9px] px-1.5 py-1 border ${
@@ -1022,9 +1173,8 @@ export default function TimePortalExperience() {
                               type="password"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
-                              placeholder="ENTER ACCESS KEY"
                               autoComplete="off"
-                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
                             />
                             <span
                               className={`text-[9px] px-1.5 py-1 border ${
@@ -1057,8 +1207,7 @@ export default function TimePortalExperience() {
                               max={9999}
                               value={jumpYear}
                               onChange={(e) => setJumpYear(e.target.value)}
-                              placeholder="2026"
-                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
                             />
                             <span
                               className={`text-[9px] px-1.5 py-1 border ${
@@ -1091,8 +1240,7 @@ export default function TimePortalExperience() {
                               max={12}
                               value={jumpMonth}
                               onChange={(e) => setJumpMonth(e.target.value)}
-                              placeholder="10"
-                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
                             />
                             <span
                               className={`text-[9px] px-1.5 py-1 border ${
@@ -1125,8 +1273,7 @@ export default function TimePortalExperience() {
                               max={31}
                               value={jumpDay}
                               onChange={(e) => setJumpDay(e.target.value)}
-                              placeholder="23"
-                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums placeholder:text-[#38bdf8]/35 focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
+                              className="w-full border border-[#38bdf8]/60 bg-[#01050d] px-3 py-1.5 text-xs tracking-[0.2em] text-[#e0f2fe] tabular-nums focus:border-[#e0f2fe] focus:shadow-[0_0_12px_rgba(56,189,248,0.45)] focus:outline-none"
                             />
                             <span
                               className={`text-[9px] px-1.5 py-1 border ${
@@ -1297,7 +1444,7 @@ export default function TimePortalExperience() {
       {/* ===================================================================== */}
       {/* VIEW 2: DESTINATION ERA INTERFACES (5 DISTINCT WEB DESIGN ERAS)       */}
       {/* ===================================================================== */}
-      {activeEra && (
+      {!IS_PORTAL_LOCKED && activeEra && (
         <EraDestinationInterface
           era={activeEra}
           travelledDate={travelledDate}
