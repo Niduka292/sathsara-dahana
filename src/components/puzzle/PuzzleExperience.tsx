@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -17,8 +16,10 @@ import {
   Flame,
   Trophy,
   Send,
+  RefreshCw,
 } from "lucide-react";
 import VortexBackground from "../ui/VortexBackground";
+import type { PublicLeaderboardEntry } from "@/src/app/api/puzzle/winner/route";
 import {
   getDeviceFingerprint,
   readMultiClientStorage,
@@ -126,8 +127,6 @@ function generateRandomSolvableTiles(previousTiles?: string[], shuffleSteps = 28
 type ClockMode = "realtime" | "stopwatch" | "rewinding" | "editable";
 
 export default function PuzzleExperience() {
-  const router = useRouter();
-
   // --- 15-PUZZLE STATE ---
   const [tiles, setTiles] = useState<string[]>(INITIAL_TILES);
 
@@ -170,15 +169,63 @@ export default function PuzzleExperience() {
   const isAllSolved = isFifteenPuzzleSolved && isClockSolved;
   const [showVictoryModal, setShowVictoryModal] = useState(false);
 
-  // --- FIRST WINNER CLAIM STATE ---
+  // --- TOP 10 LEADERBOARD & SUBMISSION STATE ---
   const [winnerLoading, setWinnerLoading] = useState(false);
-  const [winnerClaimed, setWinnerClaimed] = useState(false);
-  const [claimedByMe, setClaimedByMe] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<PublicLeaderboardEntry[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
+  const [myEntry, setMyEntry] = useState<{
+    rank: number;
+    fullName: string;
+    registrationNumber: string;
+    solveTimeSeconds: number | null;
+    inTop10: boolean;
+  } | null>(null);
+  const [submittedCurrentSolve, setSubmittedCurrentSolve] = useState(false);
   const [fullName, setFullName] = useState("");
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [email, setEmail] = useState("");
   const [submittingWinner, setSubmittingWinner] = useState(false);
   const [winnerFeedback, setWinnerFeedback] = useState<string | null>(null);
+  const [winnerFeedbackIsError, setWinnerFeedbackIsError] = useState(false);
+
+  const fetchLeaderboardData = useCallback(async (markSolved = false) => {
+    setLoadingLeaderboard(true);
+    try {
+      const storedToken =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("sd_puzzle_winner_token") || ""
+          : "";
+      const fp = await getDeviceFingerprint();
+      const solvedParam = markSolved ? "&solved=1" : "";
+      const res = await fetch(
+        `/api/puzzle/winner?fp=${encodeURIComponent(fp)}${solvedParam}&token=${encodeURIComponent(
+          storedToken
+        )}`,
+        { cache: "no-store" }
+      );
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        leaderboard?: PublicLeaderboardEntry[];
+        myEntry?: {
+          rank: number;
+          fullName: string;
+          registrationNumber: string;
+          solveTimeSeconds: number | null;
+          inTop10: boolean;
+        } | null;
+      };
+      if (Array.isArray(data.leaderboard)) {
+        setLeaderboard(data.leaderboard);
+      }
+      if (data.myEntry) {
+        setMyEntry(data.myEntry);
+      }
+    } catch {
+      // Ignore network error
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  }, []);
 
   // Persist daily state across localStorage + IndexedDB + CacheStorage + Server (IP + Fingerprint + HttpOnly Cookie + Firebase)
   const saveDailyState = useCallback(
@@ -248,11 +295,29 @@ export default function PuzzleExperience() {
       }
     }
 
+    // Pre-fill solver profile from localStorage if they submitted previously
+    try {
+      const savedProfile = localStorage.getItem("sd_puzzle_solver_profile");
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile) as {
+          fullName?: string;
+          registrationNumber?: string;
+          email?: string;
+        };
+        if (parsed.fullName) setFullName(parsed.fullName);
+        if (parsed.registrationNumber) setRegistrationNumber(parsed.registrationNumber);
+        if (parsed.email) setEmail(parsed.email);
+      }
+    } catch {
+      // Ignore storage error
+    }
+
     void hydrateDailyState();
+    void fetchLeaderboardData(false);
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [fetchLeaderboardData]);
 
   // Monitor 00:00 midnight rollover & update countdown to 00:00
   useEffect(() => {
@@ -375,58 +440,17 @@ export default function PuzzleExperience() {
     }
   }, [isFifteenPuzzleSolved, clockMode, timeLeftMs, saveDailyState, triesUsed, shufflesUsed]);
 
-  // 3. Show victory modal & check if #1 First Finisher spot is still available
+  // 3. Show victory modal & refresh Top 10 Leaderboard when puzzle is solved
   useEffect(() => {
     if (isAllSolved) {
       let cancelled = false;
       setWinnerLoading(true);
+      setSubmittedCurrentSolve(false);
+      setWinnerFeedback(null);
 
-      const storedToken =
-        typeof window !== "undefined"
-          ? sessionStorage.getItem("sd_puzzle_winner_token") || ""
-          : "";
-
-      getDeviceFingerprint()
-        .then((fp) =>
-          fetch(
-            `/api/puzzle/winner?fp=${encodeURIComponent(fp)}&solved=1&token=${encodeURIComponent(
-              storedToken
-            )}`,
-            {
-              cache: "no-store",
-            }
-          )
-        )
-        .then((res) => (res.ok ? res.json() : null))
-        .then(
-          (
-            data: {
-              claimed?: boolean;
-              claimedByCurrentVisitor?: boolean;
-              winnerToken?: string;
-            } | null
-          ) => {
-            if (cancelled || !data) return;
-            const isClaimed = Boolean(data.claimed);
-            const isCurrentWinner = Boolean(isClaimed && data.claimedByCurrentVisitor);
-
-            setWinnerClaimed(isClaimed);
-            setClaimedByMe(isCurrentWinner);
-
-            if (!isCurrentWinner && typeof window !== "undefined") {
-              try {
-                sessionStorage.removeItem("sd_puzzle_winner_token");
-                sessionStorage.removeItem("sd_puzzle_i_am_winner");
-              } catch {}
-            }
-          }
-        )
-        .catch(() => {
-          // Ignore network error
-        })
-        .finally(() => {
-          if (!cancelled) setWinnerLoading(false);
-        });
+      fetchLeaderboardData(true).finally(() => {
+        if (!cancelled) setWinnerLoading(false);
+      });
 
       const timer = setTimeout(() => setShowVictoryModal(true), 450);
       return () => {
@@ -436,15 +460,16 @@ export default function PuzzleExperience() {
     } else {
       setShowVictoryModal(false);
     }
-  }, [isAllSolved]);
+  }, [isAllSolved, fetchLeaderboardData]);
 
-  // Handle #1 First Finisher form submission to Google Sheets (via Apps Script) & redirect to /timeportal
+  // Handle Top 10 Leaderboard form submission (keeps fastest time per Registration Number)
   const handleClaimFirstWinner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submittingWinner || winnerClaimed) return;
+    if (submittingWinner) return;
 
     setSubmittingWinner(true);
     setWinnerFeedback(null);
+    setWinnerFeedbackIsError(false);
 
     try {
       const fingerprint = await getDeviceFingerprint();
@@ -463,37 +488,57 @@ export default function PuzzleExperience() {
       const data = (await res.json()) as {
         claimed?: boolean;
         status?: string;
+        rank?: number;
+        inTop10?: boolean;
+        bestTimeSeconds?: number | null;
+        myEntry?: {
+          rank: number;
+          fullName: string;
+          registrationNumber: string;
+          solveTimeSeconds: number | null;
+          inTop10: boolean;
+        } | null;
+        leaderboard?: PublicLeaderboardEntry[];
         redirectTo?: string;
         winnerToken?: string;
         message?: string;
       };
 
-      if (res.status === 201 || data.status === "claimed_by_you") {
-        if (typeof window !== "undefined" && data.winnerToken) {
-          try {
-            sessionStorage.setItem("sd_puzzle_winner_token", data.winnerToken);
-          } catch {}
-        }
-        setWinnerClaimed(true);
-        setClaimedByMe(true);
-        setWinnerFeedback(
-          data.message ??
-            "Congratulations! Your details have been recorded as the #1 First Finisher."
-        );
-        router.push(data.redirectTo || "/timeportal");
-      } else if (res.status === 409 || data.status === "already_claimed") {
+      if (res.ok || res.status === 201) {
         if (typeof window !== "undefined") {
           try {
-            sessionStorage.removeItem("sd_puzzle_winner_token");
-            sessionStorage.removeItem("sd_puzzle_i_am_winner");
+            if (data.winnerToken) {
+              sessionStorage.setItem("sd_puzzle_winner_token", data.winnerToken);
+            }
+            localStorage.setItem(
+              "sd_puzzle_solver_profile",
+              JSON.stringify({
+                fullName: fullName.trim(),
+                registrationNumber: registrationNumber.trim().toUpperCase(),
+                email: email.trim().toLowerCase(),
+              })
+            );
           } catch {}
         }
-        setWinnerClaimed(true);
-        setClaimedByMe(false);
+
+        if (Array.isArray(data.leaderboard)) {
+          setLeaderboard(data.leaderboard);
+        }
+        if (data.myEntry) {
+          setMyEntry(data.myEntry);
+        }
+        setSubmittedCurrentSolve(true);
+        setWinnerFeedbackIsError(false);
+        setWinnerFeedback(
+          data.message ??
+            "Your solve time has been recorded on the leaderboard!"
+        );
       } else {
+        setWinnerFeedbackIsError(true);
         setWinnerFeedback(data.message ?? "Please check your details and try again.");
       }
     } catch {
+      setWinnerFeedbackIsError(true);
       setWinnerFeedback("Network error while submitting. Please try again.");
     } finally {
       setSubmittingWinner(false);
@@ -1308,6 +1353,141 @@ export default function PuzzleExperience() {
             </div>
           )}
         </div>
+
+        {/* ============================================================ */}
+        {/* PUBLIC TOP 10 FASTEST SOLVERS LEADERBOARD                     */}
+        {/* ============================================================ */}
+        <div
+          id="puzzle-leaderboard"
+          className="mt-6 sm:mt-8 w-full rounded-3xl border border-[#a78bfa]/25 bg-gradient-to-b from-[#1f0610]/85 to-[#0a0207]/90 p-5 sm:p-7 backdrop-blur-xl shadow-[0_0_45px_rgba(159,18,57,0.22)]"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2.5">
+              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-[#fbbf24]" />
+              <div>
+                <h2 className="font-cinzel text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white">
+                  Top 10 Leaderboard
+                </h2>
+                <p className="text-[11px] text-[#e9d5ff]/65">
+                  Ranked by fastest 15-puzzle solve time (best time per Reg No.)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {myEntry && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#fbbf24]/40 bg-[#fbbf24]/15 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-[#fcd88b]">
+                  <Trophy className="h-3 w-3 text-[#fbbf24]" />
+                  <span>
+                    Your Rank: #{myEntry.rank}
+                    {myEntry.solveTimeSeconds != null ? ` (${myEntry.solveTimeSeconds.toFixed(2)}s)` : ""}
+                  </span>
+                </span>
+              )}
+
+              <button
+                type="button"
+                onClick={() => void fetchLeaderboardData(false)}
+                disabled={loadingLeaderboard}
+                title="Refresh Leaderboard"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#a78bfa]/25 bg-white/5 px-3 py-1 font-cinzel text-[10px] uppercase tracking-widest text-[#e9d5ff]/85 hover:bg-[#a78bfa]/15 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw
+                  className={`h-3 w-3 text-[#93c5fd] ${
+                    loadingLeaderboard ? "animate-spin" : ""
+                  }`}
+                />
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {loadingLeaderboard && leaderboard.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-black/30 py-8 px-4 text-center font-cinzel text-xs uppercase tracking-[0.2em] text-[#c4b5fd]">
+              Loading Top 10 Leaderboard...
+            </div>
+          ) : leaderboard.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-black/30 py-8 px-4 text-center">
+              <p className="font-cinzel text-xs sm:text-sm uppercase tracking-[0.2em] text-[#e9d5ff]">
+                No Solvers Recorded Yet
+              </p>
+              <p className="mt-1.5 text-xs text-[#c4b5fd]/70">
+                Solve the 15-puzzle and align the clock to claim the #1 spot on the Top 10 Leaderboard!
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border border-[#a78bfa]/20 bg-[#090206]/85">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#a78bfa]/20 bg-[#2a0815]/60 font-cinzel text-[10px] uppercase tracking-[0.18em] text-[#c4b5fd]">
+                    <th className="py-3 px-3.5 sm:px-4">Rank</th>
+                    <th className="py-3 px-3.5 sm:px-4">Name</th>
+                    <th className="py-3 px-3.5 sm:px-4">Reg No.</th>
+                    <th className="py-3 px-3.5 sm:px-4 text-right">Best Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10 text-xs sm:text-sm">
+                  {leaderboard.map((entry) => {
+                    const isMe =
+                      myEntry?.registrationNumber &&
+                      entry.registrationNumber.toUpperCase() ===
+                        myEntry.registrationNumber.toUpperCase();
+                    const isFirst = entry.rank === 1;
+                    const isSecond = entry.rank === 2;
+                    const isThird = entry.rank === 3;
+
+                    return (
+                      <tr
+                        key={entry.registrationNumber}
+                        className={`transition-colors ${
+                          isMe
+                            ? "bg-[#fbbf24]/15 hover:bg-[#fbbf24]/20"
+                            : isFirst
+                            ? "bg-[#fbbf24]/[0.06] hover:bg-[#fbbf24]/10"
+                            : "hover:bg-white/[0.03]"
+                        }`}
+                      >
+                        <td className="py-3 px-3.5 sm:px-4 font-cinzel font-bold whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-[11px] border ${
+                              isFirst
+                                ? "border-[#fbbf24]/60 bg-[#fbbf24]/20 text-[#fcd88b] shadow-[0_0_12px_rgba(251,191,36,0.3)]"
+                                : isSecond
+                                ? "border-slate-300/50 bg-slate-300/15 text-slate-200"
+                                : isThird
+                                ? "border-amber-600/50 bg-amber-700/20 text-amber-300"
+                                : "border-[#a78bfa]/25 bg-white/5 text-[#c4b5fd]"
+                            }`}
+                          >
+                            #{entry.rank}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3.5 sm:px-4 font-medium text-white">
+                          <div className="flex items-center gap-2">
+                            <span>{entry.fullName}</span>
+                            {isMe && (
+                              <span className="rounded-full border border-[#fbbf24]/40 bg-[#fbbf24]/20 px-2 py-0.5 font-cinzel text-[9px] uppercase tracking-wider text-[#fcd88b]">
+                                You
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3.5 sm:px-4 font-mono text-xs text-[#93c5fd] whitespace-nowrap">
+                          {entry.registrationNumber}
+                        </td>
+                        <td className="py-3 px-3.5 sm:px-4 text-right font-mono font-bold tabular-nums text-[#fcd88b] whitespace-nowrap">
+                          {entry.solveTimeSeconds != null
+                            ? `${entry.solveTimeSeconds.toFixed(2)}s`
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ============================================================ */}
@@ -1369,7 +1549,7 @@ export default function PuzzleExperience() {
       </AnimatePresence>
 
       {/* ============================================================ */}
-      {/* SECRET REVEAL & FIRST FINISHER CLAIM MODAL                   */}
+      {/* SECRET REVEAL & TOP 10 LEADERBOARD SUBMISSION MODAL          */}
       {/* ============================================================ */}
       <AnimatePresence>
         {showVictoryModal && (
@@ -1394,45 +1574,45 @@ export default function PuzzleExperience() {
               </div>
 
               <p className="font-cinzel text-[10px] uppercase tracking-[0.35em] text-[#fcd88b]">
-                {claimedByMe
-                  ? "#1 FIRST FINISHER"
-                  : winnerClaimed
-                  ? "07.18 • JULY 18 UNLOCKED"
+                {submittedCurrentSolve && myEntry
+                  ? `RANK #${myEntry.rank} ON LEADERBOARD`
                   : "07.18 • JULY 18 UNLOCKED"}
               </p>
 
               <h3 className="mt-1.5 font-cinzel text-xl sm:text-2xl font-bold uppercase text-white">
-                {claimedByMe
-                  ? "WINNER RECORDED"
-                  : winnerClaimed
-                  ? "TIME PORTAL UNLOCKED"
-                  : "YOU ARE THE FIRST WINNER!"}
+                {submittedCurrentSolve
+                  ? "TIME RECORDED!"
+                  : "CHRONO CIPHER SOLVED!"}
               </h3>
 
+              {solveTimeSec != null && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#fbbf24]/45 bg-[#fbbf24]/15 px-4 py-1.5 font-cinzel text-xs font-bold uppercase tracking-widest text-[#fcd88b]">
+                  <Timer className="h-3.5 w-3.5 text-[#fbbf24]" />
+                  <span>15-Puzzle Time: {solveTimeSec.toFixed(2)}s</span>
+                </div>
+              )}
+
               <p className="mt-3 text-xs sm:text-sm leading-relaxed text-[#f3e8ff]/80">
-                {claimedByMe ? (
+                {submittedCurrentSolve ? (
                   <>
-                    Your details have been recorded as the #1 First Finisher! The Time Portal is now unlocked.
-                  </>
-                ) : winnerClaimed ? (
-                  <>
-                    You successfully solved the puzzle and unlocked the time portal.
+                    {winnerFeedback ||
+                      "Your fastest solve time has been updated on the Top 10 Leaderboard and the Time Portal is unlocked!"}
                   </>
                 ) : (
                   <>
                     You solved the cipher and aligned the hands of time to{" "}
                     <span className="text-[#fcd88b] font-semibold">07.18 (July 18)</span>!
-                    Enter your details below to be recorded as the #1 solver on the leaderboard.
+                    Submit your details below to record your fastest time on the Top 10 Leaderboard.
                   </>
                 )}
               </p>
 
-              {/* --- FIRST FINISHER FORM (ONLY FOR THE #1 SOLVER) OR TIME PORTAL UNLOCK --- */}
+              {/* --- TOP 10 LEADERBOARD SUBMISSION FORM OR CONFIRMATION --- */}
               {winnerLoading ? (
                 <div className="mt-5 rounded-2xl border border-[#a78bfa]/25 bg-black/30 p-4 text-xs font-cinzel uppercase tracking-widest text-[#c4b5fd]">
-                  Checking status...
+                  Checking leaderboard...
                 </div>
-              ) : !winnerClaimed ? (
+              ) : !submittedCurrentSolve ? (
                 <form
                   onSubmit={handleClaimFirstWinner}
                   className="mt-5 rounded-2xl border border-[#fbbf24]/35 bg-black/40 p-4 sm:p-5 text-left"
@@ -1440,11 +1620,11 @@ export default function PuzzleExperience() {
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="h-4 w-4 text-[#fbbf24]" />
                     <span className="font-cinzel text-xs font-bold uppercase tracking-[0.18em] text-[#fcd88b]">
-                      Enter Details To Claim #1 Winner
+                      Submit Time to Leaderboard
                     </span>
                   </div>
                   <p className="text-[11px] text-[#e9d5ff]/75 mb-3.5 leading-relaxed">
-                    Enter your details below to be recorded on the leaderboard as the first winner and unlock the Time Portal.
+                    We keep your fastest time per Registration Number and display the Top 10 fastest solvers.
                   </p>
 
                   <div className="space-y-2.5">
@@ -1492,7 +1672,11 @@ export default function PuzzleExperience() {
                   </div>
 
                   {winnerFeedback && (
-                    <p className="mt-2.5 text-[11px] text-red-300 text-center">
+                    <p
+                      className={`mt-2.5 text-[11px] text-center ${
+                        winnerFeedbackIsError ? "text-red-300" : "text-emerald-300"
+                      }`}
+                    >
                       {winnerFeedback}
                     </p>
                   )}
@@ -1503,36 +1687,35 @@ export default function PuzzleExperience() {
                     className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-5 py-2.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 disabled:opacity-50 transition-opacity cursor-pointer"
                   >
                     <Send className="h-3.5 w-3.5" />
-                    <span>{submittingWinner ? "Submitting..." : "Submit & Enter Time Portal"}</span>
+                    <span>{submittingWinner ? "Submitting..." : "Submit Time to Leaderboard"}</span>
                   </button>
+
+                  <div className="mt-3 text-center">
+                    <Link
+                      href="/timeportal"
+                      className="inline-flex items-center gap-1.5 font-cinzel text-[10px] uppercase tracking-[0.2em] text-[#c4b5fd] hover:text-white transition-colors"
+                    >
+                      <Sparkles className="h-3 w-3 text-[#fbbf24]" />
+                      <span>Skip &amp; Visit Time Portal</span>
+                    </Link>
+                  </div>
                 </form>
-              ) : claimedByMe ? (
-                /* --- THE WINNER'S POPUP (KEPT EXACTLY AS IT IS) --- */
-                <div className="mt-5 rounded-2xl border border-[#fbbf24]/45 bg-[#fbbf24]/10 p-5 text-center space-y-4">
-                  <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
-                    <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
-                    <span>#1 FIRST FINISHER RECORDED</span>
-                  </div>
-                  <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
-                    Your details have been recorded! The Time Portal is now unlocked.
-                  </p>
-                  <Link
-                    href="/timeportal"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-[#fbbf24] px-6 py-3 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-[0_0_25px_rgba(251,191,36,0.45)] hover:opacity-95 transition-opacity"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    <span>VISIT THE TIME PORTAL</span>
-                  </Link>
-                </div>
               ) : (
-                /* --- NON-WINNERS POPUP (ONLY UNLOCKING THE TIME PORTAL, ZERO WINNER MENTIONS) --- */
                 <div className="mt-5 rounded-2xl border border-[#fbbf24]/45 bg-[#fbbf24]/10 p-5 text-center space-y-4">
                   <div className="inline-flex items-center gap-1.5 font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#fcd88b]">
                     <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
-                    <span>TIME PORTAL UNLOCKED</span>
+                    <span>
+                      {myEntry
+                        ? `RANK #${myEntry.rank} • BEST TIME: ${
+                            myEntry.solveTimeSeconds != null
+                              ? `${myEntry.solveTimeSeconds.toFixed(2)}s`
+                              : "RECORDED"
+                          }`
+                        : "LEADERBOARD UPDATED"}
+                    </span>
                   </div>
                   <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
-                    You successfully solved the puzzle and unlocked the time portal.
+                    Your best time for <span className="font-mono text-[#93c5fd]">{myEntry?.registrationNumber || registrationNumber.toUpperCase()}</span> is saved on the leaderboard.
                   </p>
                   <Link
                     href="/timeportal"
@@ -1550,7 +1733,7 @@ export default function PuzzleExperience() {
                   onClick={() => setShowVictoryModal(false)}
                   className="rounded-full border border-[#a78bfa]/30 bg-white/5 px-5 py-2.5 font-cinzel text-xs uppercase tracking-[0.2em] text-[#f3e8ff] hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  Inspect Puzzle
+                  View Leaderboard
                 </button>
                 <Link
                   href="/"

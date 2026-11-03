@@ -1,9 +1,20 @@
-{
-  "fullName": "Sonic Jayatgilaka",
-  "registrationNumber": "AS2023442",
-  "email": "palihawadanacharutha@gmail.com",
-  "completedAtIso": "2026-11-03T10:47:05.024Z",
-  "completedAtLocal": "3 Nov 2026, 16:17:05",
-  "solveTimeSeconds": 35.1,
-  "visitorId": "7a8f94878dbf67b95a4a62dc84e700c8"
-}
+[
+  {
+    "fullName": "Sonic Jayatgilaka",
+    "registrationNumber": "AS2023442",
+    "email": "palihawadanacharutha@gmail.com",
+    "completedAtIso": "2026-11-03T10:47:05.024Z",
+    "completedAtLocal": "3 Nov 2026, 16:17:05",
+    "solveTimeSeconds": 35.1,
+    "visitorId": "7a8f94878dbf67b95a4a62dc84e700c8"
+  },
+  {
+    "fullName": "Saman",
+    "registrationNumber": "AS2023525",
+    "email": "nidukajayathunga886@gmail.com",
+    "completedAtIso": "2026-11-03T15:53:26.660Z",
+    "completedAtLocal": "3 Nov 2026, 21:23:26",
+    "solveTimeSeconds": 44.78,
+    "visitorId": "ecc5dda2f257ee9b21e3a2de65ccea54"
+  }
+]

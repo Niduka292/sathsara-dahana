@@ -9,6 +9,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const LEADERBOARD_LIMIT = 10;
 const WINNER_COOKIE_NAME = "sd_puzzle_first_winner";
 const DASHBOARD_AUTH_COOKIE = "sd_dashboard_auth";
 const DASHBOARD_PASSWORD =
@@ -77,9 +78,156 @@ export interface FirstWinnerRecord {
   visitorId: string;
 }
 
+export interface RankedLeaderboardRecord extends FirstWinnerRecord {
+  rank: number;
+}
+
+export interface PublicLeaderboardEntry {
+  rank: number;
+  fullName: string;
+  registrationNumber: string;
+  solveTimeSeconds: number | null;
+  completedAtLocal: string;
+  completedAtIso: string;
+}
+
 const globalForWinner = globalThis as unknown as {
   __sdPuzzleFirstWinner?: FirstWinnerRecord | null;
+  __sdPuzzleLeaderboardEntries?: FirstWinnerRecord[];
 };
+
+function isValidRecord(item: unknown): item is FirstWinnerRecord {
+  if (!item || typeof item !== "object") return false;
+  const r = item as Partial<FirstWinnerRecord>;
+  return (
+    typeof r.fullName === "string" &&
+    r.fullName.trim().length > 0 &&
+    typeof r.registrationNumber === "string" &&
+    r.registrationNumber.trim().length > 0
+  );
+}
+
+function normalizeRecord(raw: FirstWinnerRecord): FirstWinnerRecord {
+  const numericTime =
+    typeof raw.solveTimeSeconds === "number" &&
+    Number.isFinite(raw.solveTimeSeconds) &&
+    raw.solveTimeSeconds >= 0
+      ? Number(raw.solveTimeSeconds.toFixed(2))
+      : null;
+
+  return {
+    fullName: raw.fullName.trim(),
+    registrationNumber: raw.registrationNumber.trim().toUpperCase(),
+    email: (raw.email ?? "").trim().toLowerCase(),
+    completedAtIso: raw.completedAtIso || new Date().toISOString(),
+    completedAtLocal: raw.completedAtLocal || "",
+    solveTimeSeconds: numericTime,
+    visitorId: raw.visitorId || "unknown",
+  };
+}
+
+/**
+ * Compares two records to determine which has the faster solve time.
+ * Returns < 0 if `a` is better (faster) than `b`, > 0 if `b` is better.
+ */
+function comparePuzzleRecords(a: FirstWinnerRecord, b: FirstWinnerRecord): number {
+  const aTime =
+    typeof a.solveTimeSeconds === "number" && Number.isFinite(a.solveTimeSeconds)
+      ? a.solveTimeSeconds
+      : Number.POSITIVE_INFINITY;
+  const bTime =
+    typeof b.solveTimeSeconds === "number" && Number.isFinite(b.solveTimeSeconds)
+      ? b.solveTimeSeconds
+      : Number.POSITIVE_INFINITY;
+
+  if (aTime !== bTime) {
+    return aTime - bTime;
+  }
+
+  const aDate = Date.parse(a.completedAtIso || "") || Number.MAX_SAFE_INTEGER;
+  const bDate = Date.parse(b.completedAtIso || "") || Number.MAX_SAFE_INTEGER;
+  return aDate - bDate;
+}
+
+/**
+ * Deduplicates records by normalized Registration Number (keeping the fastest solve time per reg no.)
+ * and sorts them ascending by solveTimeSeconds (then completedAtIso).
+ */
+function deduplicateAndSortLeaderboard(
+  records: FirstWinnerRecord[]
+): FirstWinnerRecord[] {
+  const byRegNo = new Map<string, FirstWinnerRecord>();
+
+  for (const raw of records) {
+    if (!isValidRecord(raw)) continue;
+    const candidate = normalizeRecord(raw);
+    const key = candidate.registrationNumber;
+    const existing = byRegNo.get(key);
+
+    if (!existing) {
+      byRegNo.set(key, candidate);
+    } else if (comparePuzzleRecords(candidate, existing) < 0) {
+      byRegNo.set(key, candidate);
+    }
+  }
+
+  return Array.from(byRegNo.values()).sort(comparePuzzleRecords);
+}
+
+function toRankedRecords(sorted: FirstWinnerRecord[]): RankedLeaderboardRecord[] {
+  return sorted.map((entry, idx) => ({
+    ...entry,
+    rank: idx + 1,
+  }));
+}
+
+function toPublicLeaderboard(
+  sorted: FirstWinnerRecord[],
+  limit = LEADERBOARD_LIMIT
+): PublicLeaderboardEntry[] {
+  return sorted.slice(0, limit).map((entry, idx) => ({
+    rank: idx + 1,
+    fullName: entry.fullName,
+    registrationNumber: entry.registrationNumber,
+    solveTimeSeconds: entry.solveTimeSeconds,
+    completedAtLocal: entry.completedAtLocal,
+    completedAtIso: entry.completedAtIso,
+  }));
+}
+
+function parseRecordsFromUnknown(raw: unknown): FirstWinnerRecord[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.filter(isValidRecord).map(normalizeRecord);
+  }
+  if (isValidRecord(raw)) {
+    return [normalizeRecord(raw)];
+  }
+  if (typeof raw === "object") {
+    const obj = raw as Record<string, unknown>;
+    const collected: FirstWinnerRecord[] = [];
+    if (Array.isArray(obj.entries)) {
+      collected.push(...obj.entries.filter(isValidRecord).map(normalizeRecord));
+    }
+    if (Array.isArray(obj.leaderboard)) {
+      collected.push(...obj.leaderboard.filter(isValidRecord).map(normalizeRecord));
+    }
+    if (isValidRecord(obj.winner)) {
+      collected.push(normalizeRecord(obj.winner));
+    }
+    if (collected.length > 0) {
+      return collected;
+    }
+    // Handle Firebase object map (e.g., { AS2023442: { ... } })
+    for (const val of Object.values(obj)) {
+      if (isValidRecord(val)) {
+        collected.push(normalizeRecord(val));
+      }
+    }
+    return collected;
+  }
+  return [];
+}
 
 // --- FILE SYSTEM PERSISTENCE (WORKS ACROSS LOCAL SERVER RESTARTS & RUNTIMES) ---
 function getStorageFilePaths(): string[] {
@@ -98,50 +246,52 @@ function getStorageFilePaths(): string[] {
   return paths;
 }
 
-function readLocalWinnerFile(): FirstWinnerRecord | null {
+function readLocalLeaderboardFiles(): FirstWinnerRecord[] {
+  const all: FirstWinnerRecord[] = [];
   for (const filePath of getStorageFilePaths()) {
     try {
       if (fs.existsSync(filePath)) {
         const raw = fs.readFileSync(filePath, "utf-8");
-        const parsed = JSON.parse(raw) as FirstWinnerRecord;
-        if (parsed && parsed.fullName && parsed.registrationNumber) {
-          return parsed;
-        }
+        const parsed = JSON.parse(raw) as unknown;
+        all.push(...parseRecordsFromUnknown(parsed));
       }
     } catch {
       // Ignore read errors
     }
   }
-  return null;
+  return deduplicateAndSortLeaderboard(all);
 }
 
-function writeLocalWinnerFile(record: FirstWinnerRecord): void {
+function writeLocalLeaderboardFiles(records: FirstWinnerRecord[]): void {
+  const sorted = deduplicateAndSortLeaderboard(records);
   for (const filePath of getStorageFilePaths()) {
     try {
       const dir = path.dirname(filePath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      fs.writeFileSync(filePath, JSON.stringify(record, null, 2), "utf-8");
+      fs.writeFileSync(filePath, JSON.stringify(sorted, null, 2), "utf-8");
     } catch {
       // Ignore write errors (e.g. read-only filesystem on serverless)
     }
   }
 }
 
-function deleteLocalWinnerFile(): void {
+function deleteLocalLeaderboardFiles(): void {
   for (const filePath of getStorageFilePaths()) {
     try {
       if (fs.existsSync(filePath)) {
         try {
-          fs.writeFileSync(filePath, "null", "utf-8");
+          fs.writeFileSync(filePath, "[]", "utf-8");
         } catch {
           // Ignore write error
         }
         try {
-          fs.unlinkSync(filePath);
+          if (filePath.includes(".puzzle-winner-cache.json")) {
+            fs.unlinkSync(filePath);
+          }
         } catch {
-          // Ignore unlink errors (e.g. read-only filesystem on serverless)
+          // Ignore unlink errors
         }
       }
     } catch {
@@ -175,53 +325,86 @@ function computeVisitorId(request: Request, fingerprint = "unknown-fp"): string 
 }
 
 // --- FIREBASE REALTIME DATABASE ---
-async function readFirebaseFirstWinner(): Promise<FirstWinnerRecord | null> {
+async function readFirebaseLeaderboard(): Promise<FirstWinnerRecord[]> {
   const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
-  if (!dbUrl) return null;
+  if (!dbUrl) return [];
 
+  const collected: FirstWinnerRecord[] = [];
   try {
-    const res = await fetch(`${dbUrl}/puzzle/firstWinner.json`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
-    if (!res.ok) return null;
-    const data = (await res.json()) as FirstWinnerRecord | null;
-    if (!data || !data.fullName || !data.registrationNumber) return null;
-    return data;
+    const [leaderboardRes, firstWinnerRes] = await Promise.allSettled([
+      fetch(`${dbUrl}/puzzle/leaderboard.json`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+      fetch(`${dbUrl}/puzzle/firstWinner.json`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+    ]);
+
+    if (leaderboardRes.status === "fulfilled" && leaderboardRes.value.ok) {
+      const data = (await leaderboardRes.value.json()) as unknown;
+      collected.push(...parseRecordsFromUnknown(data));
+    }
+    if (firstWinnerRes.status === "fulfilled" && firstWinnerRes.value.ok) {
+      const data = (await firstWinnerRes.value.json()) as unknown;
+      collected.push(...parseRecordsFromUnknown(data));
+    }
   } catch {
-    return null;
+    // Ignore Firebase read error
   }
+
+  return deduplicateAndSortLeaderboard(collected);
 }
 
-async function writeFirebaseFirstWinner(record: FirstWinnerRecord): Promise<boolean> {
+async function writeFirebaseLeaderboard(records: FirstWinnerRecord[]): Promise<boolean> {
   const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
   if (!dbUrl) return true;
 
+  const sorted = deduplicateAndSortLeaderboard(records);
+  const topWinner = sorted[0] ?? null;
+
   try {
-    const res = await fetch(`${dbUrl}/puzzle/firstWinner.json`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(record),
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
-    return res.ok;
+    const [resLeaderboard] = await Promise.allSettled([
+      fetch(`${dbUrl}/puzzle/leaderboard.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sorted),
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+      fetch(`${dbUrl}/puzzle/firstWinner.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(topWinner),
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+    ]);
+    return resLeaderboard.status === "fulfilled" && resLeaderboard.value.ok;
   } catch {
     return false;
   }
 }
 
-async function deleteFirebaseFirstWinner(): Promise<boolean> {
+async function deleteFirebaseLeaderboard(): Promise<boolean> {
   const dbUrl = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim().replace(/\/+$/, "");
   if (!dbUrl) return true;
 
   try {
-    const res = await fetch(`${dbUrl}/puzzle/firstWinner.json`, {
-      method: "DELETE",
-      cache: "no-store",
-      signal: AbortSignal.timeout(3000),
-    });
-    return res.ok;
+    await Promise.allSettled([
+      fetch(`${dbUrl}/puzzle/leaderboard.json`, {
+        method: "DELETE",
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+      fetch(`${dbUrl}/puzzle/firstWinner.json`, {
+        method: "DELETE",
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      }),
+    ]);
+    return true;
   } catch {
     return false;
   }
@@ -239,18 +422,17 @@ function getGoogleSheetWebhookUrl(): string | null {
 }
 
 function getWinnerVerificationToken(winner: FirstWinnerRecord | null): string {
-  if (!winner || !winner.registrationNumber || !winner.completedAtIso) return "";
+  if (!winner || !winner.registrationNumber) return "";
   return createHash("sha256")
-    .update(`${winner.registrationNumber}::${winner.completedAtIso}::sd-2026-winner-auth-token`)
+    .update(`${winner.registrationNumber.toUpperCase()}::sd-2026-winner-auth-token`)
     .digest("hex")
     .slice(0, 32);
 }
 
-async function queryGoogleSheetWinner(): Promise<{ claimed: boolean; winner: FirstWinnerRecord | null } | null> {
+async function queryGoogleSheetLeaderboard(): Promise<FirstWinnerRecord[]> {
   const webhookUrl = getGoogleSheetWebhookUrl();
-  if (!webhookUrl) return null;
+  if (!webhookUrl) return [];
 
-  // 1. Try GET with action=get_winner query param (handles Google Apps Script 302 redirects best)
   try {
     const getUrl = webhookUrl.includes("?")
       ? `${webhookUrl}&action=get_winner`
@@ -259,7 +441,7 @@ async function queryGoogleSheetWinner(): Promise<{ claimed: boolean; winner: Fir
     const res = await fetch(getUrl, {
       method: "GET",
       redirect: "follow",
-      signal: AbortSignal.timeout(7000),
+      signal: AbortSignal.timeout(5000),
     });
 
     if (res.ok) {
@@ -267,50 +449,19 @@ async function queryGoogleSheetWinner(): Promise<{ claimed: boolean; winner: Fir
         status?: string;
         claimed?: boolean;
         winner?: FirstWinnerRecord | null;
+        leaderboard?: FirstWinnerRecord[];
+        entries?: FirstWinnerRecord[];
       };
 
       if (data && data.status === "success") {
-        if (data.claimed && data.winner && data.winner.fullName) {
-          return { claimed: true, winner: data.winner };
-        }
-        if (data.claimed === false) {
-          return { claimed: false, winner: null };
-        }
+        return parseRecordsFromUnknown(data);
       }
     }
   } catch {
-    // If GET fails or times out, try POST fallback
+    // Ignore webhook timeout or error
   }
 
-  // 2. Fallback to POST
-  try {
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "get_winner" }),
-      signal: AbortSignal.timeout(7000),
-    });
-
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      status?: string;
-      claimed?: boolean;
-      winner?: FirstWinnerRecord | null;
-    };
-
-    if (data && data.status === "success") {
-      if (data.claimed && data.winner && data.winner.fullName) {
-        return { claimed: true, winner: data.winner };
-      }
-      if (data.claimed === false) {
-        return { claimed: false, winner: null };
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
+  return [];
 }
 
 async function resetGoogleSheetWebhook(): Promise<boolean> {
@@ -356,7 +507,7 @@ async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<b
       redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "submit", ...record }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8000),
     });
     return res.ok;
   } catch {
@@ -364,45 +515,37 @@ async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<b
   }
 }
 
-// --- AUTHORITATIVE WINNER RETRIEVAL (CHECKS MEMORY, GOOGLE SHEET, FIREBASE, LOCAL FILE) ---
-async function getAuthoritativeFirstWinner(): Promise<FirstWinnerRecord | null> {
-  // 1. In-memory
-  if (globalForWinner.__sdPuzzleFirstWinner !== undefined) {
-    return globalForWinner.__sdPuzzleFirstWinner;
+// --- AUTHORITATIVE LEADERBOARD RETRIEVAL ---
+async function getAuthoritativeLeaderboard(): Promise<FirstWinnerRecord[]> {
+  const memoryEntries = globalForWinner.__sdPuzzleLeaderboardEntries ?? [];
+  const localEntries = readLocalLeaderboardFiles();
+  const firebaseEntries = await readFirebaseLeaderboard();
+
+  // Only query Google Sheet if we have no entries yet in memory/local/firebase
+  let sheetEntries: FirstWinnerRecord[] = [];
+  if (
+    memoryEntries.length === 0 &&
+    localEntries.length === 0 &&
+    firebaseEntries.length === 0
+  ) {
+    sheetEntries = await queryGoogleSheetLeaderboard();
   }
 
-  // 2. Google Sheet Webhook (Primary live source of truth for the competition)
-  const sheetResult = await queryGoogleSheetWinner();
-  if (sheetResult !== null) {
-    if (sheetResult.claimed && sheetResult.winner) {
-      globalForWinner.__sdPuzzleFirstWinner = sheetResult.winner;
-      writeLocalWinnerFile(sheetResult.winner);
-      void writeFirebaseFirstWinner(sheetResult.winner);
-      return sheetResult.winner;
-    }
-    if (sheetResult.claimed === false) {
-      globalForWinner.__sdPuzzleFirstWinner = null;
-      deleteLocalWinnerFile();
-      return null;
-    }
+  const merged = deduplicateAndSortLeaderboard([
+    ...memoryEntries,
+    ...localEntries,
+    ...firebaseEntries,
+    ...sheetEntries,
+  ]);
+
+  globalForWinner.__sdPuzzleLeaderboardEntries = merged;
+  globalForWinner.__sdPuzzleFirstWinner = merged[0] ?? null;
+
+  if (merged.length !== localEntries.length) {
+    writeLocalLeaderboardFiles(merged);
   }
 
-  // 3. Firebase
-  const fbWinner = await readFirebaseFirstWinner();
-  if (fbWinner) {
-    globalForWinner.__sdPuzzleFirstWinner = fbWinner;
-    writeLocalWinnerFile(fbWinner);
-    return fbWinner;
-  }
-
-  // 4. Local disk file
-  const localWinner = readLocalWinnerFile();
-  if (localWinner) {
-    globalForWinner.__sdPuzzleFirstWinner = localWinner;
-    return localWinner;
-  }
-
-  return null;
+  return merged;
 }
 
 function escapeCsvCell(value: string | number | null | undefined): string {
@@ -411,34 +554,34 @@ function escapeCsvCell(value: string | number | null | undefined): string {
   return `"${sanitized.replace(/"/g, '""')}"`;
 }
 
-function buildExcelCsv(winner: FirstWinnerRecord | null): string {
+function buildExcelCsv(entries: FirstWinnerRecord[]): string {
   const headers = [
     "Rank",
     "Full Name",
     "Registration Number",
+    "Puzzle Solve Time (Seconds)",
     "Email",
     "Completed At (Sri Lanka Time)",
     "Completed At (ISO)",
-    "Puzzle Solve Time (Seconds)",
   ];
 
   const rows: string[] = [headers.map(escapeCsvCell).join(",")];
 
-  if (winner) {
+  entries.forEach((entry, index) => {
     rows.push(
       [
-        1,
-        winner.fullName,
-        winner.registrationNumber,
-        winner.email,
-        winner.completedAtLocal,
-        winner.completedAtIso,
-        winner.solveTimeSeconds ?? "",
+        index + 1,
+        entry.fullName,
+        entry.registrationNumber,
+        entry.solveTimeSeconds ?? "",
+        entry.email,
+        entry.completedAtLocal,
+        entry.completedAtIso,
       ]
         .map(escapeCsvCell)
         .join(",")
     );
-  }
+  });
 
   return `\uFEFF${rows.join("\r\n")}\r\n`;
 }
@@ -448,7 +591,6 @@ export async function GET(request: Request) {
   const format = searchParams.get("format")?.toLowerCase();
   const isAdmin = searchParams.get("admin") === "1";
   const isLogout = searchParams.get("logout") === "1";
-  const fingerprint = searchParams.get("fp")?.trim() || "unknown-fp";
 
   if (isLogout) {
     const res = NextResponse.json(
@@ -478,16 +620,19 @@ export async function GET(request: Request) {
     }
   }
 
-  const winner = await getAuthoritativeFirstWinner();
+  const allSorted = await getAuthoritativeLeaderboard();
+  const rankedAll = toRankedRecords(allSorted);
+  const top10Ranked = rankedAll.slice(0, LEADERBOARD_LIMIT);
+  const winner = allSorted[0] ?? null;
 
   if (format === "csv") {
-    const csvContent = buildExcelCsv(winner);
+    const csvContent = buildExcelCsv(allSorted);
     const res = new NextResponse(csvContent, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition":
-          'attachment; filename="sathsara-dahana-first-puzzle-winner.csv"',
+          'attachment; filename="sathsara-dahana-puzzle-leaderboard.csv"',
         "Cache-Control": "no-store",
       },
     });
@@ -501,6 +646,9 @@ export async function GET(request: Request) {
         authenticated: true,
         claimed: Boolean(winner),
         winner,
+        leaderboard: top10Ranked,
+        allEntries: rankedAll,
+        totalSubmissions: rankedAll.length,
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     );
@@ -509,34 +657,50 @@ export async function GET(request: Request) {
   }
 
   const cookieHeader = request.headers.get("cookie") || "";
-  const validWinnerToken = getWinnerVerificationToken(winner);
-
-  const clientTokenMatch =
-    Boolean(validWinnerToken) &&
-    cookieHeader.includes(`${WINNER_COOKIE_NAME}=${validWinnerToken}`);
   const clientHeaderToken = request.headers.get("x-winner-token")?.trim();
   const queryToken = searchParams.get("token")?.trim();
 
-  // Only the specific browser that submitted the active winning form carries the matching token
-  const claimedByCurrentVisitor = Boolean(
-    winner &&
-      validWinnerToken &&
-      (clientTokenMatch ||
-        clientHeaderToken === validWinnerToken ||
-        queryToken === validWinnerToken)
-  );
+  let matchedEntry: RankedLeaderboardRecord | null = null;
+  let matchedToken = "";
+
+  for (const entry of rankedAll) {
+    const token = getWinnerVerificationToken(entry);
+    if (
+      token &&
+      (cookieHeader.includes(`${WINNER_COOKIE_NAME}=${token}`) ||
+        clientHeaderToken === token ||
+        queryToken === token)
+    ) {
+      matchedEntry = entry;
+      matchedToken = token;
+      break;
+    }
+  }
+
+  const publicLeaderboard = toPublicLeaderboard(allSorted, LEADERBOARD_LIMIT);
 
   const res = NextResponse.json(
     {
       claimed: Boolean(winner),
-      claimedByCurrentVisitor,
-      winnerToken: claimedByCurrentVisitor ? validWinnerToken : undefined,
+      claimedByCurrentVisitor: Boolean(matchedEntry),
+      winnerToken: matchedEntry ? matchedToken : undefined,
+      myEntry: matchedEntry
+        ? {
+            rank: matchedEntry.rank,
+            fullName: matchedEntry.fullName,
+            registrationNumber: matchedEntry.registrationNumber,
+            solveTimeSeconds: matchedEntry.solveTimeSeconds,
+            inTop10: matchedEntry.rank <= LEADERBOARD_LIMIT,
+          }
+        : null,
+      leaderboard: publicLeaderboard,
+      totalParticipants: rankedAll.length,
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   );
 
   // Clear stale winner cookie if the cookie belongs to an older/reset competition
-  if (!claimedByCurrentVisitor && cookieHeader.includes(WINNER_COOKIE_NAME)) {
+  if (!matchedEntry && cookieHeader.includes(WINNER_COOKIE_NAME)) {
     res.cookies.set({
       name: WINNER_COOKIE_NAME,
       value: "",
@@ -556,22 +720,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const existing = await getAuthoritativeFirstWinner();
-    if (existing) {
-      const alreadyRes = NextResponse.json(
-        {
-          claimed: true,
-          status: "already_claimed",
-          redirectTo: "/timeportal",
-          message:
-            "You successfully solved the puzzle and unlocked the time portal.",
-        },
-        { status: 409, headers: { "Cache-Control": "no-store" } }
-      );
-      attachTimePortalUnlockCookie(alreadyRes);
-      return alreadyRes;
-    }
-
     const body = (await request.json()) as {
       fullName?: string;
       registrationNumber?: string;
@@ -621,7 +769,7 @@ export async function POST(request: Request) {
 
     const visitorId = computeVisitorId(request, body.fingerprint?.trim() || "unknown-fp");
 
-    const record: FirstWinnerRecord = {
+    const candidateRecord: FirstWinnerRecord = {
       fullName,
       registrationNumber,
       email,
@@ -631,38 +779,75 @@ export async function POST(request: Request) {
       visitorId,
     };
 
-    // Double-check race condition
-    const raceCheck = await getAuthoritativeFirstWinner();
-    if (raceCheck) {
-      const alreadyRes = NextResponse.json(
-        {
-          claimed: true,
-          status: "already_claimed",
-          redirectTo: "/timeportal",
-          message:
-            "You successfully solved the puzzle and unlocked the time portal.",
-        },
-        { status: 409, headers: { "Cache-Control": "no-store" } }
-      );
-      attachTimePortalUnlockCookie(alreadyRes);
-      return alreadyRes;
-    }
+    const currentLeaderboard = await getAuthoritativeLeaderboard();
+    const existingForReg = currentLeaderboard.find(
+      (r) => r.registrationNumber.toUpperCase() === registrationNumber
+    );
+
+    const improvedOrNew =
+      !existingForReg || comparePuzzleRecords(candidateRecord, existingForReg) < 0;
+
+    // Merge and keep best time per registration number
+    const updatedLeaderboard = deduplicateAndSortLeaderboard([
+      ...currentLeaderboard,
+      candidateRecord,
+    ]);
+
+    const rankedAll = toRankedRecords(updatedLeaderboard);
+    const playerEntry =
+      rankedAll.find((r) => r.registrationNumber === registrationNumber) ?? null;
+    const playerRank = playerEntry?.rank ?? rankedAll.length;
+    const inTop10 = playerRank <= LEADERBOARD_LIMIT;
 
     // Persist across in-memory global, local disk file, Firebase, and Google Sheet
-    globalForWinner.__sdPuzzleFirstWinner = record;
-    writeLocalWinnerFile(record);
-    await writeFirebaseFirstWinner(record);
-    await forwardToGoogleSheetWebhook(record);
+    globalForWinner.__sdPuzzleLeaderboardEntries = updatedLeaderboard;
+    globalForWinner.__sdPuzzleFirstWinner = updatedLeaderboard[0] ?? null;
+    writeLocalLeaderboardFiles(updatedLeaderboard);
+    await writeFirebaseLeaderboard(updatedLeaderboard);
+    if (improvedOrNew) {
+      void forwardToGoogleSheetWebhook(candidateRecord);
+    }
 
-    const winnerToken = getWinnerVerificationToken(record);
+    const winnerToken = getWinnerVerificationToken(playerEntry ?? candidateRecord);
+    const bestTimeText =
+      playerEntry?.solveTimeSeconds != null ? `${playerEntry.solveTimeSeconds}s` : "recorded";
+
+    let message: string;
+    if (!existingForReg) {
+      message = inTop10
+        ? `Congratulations! You are ranked #${playerRank} on the Top 10 Leaderboard (${bestTimeText})!`
+        : `Submission recorded! Your best time is ${bestTimeText} (Current Rank #${playerRank}).`;
+    } else if (improvedOrNew) {
+      message = `New Personal Best! You improved your time to ${bestTimeText} and are now Rank #${playerRank}!`;
+    } else {
+      message = `Your faster time of ${bestTimeText} is already kept on the leaderboard (Rank #${playerRank}).`;
+    }
 
     const response = NextResponse.json(
       {
         claimed: true,
-        status: "claimed_by_you",
+        status: !existingForReg
+          ? "new_entry"
+          : improvedOrNew
+          ? "improved_time"
+          : "kept_best_time",
+        rank: playerRank,
+        inTop10,
+        bestTimeSeconds: playerEntry?.solveTimeSeconds ?? solveTimeSeconds,
+        myEntry: playerEntry
+          ? {
+              rank: playerEntry.rank,
+              fullName: playerEntry.fullName,
+              registrationNumber: playerEntry.registrationNumber,
+              solveTimeSeconds: playerEntry.solveTimeSeconds,
+              inTop10,
+            }
+          : null,
+        leaderboard: toPublicLeaderboard(updatedLeaderboard, LEADERBOARD_LIMIT),
+        totalParticipants: rankedAll.length,
         redirectTo: "/timeportal",
         winnerToken,
-        message: "Congratulations! Your details have been recorded as the #1 First Finisher.",
+        message,
       },
       { status: 201, headers: { "Cache-Control": "no-store" } }
     );
@@ -696,13 +881,14 @@ export async function DELETE(request: Request) {
 
   // 1. Clear memory
   globalForWinner.__sdPuzzleFirstWinner = null;
+  globalForWinner.__sdPuzzleLeaderboardEntries = [];
 
   // 2. Clear local file
-  deleteLocalWinnerFile();
+  deleteLocalLeaderboardFiles();
 
   // 3. Clear Firebase & Google Sheet in parallel
   await Promise.allSettled([
-    deleteFirebaseFirstWinner(),
+    deleteFirebaseLeaderboard(),
     resetGoogleSheetWebhook(),
   ]);
 
@@ -711,8 +897,10 @@ export async function DELETE(request: Request) {
       reset: true,
       claimed: false,
       winner: null,
+      leaderboard: [],
+      allEntries: [],
       totalSubmissions: 0,
-      message: "First finisher record and submissions have been cleared.",
+      message: "Leaderboard records and submissions have been cleared.",
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   );
