@@ -133,10 +133,19 @@ function deleteLocalWinnerFile(): void {
   for (const filePath of getStorageFilePaths()) {
     try {
       if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+        try {
+          fs.writeFileSync(filePath, "null", "utf-8");
+        } catch {
+          // Ignore write error
+        }
+        try {
+          fs.unlinkSync(filePath);
+        } catch {
+          // Ignore unlink errors (e.g. read-only filesystem on serverless)
+        }
       }
     } catch {
-      // Ignore unlink errors
+      // Ignore
     }
   }
 }
@@ -228,17 +237,58 @@ function getGoogleSheetWebhookUrl(): string | null {
   )?.trim() || null;
 }
 
+function getWinnerVerificationToken(winner: FirstWinnerRecord | null): string {
+  if (!winner || !winner.registrationNumber || !winner.completedAtIso) return "";
+  return createHash("sha256")
+    .update(`${winner.registrationNumber}::${winner.completedAtIso}::sd-2026-winner-auth-token`)
+    .digest("hex")
+    .slice(0, 32);
+}
+
 async function queryGoogleSheetWinner(): Promise<{ claimed: boolean; winner: FirstWinnerRecord | null } | null> {
   const webhookUrl = getGoogleSheetWebhookUrl();
   if (!webhookUrl) return null;
 
+  // 1. Try GET with action=get_winner query param (handles Google Apps Script 302 redirects best)
+  try {
+    const getUrl = webhookUrl.includes("?")
+      ? `${webhookUrl}&action=get_winner`
+      : `${webhookUrl}?action=get_winner`;
+
+    const res = await fetch(getUrl, {
+      method: "GET",
+      redirect: "follow",
+      signal: AbortSignal.timeout(7000),
+    });
+
+    if (res.ok) {
+      const data = (await res.json()) as {
+        status?: string;
+        claimed?: boolean;
+        winner?: FirstWinnerRecord | null;
+      };
+
+      if (data && data.status === "success") {
+        if (data.claimed && data.winner && data.winner.fullName) {
+          return { claimed: true, winner: data.winner };
+        }
+        if (data.claimed === false) {
+          return { claimed: false, winner: null };
+        }
+      }
+    }
+  } catch {
+    // If GET fails or times out, try POST fallback
+  }
+
+  // 2. Fallback to POST
   try {
     const res = await fetch(webhookUrl, {
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "get_winner" }),
-      signal: AbortSignal.timeout(4500),
+      signal: AbortSignal.timeout(7000),
     });
 
     if (!res.ok) return null;
@@ -267,12 +317,27 @@ async function resetGoogleSheetWebhook(): Promise<boolean> {
   if (!webhookUrl) return true;
 
   try {
+    const resetUrl = webhookUrl.includes("?")
+      ? `${webhookUrl}&action=reset`
+      : `${webhookUrl}?action=reset`;
+
+    const res = await fetch(resetUrl, {
+      method: "GET",
+      redirect: "follow",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) return true;
+  } catch {
+    // Fallback to POST
+  }
+
+  try {
     const res = await fetch(webhookUrl, {
       method: "POST",
       redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "reset" }),
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(8000),
     });
     return res.ok;
   } catch {
@@ -298,18 +363,27 @@ async function forwardToGoogleSheetWebhook(record: FirstWinnerRecord): Promise<b
   }
 }
 
-// --- AUTHORITATIVE WINNER RETRIEVAL (CHECKS MEMORY, LOCAL FILE, FIREBASE, GOOGLE SHEET) ---
+// --- AUTHORITATIVE WINNER RETRIEVAL (CHECKS MEMORY, GOOGLE SHEET, FIREBASE, LOCAL FILE) ---
 async function getAuthoritativeFirstWinner(): Promise<FirstWinnerRecord | null> {
   // 1. In-memory
-  if (globalForWinner.__sdPuzzleFirstWinner) {
+  if (globalForWinner.__sdPuzzleFirstWinner !== undefined) {
     return globalForWinner.__sdPuzzleFirstWinner;
   }
 
-  // 2. Local disk file
-  const localWinner = readLocalWinnerFile();
-  if (localWinner) {
-    globalForWinner.__sdPuzzleFirstWinner = localWinner;
-    return localWinner;
+  // 2. Google Sheet Webhook (Primary live source of truth for the competition)
+  const sheetResult = await queryGoogleSheetWinner();
+  if (sheetResult !== null) {
+    if (sheetResult.claimed && sheetResult.winner) {
+      globalForWinner.__sdPuzzleFirstWinner = sheetResult.winner;
+      writeLocalWinnerFile(sheetResult.winner);
+      void writeFirebaseFirstWinner(sheetResult.winner);
+      return sheetResult.winner;
+    }
+    if (sheetResult.claimed === false) {
+      globalForWinner.__sdPuzzleFirstWinner = null;
+      deleteLocalWinnerFile();
+      return null;
+    }
   }
 
   // 3. Firebase
@@ -320,13 +394,11 @@ async function getAuthoritativeFirstWinner(): Promise<FirstWinnerRecord | null> 
     return fbWinner;
   }
 
-  // 4. Google Sheet Webhook
-  const sheetResult = await queryGoogleSheetWinner();
-  if (sheetResult && sheetResult.claimed && sheetResult.winner) {
-    globalForWinner.__sdPuzzleFirstWinner = sheetResult.winner;
-    writeLocalWinnerFile(sheetResult.winner);
-    void writeFirebaseFirstWinner(sheetResult.winner);
-    return sheetResult.winner;
+  // 4. Local disk file
+  const localWinner = readLocalWinnerFile();
+  if (localWinner) {
+    globalForWinner.__sdPuzzleFirstWinner = localWinner;
+    return localWinner;
   }
 
   return null;
@@ -436,17 +508,43 @@ export async function GET(request: Request) {
   }
 
   const cookieHeader = request.headers.get("cookie") || "";
-  const hasWinnerCookie = cookieHeader.includes(`${WINNER_COOKIE_NAME}=1`);
-  // Only the specific browser that submitted the winning form carries the HttpOnly winner cookie
-  const claimedByCurrentVisitor = Boolean(winner) && hasWinnerCookie;
+  const validWinnerToken = getWinnerVerificationToken(winner);
+
+  const clientTokenMatch =
+    Boolean(validWinnerToken) &&
+    cookieHeader.includes(`${WINNER_COOKIE_NAME}=${validWinnerToken}`);
+  const clientHeaderToken = request.headers.get("x-winner-token")?.trim();
+  const queryToken = searchParams.get("token")?.trim();
+
+  // Only the specific browser that submitted the active winning form carries the matching token
+  const claimedByCurrentVisitor = Boolean(
+    winner &&
+      validWinnerToken &&
+      (clientTokenMatch ||
+        clientHeaderToken === validWinnerToken ||
+        queryToken === validWinnerToken)
+  );
 
   const res = NextResponse.json(
     {
       claimed: Boolean(winner),
       claimedByCurrentVisitor,
+      winnerToken: claimedByCurrentVisitor ? validWinnerToken : undefined,
     },
     { status: 200, headers: { "Cache-Control": "no-store" } }
   );
+
+  // Clear stale winner cookie if the cookie belongs to an older/reset competition
+  if (!claimedByCurrentVisitor && cookieHeader.includes(WINNER_COOKIE_NAME)) {
+    res.cookies.set({
+      name: WINNER_COOKIE_NAME,
+      value: "",
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+  }
 
   if (searchParams.get("solved") === "1") {
     attachTimePortalUnlockCookie(res);
@@ -465,7 +563,7 @@ export async function POST(request: Request) {
           status: "already_claimed",
           redirectTo: "/timeportal",
           message:
-            "Someone else has already claimed the #1 First Finisher spot! The Time Portal is unlocked for you.",
+            "You successfully solved the puzzle and unlocked the time portal.",
         },
         { status: 409, headers: { "Cache-Control": "no-store" } }
       );
@@ -541,7 +639,7 @@ export async function POST(request: Request) {
           status: "already_claimed",
           redirectTo: "/timeportal",
           message:
-            "Someone else just claimed the #1 First Finisher spot moments ago! The Time Portal is unlocked for you.",
+            "You successfully solved the puzzle and unlocked the time portal.",
         },
         { status: 409, headers: { "Cache-Control": "no-store" } }
       );
@@ -555,11 +653,14 @@ export async function POST(request: Request) {
     await writeFirebaseFirstWinner(record);
     await forwardToGoogleSheetWebhook(record);
 
+    const winnerToken = getWinnerVerificationToken(record);
+
     const response = NextResponse.json(
       {
         claimed: true,
         status: "claimed_by_you",
         redirectTo: "/timeportal",
+        winnerToken,
         message: "Congratulations! Your details have been recorded as the #1 First Finisher.",
       },
       { status: 201, headers: { "Cache-Control": "no-store" } }
@@ -567,7 +668,7 @@ export async function POST(request: Request) {
 
     response.cookies.set({
       name: WINNER_COOKIE_NAME,
-      value: "1",
+      value: winnerToken,
       httpOnly: true,
       sameSite: "lax",
       path: "/",

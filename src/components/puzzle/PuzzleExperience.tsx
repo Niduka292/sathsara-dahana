@@ -381,11 +381,21 @@ export default function PuzzleExperience() {
       let cancelled = false;
       setWinnerLoading(true);
 
+      const storedToken =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("sd_puzzle_winner_token") || ""
+          : "";
+
       getDeviceFingerprint()
         .then((fp) =>
-          fetch(`/api/puzzle/winner?fp=${encodeURIComponent(fp)}&solved=1`, {
-            cache: "no-store",
-          })
+          fetch(
+            `/api/puzzle/winner?fp=${encodeURIComponent(fp)}&solved=1&token=${encodeURIComponent(
+              storedToken
+            )}`,
+            {
+              cache: "no-store",
+            }
+          )
         )
         .then((res) => (res.ok ? res.json() : null))
         .then(
@@ -393,15 +403,22 @@ export default function PuzzleExperience() {
             data: {
               claimed?: boolean;
               claimedByCurrentVisitor?: boolean;
+              winnerToken?: string;
             } | null
           ) => {
             if (cancelled || !data) return;
-            const isWinnerInSession =
-              typeof window !== "undefined" &&
-              sessionStorage.getItem("sd_puzzle_i_am_winner") === "1";
-            setWinnerClaimed(Boolean(data.claimed));
-            // Only true if this visitor specifically holds the winner auth cookie or session confirmation
-            setClaimedByMe(Boolean(data.claimed && (data.claimedByCurrentVisitor || isWinnerInSession)));
+            const isClaimed = Boolean(data.claimed);
+            const isCurrentWinner = Boolean(isClaimed && data.claimedByCurrentVisitor);
+
+            setWinnerClaimed(isClaimed);
+            setClaimedByMe(isCurrentWinner);
+
+            if (!isCurrentWinner && typeof window !== "undefined") {
+              try {
+                sessionStorage.removeItem("sd_puzzle_winner_token");
+                sessionStorage.removeItem("sd_puzzle_i_am_winner");
+              } catch {}
+            }
           }
         )
         .catch(() => {
@@ -447,13 +464,16 @@ export default function PuzzleExperience() {
         claimed?: boolean;
         status?: string;
         redirectTo?: string;
+        winnerToken?: string;
         message?: string;
       };
 
       if (res.status === 201 || data.status === "claimed_by_you") {
-        try {
-          sessionStorage.setItem("sd_puzzle_i_am_winner", "1");
-        } catch {}
+        if (typeof window !== "undefined" && data.winnerToken) {
+          try {
+            sessionStorage.setItem("sd_puzzle_winner_token", data.winnerToken);
+          } catch {}
+        }
         setWinnerClaimed(true);
         setClaimedByMe(true);
         setWinnerFeedback(
@@ -462,9 +482,12 @@ export default function PuzzleExperience() {
         );
         router.push(data.redirectTo || "/timeportal");
       } else if (res.status === 409 || data.status === "already_claimed") {
-        try {
-          sessionStorage.removeItem("sd_puzzle_i_am_winner");
-        } catch {}
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.removeItem("sd_puzzle_winner_token");
+            sessionStorage.removeItem("sd_puzzle_i_am_winner");
+          } catch {}
+        }
         setWinnerClaimed(true);
         setClaimedByMe(false);
       } else {
@@ -1347,9 +1370,7 @@ export default function PuzzleExperience() {
                   </>
                 ) : winnerClaimed ? (
                   <>
-                    Congratulations! You solved the cipher and aligned the hands of time to{" "}
-                    <span className="text-[#fcd88b] font-semibold">07.18 (July 18)</span>.
-                    The Time Portal is now unlocked for you.
+                    You successfully solved the puzzle and unlocked the time portal.
                   </>
                 ) : (
                   <>
@@ -1390,7 +1411,7 @@ export default function PuzzleExperience() {
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="e.g. Kasun Perera"
+                        placeholder="e.g. Saman Perera"
                         className="w-full rounded-xl border border-[#a78bfa]/30 bg-[#14040a]/90 px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:border-[#fbbf24] focus:outline-none"
                       />
                     </div>
@@ -1418,7 +1439,7 @@ export default function PuzzleExperience() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="e.g. kasun@sjp.ac.lk"
+                        placeholder="e.g. samanperera@gmail.com"
                         className="w-full rounded-xl border border-[#a78bfa]/30 bg-[#14040a]/90 px-3.5 py-2 text-xs text-white placeholder:text-white/30 focus:border-[#fbbf24] focus:outline-none"
                       />
                     </div>
@@ -1465,7 +1486,7 @@ export default function PuzzleExperience() {
                     <span>TIME PORTAL UNLOCKED</span>
                   </div>
                   <p className="text-xs text-[#f3e8ff]/90 leading-relaxed">
-                    The cipher has been solved and the Time Portal is now unlocked. Click below to enter the portal.
+                    You successfully solved the puzzle and unlocked the time portal.
                   </p>
                   <Link
                     href="/timeportal"
