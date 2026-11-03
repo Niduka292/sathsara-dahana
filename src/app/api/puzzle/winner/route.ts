@@ -233,7 +233,8 @@ function getGoogleSheetWebhookUrl(): string | null {
     process.env.PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_PUZZLE_GOOGLE_SHEET_WEBHOOK_URL ||
     process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL ||
-    process.env.GOOGLE_SCRIPT_URL
+    process.env.GOOGLE_SCRIPT_URL ||
+    "https://script.google.com/macros/s/AKfycbx_jYd2htLu6LBkHhiC5Jn9-FEnLmAGkpVfpQrhnd82Fr7bGIOaYe9pSqiIPmfHBmme/exec"
   )?.trim() || null;
 }
 

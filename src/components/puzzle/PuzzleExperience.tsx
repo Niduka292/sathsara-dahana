@@ -1261,6 +1261,52 @@ export default function PuzzleExperience() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Mobile / Short Screen Digital Countdown (Below Puzzle Grid) */}
+          {!isFifteenPuzzleSolved && !isOutOfTries && (
+            <div className="mt-4 flex justify-center sm:hidden">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 backdrop-blur-md transition-all ${
+                  clockMode === "stopwatch"
+                    ? isLowTime
+                      ? "border-red-500/70 bg-red-950/85 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.55)] animate-pulse"
+                      : "border-[#a78bfa]/45 bg-[#1f0612]/90 text-[#fde68a] shadow-[0_0_16px_rgba(251,191,36,0.25)]"
+                    : "border-white/15 bg-black/40 text-white/70"
+                }`}
+              >
+                <Timer
+                  className={`h-3.5 w-3.5 ${
+                    clockMode === "stopwatch"
+                      ? isLowTime
+                        ? "text-red-400"
+                        : "text-[#fbbf24]"
+                      : "text-white/40"
+                  }`}
+                />
+                <span className="font-cinzel text-xs font-bold tracking-wider">
+                  {clockMode === "stopwatch" ? (
+                    <>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-[#e9d5ff]/70 mr-1.5">
+                        Time Left:
+                      </span>
+                      <span className="tabular-nums text-sm font-black text-white">
+                        {formattedStopwatch}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 mr-1.5">
+                        Time Limit:
+                      </span>
+                      <span className="tabular-nums text-sm font-semibold text-white/80">
+                        01:00
+                      </span>
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
