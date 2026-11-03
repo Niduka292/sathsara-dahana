@@ -147,17 +147,13 @@ test("results page renders countdown before release and original search interfac
   assert.doesNotMatch(after, /Results reveal in|password/i);
 });
 
-test("existing popup has the requested before/after copy and the same results link", () => {
-  for (const released of [false, true]) {
-    const { load } = fixture(release, {
-      "@/hooks/useResultsRelease": { useResultsRelease: () => ({ released, countdown: { days: 0, hours: 0, minutes: 0, seconds: 1 } }) },
-    });
-    const Popup = load("@/src/components/results/ResultsAnnouncement").default;
-    const markup = renderToStaticMarkup(React.createElement(Popup));
-    assert.match(markup, released ? /The wait is over/ : /The wait is almost over/);
-    assert.match(markup, released ? /are out!/ : /are coming soon!/);
-    assert.match(markup, /href="\/results"/);
-    assert.equal(markup.includes('role="timer"'), !released);
-    assert.equal((markup.match(/<dialog/g) ?? []).length, 1);
-  }
+test("asteroid news popup renders the 2026 UA1 encounter report and timestamp discrepancy notice", () => {
+  const { load } = fixture(release);
+  const Popup = load("@/src/components/ui/AsteroidNewsPopup").default;
+  const markup = renderToStaticMarkup(React.createElement(Popup));
+  assert.match(markup, /2026 UA1/);
+  assert.match(markup, /221,500 kilometres/);
+  assert.match(markup, /October 23/);
+  assert.match(markup, /unexplained timestamp discrepancies/);
+  assert.equal((markup.match(/<dialog/g) ?? []).length, 1);
 });
