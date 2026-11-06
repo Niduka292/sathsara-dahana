@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useBeatDetection } from "@/hooks/useBeatDetection";
+import {
+  useBeatDetection,
+  type AudioInputDevice,
+} from "@/hooks/useBeatDetection";
 import type { LightshowDesign } from "@/lib/lightshow/types";
 
 interface BeatDetectorProps {
@@ -10,6 +13,9 @@ interface BeatDetectorProps {
   manualEnergy: number;
   manualMode: boolean;
   active: boolean;
+  deviceId?: string;
+  inputGain?: number;
+  noiseGate?: number;
   onEnergyChange?: (
     energy: number,
     bassEnergy: number,
@@ -17,6 +23,11 @@ interface BeatDetectorProps {
     pitchHeight: number,  // 0–1   (low → high), smoothed
   ) => void;
   onError?: (message: string | null) => void;
+  onDevicesChange?: (
+    devices: AudioInputDevice[],
+    activeDeviceLabel: string | null,
+    refreshDevices: (requestPermission?: boolean) => Promise<void>,
+  ) => void;
 }
 
 // ── Lightweight pitch estimator ───────────────────────────────────────────────
@@ -24,13 +35,6 @@ interface BeatDetectorProps {
 // Uses the HPS (Harmonic Product Spectrum) algorithm on the existing
 // AnalyserNode frequency data already provided by useBeatDetection.
 // No extra microphone permission is needed — we reuse the same audio graph.
-//
-// Steps:
-//  1. Find the dominant frequency bin via HPS (downsamples & multiplies spectrum).
-//  2. Convert bin index → Hz using sampleRate and fftSize.
-//  3. Convert Hz → MIDI note number → pitch class (0–11).
-//  4. Smooth pitchHeight with an exponential moving average so visuals don't
-//     flicker on every frame.
 
 const A4_HZ = 440;
 const A4_MIDI = 69;
@@ -96,21 +100,40 @@ export default function BeatDetector({
   manualEnergy,
   manualMode,
   active,
+  deviceId,
+  inputGain,
+  noiseGate,
   onEnergyChange,
   onError,
+  onDevicesChange,
 }: BeatDetectorProps) {
-  const { lastEnergy, lastBassEnergy, error, analyserNode, sampleRate } =
-    useBeatDetection({
-      enabled,
-      design,
-      manualEnergy,
-      manualMode,
-      active,
-    });
+  const {
+    lastEnergy,
+    lastBassEnergy,
+    error,
+    analyserNode,
+    sampleRate,
+    devices,
+    activeDeviceLabel,
+    refreshDevices,
+  } = useBeatDetection({
+    enabled,
+    design,
+    manualEnergy,
+    manualMode,
+    active,
+    deviceId,
+    inputGain,
+    noiseGate,
+  });
 
   // Smoothed pitch state lives in a ref so it doesn't trigger re-renders
   const pitchRef = useRef({ pitchClass: -1, pitchHeight: 0.5 });
   const freqDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
+
+  useEffect(() => {
+    onDevicesChange?.(devices, activeDeviceLabel, refreshDevices);
+  }, [devices, activeDeviceLabel, refreshDevices, onDevicesChange]);
 
   // ── Pitch polling loop ──────────────────────────────────────────────────────
   // We poll the analyser at ~30 fps independently of the energy callbacks to

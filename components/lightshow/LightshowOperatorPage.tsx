@@ -1,12 +1,15 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import AudienceExperience from "@/components/lightshow/AudienceExperience";
 import BeatDetector from "@/components/lightshow/BeatDetector";
 import OperatorControls from "@/components/lightshow/OperatorControls";
 import {
+  DEFAULT_INPUT_GAIN,
+  DEFAULT_NOISE_GATE,
   emergencyStopLightshow,
   writeLightshowState,
+  type AudioInputDevice,
 } from "@/hooks/useBeatDetection";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useLightshowState } from "@/hooks/useLightshowState";
@@ -28,8 +31,18 @@ export default function LightshowOperatorPage() {
   const [manualMode, setManualMode] = useState(true);
   const [audioEnergy, setAudioEnergy] = useState(0);
   const [bassEnergy, setBassEnergy] = useState(0);
+  const [pitchClass, setPitchClass] = useState(-1);
+  const [pitchHeight, setPitchHeight] = useState(0.5);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [bpm, setBpm] = useState(120);
+
+  // Audio Input / Line-In state
+  const [devices, setDevices] = useState<AudioInputDevice[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState("");
+  const [activeDeviceLabel, setActiveDeviceLabel] = useState<string | null>(null);
+  const [inputGain, setInputGain] = useState(DEFAULT_INPUT_GAIN);
+  const [noiseGate, setNoiseGate] = useState(DEFAULT_NOISE_GATE);
+  const refreshDevicesRef = useRef<((requestPermission?: boolean) => Promise<void>) | null>(null);
 
   const handlePinSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -40,6 +53,32 @@ export default function LightshowOperatorPage() {
     }
     setPinError("Invalid operator PIN.");
   };
+
+  const handleDevicesChange = useCallback(
+    (
+      nextDevices: AudioInputDevice[],
+      nextActiveLabel: string | null,
+      refreshFn: (requestPermission?: boolean) => Promise<void>,
+    ) => {
+      setDevices(nextDevices);
+      setActiveDeviceLabel(nextActiveLabel);
+      refreshDevicesRef.current = refreshFn;
+    },
+    [],
+  );
+
+  const handleDeviceSelect = useCallback(
+    (deviceId: string) => {
+      setSelectedDeviceId(deviceId);
+      const chosen = devices.find((d) => d.deviceId === deviceId);
+      if (chosen?.isLineIn) {
+        // Automatically apply cleaner Line-In gain & low noise floor when switching to a Line-In device
+        setInputGain(1.3);
+        setNoiseGate(5);
+      }
+    },
+    [devices],
+  );
 
   const syncState = useCallback(
     async (partial: {
@@ -129,6 +168,11 @@ export default function LightshowOperatorPage() {
             audioEnergy={audioEnergy}
             bassEnergy={bassEnergy}
             audioError={audioError}
+            devices={devices}
+            selectedDeviceId={selectedDeviceId}
+            activeDeviceLabel={activeDeviceLabel}
+            inputGain={inputGain}
+            noiseGate={noiseGate}
             onDesignChange={(nextDesign) => {
               setDesign(nextDesign);
               void syncState({ design: nextDesign });
@@ -140,6 +184,12 @@ export default function LightshowOperatorPage() {
             onManualEnergyChange={setManualEnergy}
             onManualModeChange={setManualMode}
             onBpmChange={setBpm}
+            onDeviceChange={handleDeviceSelect}
+            onRefreshDevices={() => {
+              void refreshDevicesRef.current?.(true);
+            }}
+            onInputGainChange={setInputGain}
+            onNoiseGateChange={setNoiseGate}
             onEmergencyStop={() => {
               setActive(false);
               void emergencyStopLightshow();
@@ -163,6 +213,11 @@ export default function LightshowOperatorPage() {
               showDesignLabel
               preview
               smooth={false}
+              bpm={bpm}
+              manualMode={manualMode}
+              manualEnergy={manualEnergy}
+              pitchClass={pitchClass}
+              pitchHeight={pitchHeight}
             />
           </div>
         </div>
@@ -174,11 +229,17 @@ export default function LightshowOperatorPage() {
         manualEnergy={manualEnergy}
         manualMode={manualMode}
         active={active}
-        onEnergyChange={(energy, bass) => {
+        deviceId={selectedDeviceId}
+        inputGain={inputGain}
+        noiseGate={noiseGate}
+        onEnergyChange={(energy, bass, nextPitchClass, nextPitchHeight) => {
           setAudioEnergy(energy);
           setBassEnergy(bass);
+          setPitchClass(nextPitchClass);
+          setPitchHeight(nextPitchHeight);
         }}
         onError={setAudioError}
+        onDevicesChange={handleDevicesChange}
       />
     </div>
   );

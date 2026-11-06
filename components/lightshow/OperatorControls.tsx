@@ -1,5 +1,6 @@
 "use client";
 
+import type { AudioInputDevice } from "@/hooks/useBeatDetection";
 import {
   OPERATOR_DESIGN_TO_STATE,
   STATE_DESIGN_TO_OPERATOR,
@@ -17,11 +18,20 @@ interface OperatorControlsProps {
   audioEnergy: number;
   bassEnergy: number;
   audioError: string | null;
+  devices?: AudioInputDevice[];
+  selectedDeviceId?: string;
+  activeDeviceLabel?: string | null;
+  inputGain?: number;
+  noiseGate?: number;
   onDesignChange: (design: LightshowDesign) => void;
   onActiveChange: (active: boolean) => void;
   onManualEnergyChange: (value: number) => void;
   onManualModeChange: (enabled: boolean) => void;
   onBpmChange?: (bpm: number) => void;
+  onDeviceChange?: (deviceId: string) => void;
+  onRefreshDevices?: () => void;
+  onInputGainChange?: (gain: number) => void;
+  onNoiseGateChange?: (gate: number) => void;
   onEmergencyStop: () => void;
 }
 
@@ -82,11 +92,20 @@ export default function OperatorControls({
   audioEnergy,
   bassEnergy,
   audioError,
+  devices = [],
+  selectedDeviceId = "",
+  activeDeviceLabel = null,
+  inputGain = 2.4,
+  noiseGate = 10,
   onDesignChange,
   onActiveChange,
   onManualEnergyChange,
   onManualModeChange,
   onBpmChange = () => {},
+  onDeviceChange = () => {},
+  onRefreshDevices = () => {},
+  onInputGainChange = () => {},
+  onNoiseGateChange = () => {},
   onEmergencyStop,
 }: OperatorControlsProps) {
   const selectedLabel = STATE_DESIGN_TO_OPERATOR[design];
@@ -165,16 +184,114 @@ export default function OperatorControls({
             Start
           </ControlButton>
           <ControlButton onClick={() => onActiveChange(false)}>Stop</ControlButton>
-          <ControlButton active={manualMode} onClick={() => onManualModeChange(!manualMode)}>
-            Manual Mode
+          <ControlButton active={!manualMode} onClick={() => onManualModeChange(false)}>
+            Live Audio / Line-In
+          </ControlButton>
+          <ControlButton active={manualMode} onClick={() => onManualModeChange(true)}>
+            Manual BPM
           </ControlButton>
         </div>
-        {!manualMode && (
-          <p className="text-[10px] leading-5 text-white/45">
-            Live audio uses your microphone. Brightness and motion follow volume and bass.
-          </p>
-        )}
       </section>
+
+      {/* ── Audio Input & Line-In Selector (when Live Audio mode is active) ── */}
+      {!manualMode && (
+        <section className="space-y-3 rounded border border-blue-900/50 bg-blue-950/20 p-3">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-blue-200/90">
+              Audio Input Source
+            </p>
+            <button
+              type="button"
+              onClick={onRefreshDevices}
+              className="rounded border border-blue-400/30 bg-blue-500/10 px-2 py-0.5 text-[9px] uppercase tracking-[0.15em] text-blue-200 transition hover:border-blue-400/60 hover:bg-blue-500/20"
+            >
+              Scan Inputs
+            </button>
+          </div>
+
+          <select
+            value={selectedDeviceId}
+            onChange={(e) => onDeviceChange(e.target.value)}
+            className="w-full rounded border border-white/15 bg-black/80 px-2.5 py-2 font-sans text-xs text-white outline-none focus:border-blue-400"
+          >
+            <option value="">System Default Audio Input</option>
+            {devices.map((d) => (
+              <option key={d.deviceId} value={d.deviceId}>
+                {d.isLineIn ? `⚡ [Line-In / Direct] ${d.label}` : d.label}
+              </option>
+            ))}
+          </select>
+
+          {activeDeviceLabel && (
+            <p className="truncate font-sans text-[10px] text-emerald-300/85">
+              Active: {activeDeviceLabel}
+            </p>
+          )}
+
+          {/* Quick presets for Line-In vs Noisy Room Mic */}
+          <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                onInputGainChange(1.3);
+                onNoiseGateChange(5);
+              }}
+              className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[9px] uppercase tracking-[0.12em] text-white/75 transition hover:border-blue-400/50 hover:text-white"
+            >
+              Line-In Preset
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onInputGainChange(2.0);
+                onNoiseGateChange(22);
+              }}
+              className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[9px] uppercase tracking-[0.12em] text-white/75 transition hover:border-blue-400/50 hover:text-white"
+            >
+              Noisy Venue Mic
+            </button>
+          </div>
+
+          {/* Noise Gate Slider */}
+          <div className="space-y-1 pt-1">
+            <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-white/55">
+              <span>Noise Gate (Cut Crowd Noise)</span>
+              <span className="text-blue-200">{noiseGate}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={50}
+              step={1}
+              value={noiseGate}
+              onChange={(e) => onNoiseGateChange(Number(e.target.value))}
+              className="w-full accent-blue-400"
+            />
+          </div>
+
+          {/* Input Gain Slider */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-white/55">
+              <span>Input Gain (Sensitivity)</span>
+              <span className="text-blue-200">{inputGain.toFixed(1)}×</span>
+            </div>
+            <input
+              type="range"
+              min={0.4}
+              max={5.0}
+              step={0.1}
+              value={inputGain}
+              onChange={(e) => onInputGainChange(Number(e.target.value))}
+              className="w-full accent-blue-400"
+            />
+          </div>
+
+          <p className="font-sans text-[10px] leading-4 text-white/40">
+            Tip: Connect a 3.5mm Line-In or USB audio interface from the soundboard, click{" "}
+            <strong className="text-white/60">Scan Inputs</strong>, and select it above for zero crowd noise.
+          </p>
+        </section>
+      )}
 
       {/* ── Manual energy slider (only in manual mode) ───────────── */}
       {manualMode && (
