@@ -12,6 +12,9 @@ export interface LightshowState {
   effect: LightshowEffect;
   energy: number;
   bassEnergy: number;
+  leftEnergy?: number;
+  rightEnergy?: number;
+  stereoChannels?: number;
   beat: boolean;
   active: boolean;
   updatedAt: number;
@@ -26,6 +29,9 @@ export const DEFAULT_LIGHTSHOW_STATE: LightshowState = {
   effect: "idle",
   energy: 0,
   bassEnergy: 0,
+  leftEnergy: 0,
+  rightEnergy: 0,
+  stereoChannels: 2,
   beat: false,
   active: false,
   updatedAt: 0,

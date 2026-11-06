@@ -31,6 +31,10 @@ export default function LightshowOperatorPage() {
   const [manualMode, setManualMode] = useState(true);
   const [audioEnergy, setAudioEnergy] = useState(0);
   const [bassEnergy, setBassEnergy] = useState(0);
+  const [leftEnergy, setLeftEnergy] = useState(0);
+  const [rightEnergy, setRightEnergy] = useState(0);
+  const [channelCount, setChannelCount] = useState(2);
+  const [monitorAudio, setMonitorAudio] = useState(false);
   const [pitchClass, setPitchClass] = useState(-1);
   const [pitchHeight, setPitchHeight] = useState(0.5);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -72,7 +76,6 @@ export default function LightshowOperatorPage() {
       setSelectedDeviceId(deviceId);
       const chosen = devices.find((d) => d.deviceId === deviceId);
       if (chosen?.isLineIn) {
-        // Automatically apply cleaner Line-In gain & low noise floor when switching to a Line-In device
         setInputGain(1.3);
         setNoiseGate(5);
       }
@@ -87,16 +90,20 @@ export default function LightshowOperatorPage() {
     }) => {
       const nextDesign = partial.design ?? design;
       const nextActive = partial.active ?? active;
+      const currentEnergy = manualMode ? manualEnergy : audioEnergy;
 
       await writeLightshowState({
         design: nextDesign,
         active: nextActive,
         effect: nextActive ? "portal" : "idle",
-        energy: manualMode ? manualEnergy : audioEnergy,
+        energy: currentEnergy,
         bassEnergy,
+        leftEnergy: manualMode ? manualEnergy : leftEnergy,
+        rightEnergy: manualMode ? manualEnergy : rightEnergy,
+        stereoChannels: 2,
       });
     },
-    [active, audioEnergy, bassEnergy, design, manualEnergy, manualMode],
+    [active, audioEnergy, bassEnergy, design, leftEnergy, manualEnergy, manualMode, rightEnergy],
   );
 
   if (!authenticated) {
@@ -152,6 +159,9 @@ export default function LightshowOperatorPage() {
     active,
     energy: manualMode ? manualEnergy : audioEnergy,
     bassEnergy,
+    leftEnergy: manualMode ? manualEnergy : leftEnergy,
+    rightEnergy: manualMode ? manualEnergy : rightEnergy,
+    stereoChannels: 2,
   };
 
   return (
@@ -167,6 +177,10 @@ export default function LightshowOperatorPage() {
             audienceCount={meta.audienceCount}
             audioEnergy={audioEnergy}
             bassEnergy={bassEnergy}
+            leftEnergy={leftEnergy}
+            rightEnergy={rightEnergy}
+            channelCount={channelCount}
+            monitorAudio={monitorAudio}
             audioError={audioError}
             devices={devices}
             selectedDeviceId={selectedDeviceId}
@@ -190,6 +204,7 @@ export default function LightshowOperatorPage() {
             }}
             onInputGainChange={setInputGain}
             onNoiseGateChange={setNoiseGate}
+            onMonitorAudioChange={setMonitorAudio}
             onEmergencyStop={() => {
               setActive(false);
               void emergencyStopLightshow();
@@ -232,11 +247,23 @@ export default function LightshowOperatorPage() {
         deviceId={selectedDeviceId}
         inputGain={inputGain}
         noiseGate={noiseGate}
-        onEnergyChange={(energy, bass, nextPitchClass, nextPitchHeight) => {
+        monitorAudio={monitorAudio}
+        onEnergyChange={(
+          energy,
+          bass,
+          nextPitchClass,
+          nextPitchHeight,
+          nextLeft,
+          nextRight,
+          nextChannels,
+        ) => {
           setAudioEnergy(energy);
           setBassEnergy(bass);
           setPitchClass(nextPitchClass);
           setPitchHeight(nextPitchHeight);
+          setLeftEnergy(nextLeft);
+          setRightEnergy(nextRight);
+          setChannelCount(nextChannels);
         }}
         onError={setAudioError}
         onDevicesChange={handleDevicesChange}

@@ -14,6 +14,8 @@ interface MusicalVisualProps {
   rawEnergy: number;
   bassEnergy: number;
   rawBassEnergy: number;
+  leftEnergy?: number;
+  rightEnergy?: number;
   pitchClass: number;
   pitchHeight: number;
   active: boolean;
@@ -198,7 +200,6 @@ function buildVeinSegments(width: number, height: number, seed: number): VeinSeg
   const SPREAD = Math.PI / 6;
   const MAX_SEGS = 300;
 
-  // Build queue carries: x, y, depth, armIndex, angle, parentSegIdx (-1 = none)
   type QNode = { x: number; y: number; depth: number; armIndex: number; angle: number; parentSegIdx: number };
   const queue: QNode[] = [{ x: cx, y: cy, depth: 0, armIndex: -1, angle: 0, parentSegIdx: -1 }];
 
@@ -229,7 +230,6 @@ function buildVeinSegments(width: number, height: number, seed: number): VeinSeg
         childIndices: [],
       });
 
-      // Register this segment as a child of its parent
       if (node.parentSegIdx >= 0) {
         segs[node.parentSegIdx].childIndices.push(segIdx);
       }
@@ -253,26 +253,56 @@ function armChargeFactor(armIndex: number, pitchClass: number): number {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function MusicalVisual({
-  design, energy, rawEnergy, bassEnergy, rawBassEnergy,
-  pitchClass, pitchHeight, active, reducedMotion,
+  design,
+  energy,
+  rawEnergy,
+  bassEnergy,
+  rawBassEnergy,
+  leftEnergy,
+  rightEnergy,
+  pitchClass,
+  pitchHeight,
+  active,
+  reducedMotion,
 }: MusicalVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const propsRef = useRef({ design, energy, rawEnergy, bassEnergy, rawBassEnergy, pitchClass, pitchHeight, active, reducedMotion });
-  propsRef.current = { design, energy, rawEnergy, bassEnergy, rawBassEnergy, pitchClass, pitchHeight, active, reducedMotion };
+  const propsRef = useRef({
+    design,
+    energy,
+    rawEnergy,
+    bassEnergy,
+    rawBassEnergy,
+    leftEnergy: leftEnergy ?? energy,
+    rightEnergy: rightEnergy ?? energy,
+    pitchClass,
+    pitchHeight,
+    active,
+    reducedMotion,
+  });
+  propsRef.current = {
+    design,
+    energy,
+    rawEnergy,
+    bassEnergy,
+    rawBassEnergy,
+    leftEnergy: leftEnergy ?? energy,
+    rightEnergy: rightEnergy ?? energy,
+    pitchClass,
+    pitchHeight,
+    active,
+    reducedMotion,
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // No alpha:false — keeps globalAlpha and gradients working correctly
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // ── geometry ─────────────────────────────────────────────────────────────
     let hexCells: HexCell[] = [];
     let veinSegs: VeinSegment[] = [];
-    // root-arm segment indices (depth === 1) — computed after build
     let rootSegIndices: number[] = [];
-    // per-frame charge array, allocated once
     let segCharge = new Float32Array(0);
     let hexR = 0;
 
@@ -289,7 +319,6 @@ export default function MusicalVisual({
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
-      // DPR capped at 1.5 for mobile fps headroom
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = parent.clientWidth * dpr;
       canvas.height = parent.clientHeight * dpr;
@@ -305,6 +334,8 @@ export default function MusicalVisual({
     // ── frame state ───────────────────────────────────────────────────────────
     let displayEnergy = 0;
     let displayBass = 0;
+    let displayLeft = 0;
+    let displayRight = 0;
     let time = 0;
     let frameId = 0;
     let smoothPitchH = 0.5;
@@ -336,10 +367,17 @@ export default function MusicalVisual({
     };
 
     // ── DRAW: Supernova ───────────────────────────────────────────────────────
-    const drawSupernova = (w: number, h: number, amp: number, bass: number, pH: number) => {
+    const drawSupernova = (
+      w: number,
+      h: number,
+      amp: number,
+      bass: number,
+      pH: number,
+      stereoPan: number,
+    ) => {
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
-      const cx = w / 2;
+      const cx = w / 2 + stereoPan * (w * 0.06);
       const cy = h / 2;
 
       if (amp > 0.18 && amp - prevAmp > 0.06) spawnDetonation(w, h, amp, pH);
@@ -413,21 +451,33 @@ export default function MusicalVisual({
       ctx.closePath();
     };
 
-    const drawHexBloom = (w: number, h: number, amp: number, bass: number) => {
+    const drawHexBloom = (
+      w: number,
+      h: number,
+      amp: number,
+      bass: number,
+      leftAmp: number,
+      rightAmp: number,
+    ) => {
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
       const breathe = Math.sin(time * 1.1) * 0.04;
-      const totalEnergy = clamp(amp + bass * 0.35 + breathe, 0, 1);
       const outerR = hexR * 0.88;
+      const midX = w / 2;
 
       for (const cell of hexCells) {
+        // Blend between Left channel energy and Right channel energy across screen width
+        const sideT = clamp(cell.cx / Math.max(1, w), 0, 1);
+        const channelAmp = lerp(leftAmp, rightAmp, sideT);
+        const localAmp = channelAmp * 0.65 + amp * 0.35;
+        const totalEnergy = clamp(localAmp + bass * 0.35 + breathe, 0, 1);
         const bloom = clamp(totalEnergy - cell.dist * 0.82, 0, 1);
 
         if (bloom < 0.01) {
           traceHex(cell.cx, cell.cy, outerR);
           ctx.globalAlpha = 1;
-          ctx.strokeStyle = "rgba(40,0,80,0.35)";
+          ctx.strokeStyle = cell.cx < midX ? "rgba(40,0,80,0.35)" : "rgba(40,0,80,0.35)";
           ctx.lineWidth = 0.5;
           ctx.stroke();
           continue;
@@ -460,18 +510,20 @@ export default function MusicalVisual({
     };
 
     // ── DRAW: Plasma Veins ────────────────────────────────────────────────────
-    // Charge propagation: BFS order from build guarantees every parent segment
-    // appears at a lower index than its children, so a single forward pass
-    // through segCharge correctly propagates from root arms to tips.
-
-    const computeCharges = (rootCharge: number, pc: number) => {
-      // Zero out
+    const computeCharges = (
+      rootCharge: number,
+      pc: number,
+      leftCharge: number,
+      rightCharge: number,
+    ) => {
       segCharge.fill(0);
-      // Seed root arms
       for (const idx of rootSegIndices) {
-        segCharge[idx] = rootCharge * armChargeFactor(veinSegs[idx].armIndex, pc);
+        const seg = veinSegs[idx];
+        const isRightSide = seg.x2 >= seg.x1;
+        const sideBoost = isRightSide ? rightCharge : leftCharge;
+        const blendedRoot = rootCharge * 0.5 + sideBoost * 0.5;
+        segCharge[idx] = blendedRoot * armChargeFactor(seg.armIndex, pc);
       }
-      // Forward propagation — parent always has lower index (BFS build order)
       for (let i = 0; i < veinSegs.length; i++) {
         if (segCharge[i] < 0.01) continue;
         const childCharge = clamp(segCharge[i] - CHARGE_DROP, 0, 1);
@@ -481,16 +533,29 @@ export default function MusicalVisual({
       }
     };
 
-    const drawPlasmaVeins = (w: number, h: number, amp: number, bass: number, pc: number, pH: number) => {
+    const drawPlasmaVeins = (
+      w: number,
+      h: number,
+      amp: number,
+      bass: number,
+      pc: number,
+      pH: number,
+      leftAmp: number,
+      rightAmp: number,
+    ) => {
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
 
       const rawCharge = clamp(Math.pow(amp, 0.6) + bass * 0.4, 0, 1);
+      const rawLeftCharge = clamp(Math.pow(leftAmp, 0.6) + bass * 0.4, 0, 1);
+      const rawRightCharge = clamp(Math.pow(rightAmp, 0.6) + bass * 0.4, 0, 1);
       const pulse = Math.sin(time * 2.8) * 0.18 + Math.sin(time * 1.1) * 0.07;
       const rootCharge = clamp(rawCharge + pulse * rawCharge, 0, 1);
+      const leftCharge = clamp(rawLeftCharge + pulse * rawLeftCharge, 0, 1);
+      const rightCharge = clamp(rawRightCharge + pulse * rawRightCharge, 0, 1);
 
-      computeCharges(rootCharge, pc);
+      computeCharges(rootCharge, pc, leftCharge, rightCharge);
 
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
@@ -547,6 +612,7 @@ export default function MusicalVisual({
       const {
         design: d, energy: e, rawEnergy: re,
         bassEnergy: be, rawBassEnergy: rbe,
+        leftEnergy: le, rightEnergy: rie,
         pitchClass: pc, pitchHeight: ph,
         active: isActive, reducedMotion: reduced,
       } = propsRef.current;
@@ -554,21 +620,28 @@ export default function MusicalVisual({
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
 
-      displayEnergy = chaseValue(displayEnergy, normalizeVisualEnergy(e), reduced ? 0.78 : 0.92, reduced ? 0.55 : 0.72);
+      const rise = reduced ? 0.78 : 0.92;
+      const fall = reduced ? 0.55 : 0.72;
+
+      displayEnergy = chaseValue(displayEnergy, normalizeVisualEnergy(e), rise, fall);
       displayBass = chaseValue(displayBass, normalizeVisualEnergy(be), reduced ? 0.80 : 0.94, reduced ? 0.58 : 0.75);
+      displayLeft = chaseValue(displayLeft, normalizeVisualEnergy(le), rise, fall);
+      displayRight = chaseValue(displayRight, normalizeVisualEnergy(rie), rise, fall);
 
       const bassLive = normalizeVisualEnergy(rbe) * 0.88 + displayBass * 0.12;
       const amp = liveAmplitude(displayEnergy, normalizeVisualEnergy(re), bassLive);
+      const leftAmp = liveAmplitude(displayLeft, normalizeVisualEnergy(le), bassLive);
+      const rightAmp = liveAmplitude(displayRight, normalizeVisualEnergy(rie), bassLive);
+      const stereoPan = clamp((rightAmp - leftAmp) * 1.8, -1, 1);
 
       const safePh = Number.isFinite(ph) ? ph : 0.5;
       smoothPitchH += (safePh - smoothPitchH) * (reduced ? 0.12 : 0.18);
       time += reduced ? 0.008 : 0.016;
 
-      // Always reset globalAlpha at top of frame
       ctx.globalAlpha = 1;
 
       if (!isActive) {
-        displayEnergy = 0; displayBass = 0;
+        displayEnergy = 0; displayBass = 0; displayLeft = 0; displayRight = 0;
         shockwaves.length = 0; debris.length = 0; prevAmp = 0;
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, w, h);
@@ -577,11 +650,11 @@ export default function MusicalVisual({
       }
 
       if (d === "radial") {
-        drawSupernova(w, h, amp, bassLive, smoothPitchH);
+        drawSupernova(w, h, amp, bassLive, smoothPitchH, stereoPan);
       } else if (d === "grid") {
-        drawHexBloom(w, h, amp, bassLive);
+        drawHexBloom(w, h, amp, bassLive, leftAmp, rightAmp);
       } else {
-        drawPlasmaVeins(w, h, amp, bassLive, pc ?? -1, smoothPitchH);
+        drawPlasmaVeins(w, h, amp, bassLive, pc ?? -1, smoothPitchH, leftAmp, rightAmp);
       }
 
       frameId = requestAnimationFrame(draw);

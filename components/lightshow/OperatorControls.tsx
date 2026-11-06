@@ -17,6 +17,10 @@ interface OperatorControlsProps {
   audienceCount: number;
   audioEnergy: number;
   bassEnergy: number;
+  leftEnergy?: number;
+  rightEnergy?: number;
+  channelCount?: number;
+  monitorAudio?: boolean;
   audioError: string | null;
   devices?: AudioInputDevice[];
   selectedDeviceId?: string;
@@ -32,19 +36,18 @@ interface OperatorControlsProps {
   onRefreshDevices?: () => void;
   onInputGainChange?: (gain: number) => void;
   onNoiseGateChange?: (gate: number) => void;
+  onMonitorAudioChange?: (enabled: boolean) => void;
   onEmergencyStop: () => void;
 }
 
 const DESIGN_OPTIONS: OperatorDesignLabel[] = ["Supernova", "Hex Bloom", "Plasma Veins"];
 
-// Visual description shown per design so the operator knows what to expect
 const DESIGN_DESCRIPTIONS: Record<OperatorDesignLabel, string> = {
   Supernova: "Core orb detonates shockwave rings on every beat. Debris trails fly outward.",
   "Hex Bloom": "Honeycomb grid blooms from center outward on each beat pulse.",
   "Plasma Veins": "Electric charge travels along branching veins, surging on every beat.",
 };
 
-// BPM tempo label shown alongside the value
 function bpmLabel(bpm: number): string {
   if (bpm < 70)  return "Ambient";
   if (bpm < 90)  return "Slow";
@@ -91,6 +94,10 @@ export default function OperatorControls({
   audienceCount,
   audioEnergy,
   bassEnergy,
+  leftEnergy = 0,
+  rightEnergy = 0,
+  channelCount = 2,
+  monitorAudio = false,
   audioError,
   devices = [],
   selectedDeviceId = "",
@@ -106,6 +113,7 @@ export default function OperatorControls({
   onRefreshDevices = () => {},
   onInputGainChange = () => {},
   onNoiseGateChange = () => {},
+  onMonitorAudioChange = () => {},
   onEmergencyStop,
 }: OperatorControlsProps) {
   const selectedLabel = STATE_DESIGN_TO_OPERATOR[design];
@@ -161,7 +169,6 @@ export default function OperatorControls({
           onChange={(e) => onBpmChange(Number(e.target.value))}
           className="w-full accent-blue-400"
         />
-        {/* Tick marks at common BPM anchors */}
         <div className="flex justify-between text-[8px] text-white/20">
           <span>60</span>
           <span>90</span>
@@ -223,10 +230,47 @@ export default function OperatorControls({
           </select>
 
           {activeDeviceLabel && (
-            <p className="truncate font-sans text-[10px] text-emerald-300/85">
-              Active: {activeDeviceLabel}
-            </p>
+            <div className="flex items-center justify-between gap-2 font-sans text-[10px]">
+              <span className="truncate text-emerald-300/85">
+                Active: {activeDeviceLabel}
+              </span>
+              <span className="shrink-0 rounded border border-emerald-400/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] uppercase text-emerald-200">
+                {channelCount >= 2 ? "2-Ch Stereo" : "Stereo Upmix"}
+              </span>
+            </div>
           )}
+
+          {/* Stereo L / R Live Level Meters */}
+          <div className="space-y-1.5 rounded border border-white/10 bg-black/40 p-2 font-sans text-[10px]">
+            <div className="flex items-center gap-2">
+              <span className="w-4 font-semibold text-blue-300">L</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-300 transition-all duration-75"
+                  style={{ width: `${Math.min(100, Math.round(leftEnergy))}%` }}
+                />
+              </div>
+              <span className="w-7 text-right text-white/60">{Math.round(leftEnergy)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-4 font-semibold text-blue-300">R</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-300 transition-all duration-75"
+                  style={{ width: `${Math.min(100, Math.round(rightEnergy))}%` }}
+                />
+              </div>
+              <span className="w-7 text-right text-white/60">{Math.round(rightEnergy)}</span>
+            </div>
+          </div>
+
+          {/* Stereo Speaker Passthrough Toggle */}
+          <ControlButton
+            active={monitorAudio}
+            onClick={() => onMonitorAudioChange(!monitorAudio)}
+          >
+            {monitorAudio ? "Stereo Speaker Out: ON" : "Stereo Speaker Out: OFF"}
+          </ControlButton>
 
           {/* Quick presets for Line-In vs Noisy Room Mic */}
           <div className="grid grid-cols-2 gap-1.5 pt-1">
@@ -285,11 +329,6 @@ export default function OperatorControls({
               className="w-full accent-blue-400"
             />
           </div>
-
-          <p className="font-sans text-[10px] leading-4 text-white/40">
-            Tip: Connect a 3.5mm Line-In or USB audio interface from the soundboard, click{" "}
-            <strong className="text-white/60">Scan Inputs</strong>, and select it above for zero crowd noise.
-          </p>
         </section>
       )}
 
@@ -329,7 +368,7 @@ export default function OperatorControls({
           <div>
             <p className="text-white/40">Mode</p>
             <p className="mt-1 text-sm text-blue-200">
-              {manualMode ? `Manual · ${bpm} BPM` : active ? "Live Audio" : "Idle"}
+              {manualMode ? `Manual · ${bpm} BPM` : active ? "Live Stereo" : "Idle"}
             </p>
           </div>
         </div>

@@ -23,24 +23,41 @@ export function useSmoothedLightshowState(state: LightshowState) {
       const rising = 0.96;
       const falling = 0.84;
 
-      setDisplay((current) => ({
-        ...target,
-        energy: lerp(
-          current.energy,
-          target.energy,
-          target.energy >= current.energy ? rising : falling,
-        ),
-        bassEnergy: lerp(
-          current.bassEnergy,
-          target.bassEnergy,
-          target.bassEnergy >= current.bassEnergy ? rising : falling,
-        ),
-        beat: false,
-        effect: target.effect,
-        design: target.design,
-        active: target.active,
-        updatedAt: target.updatedAt,
-      }));
+      setDisplay((current) => {
+        const targetLeft = target.leftEnergy ?? target.energy;
+        const targetRight = target.rightEnergy ?? target.energy;
+        const currentLeft = current.leftEnergy ?? current.energy;
+        const currentRight = current.rightEnergy ?? current.energy;
+
+        return {
+          ...target,
+          energy: lerp(
+            current.energy,
+            target.energy,
+            target.energy >= current.energy ? rising : falling,
+          ),
+          bassEnergy: lerp(
+            current.bassEnergy,
+            target.bassEnergy,
+            target.bassEnergy >= current.bassEnergy ? rising : falling,
+          ),
+          leftEnergy: lerp(
+            currentLeft,
+            targetLeft,
+            targetLeft >= currentLeft ? rising : falling,
+          ),
+          rightEnergy: lerp(
+            currentRight,
+            targetRight,
+            targetRight >= currentRight ? rising : falling,
+          ),
+          beat: false,
+          effect: target.effect,
+          design: target.design,
+          active: target.active,
+          updatedAt: target.updatedAt,
+        };
+      });
       frame = requestAnimationFrame(tick);
     };
 

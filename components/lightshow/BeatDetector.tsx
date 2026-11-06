@@ -16,11 +16,15 @@ interface BeatDetectorProps {
   deviceId?: string;
   inputGain?: number;
   noiseGate?: number;
+  monitorAudio?: boolean;
   onEnergyChange?: (
     energy: number,
     bassEnergy: number,
     pitchClass: number,   // 0–11  (C=0 … B=11); -1 when no pitch detected
     pitchHeight: number,  // 0–1   (low → high), smoothed
+    leftEnergy: number,   // 0–100 stereo Left
+    rightEnergy: number,  // 0–100 stereo Right
+    channelCount: number, // detected hardware channel count
   ) => void;
   onError?: (message: string | null) => void;
   onDevicesChange?: (
@@ -29,12 +33,6 @@ interface BeatDetectorProps {
     refreshDevices: (requestPermission?: boolean) => Promise<void>,
   ) => void;
 }
-
-// ── Lightweight pitch estimator ───────────────────────────────────────────────
-//
-// Uses the HPS (Harmonic Product Spectrum) algorithm on the existing
-// AnalyserNode frequency data already provided by useBeatDetection.
-// No extra microphone permission is needed — we reuse the same audio graph.
 
 const A4_HZ = 440;
 const A4_MIDI = 69;
@@ -103,6 +101,7 @@ export default function BeatDetector({
   deviceId,
   inputGain,
   noiseGate,
+  monitorAudio,
   onEnergyChange,
   onError,
   onDevicesChange,
@@ -110,6 +109,9 @@ export default function BeatDetector({
   const {
     lastEnergy,
     lastBassEnergy,
+    lastLeftEnergy,
+    lastRightEnergy,
+    channelCount,
     error,
     analyserNode,
     sampleRate,
@@ -125,6 +127,7 @@ export default function BeatDetector({
     deviceId,
     inputGain,
     noiseGate,
+    monitorAudio,
   });
 
   // Smoothed pitch state lives in a ref so it doesn't trigger re-renders
@@ -136,8 +139,6 @@ export default function BeatDetector({
   }, [devices, activeDeviceLabel, refreshDevices, onDevicesChange]);
 
   // ── Pitch polling loop ──────────────────────────────────────────────────────
-  // We poll the analyser at ~30 fps independently of the energy callbacks to
-  // keep pitch smooth without flooding the parent with state updates.
   useEffect(() => {
     if (!analyserNode || !sampleRate) return;
 
@@ -149,8 +150,8 @@ export default function BeatDetector({
     let lastDispatch = 0;
     const DISPATCH_INTERVAL_MS = 33; // ~30 fps pitch updates
 
-    const SMOOTH_UP   = 0.25; // how fast pitchHeight rises
-    const SMOOTH_DOWN = 0.10; // how fast it falls (slower = trails nicely)
+    const SMOOTH_UP   = 0.25;
+    const SMOOTH_DOWN = 0.10;
 
     const poll = (ts: number) => {
       rafId = requestAnimationFrame(poll);
@@ -160,7 +161,6 @@ export default function BeatDetector({
       const result = estimatePitch(freqDataRef.current, sampleRate, fftSize);
 
       if (result) {
-        // Smooth pitchHeight exponentially
         const prev = pitchRef.current.pitchHeight;
         const alpha = result.pitchHeight > prev ? SMOOTH_UP : SMOOTH_DOWN;
         pitchRef.current = {
@@ -168,14 +168,12 @@ export default function BeatDetector({
           pitchHeight: prev + (result.pitchHeight - prev) * alpha,
         };
       } else {
-        // Decay toward centre when no pitch detected
         pitchRef.current = {
           pitchClass: pitchRef.current.pitchClass,
           pitchHeight: pitchRef.current.pitchHeight * 0.95,
         };
       }
 
-      // Throttle dispatch so parent re-renders stay cheap
       if (ts - lastDispatch >= DISPATCH_INTERVAL_MS) {
         lastDispatch = ts;
         onEnergyChange?.(
@@ -183,25 +181,48 @@ export default function BeatDetector({
           lastBassEnergy,
           pitchRef.current.pitchClass,
           pitchRef.current.pitchHeight,
+          lastLeftEnergy,
+          lastRightEnergy,
+          channelCount,
         );
       }
     };
 
     rafId = requestAnimationFrame(poll);
     return () => cancelAnimationFrame(rafId);
-  }, [analyserNode, sampleRate, active, lastEnergy, lastBassEnergy, onEnergyChange]);
+  }, [
+    analyserNode,
+    sampleRate,
+    active,
+    lastEnergy,
+    lastBassEnergy,
+    lastLeftEnergy,
+    lastRightEnergy,
+    channelCount,
+    onEnergyChange,
+  ]);
 
   // ── Fallback: fire energy callback even when analyser isn't available ───────
-  // (manualMode, SSR, or hook version that doesn't expose analyserNode)
   useEffect(() => {
-    if (analyserNode) return; // handled above
+    if (analyserNode) return;
     onEnergyChange?.(
       lastEnergy,
       lastBassEnergy,
       pitchRef.current.pitchClass,
       pitchRef.current.pitchHeight,
+      lastLeftEnergy,
+      lastRightEnergy,
+      channelCount,
     );
-  }, [lastEnergy, lastBassEnergy, analyserNode, onEnergyChange]);
+  }, [
+    lastEnergy,
+    lastBassEnergy,
+    lastLeftEnergy,
+    lastRightEnergy,
+    channelCount,
+    analyserNode,
+    onEnergyChange,
+  ]);
 
   useEffect(() => {
     onError?.(error);

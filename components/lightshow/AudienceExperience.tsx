@@ -46,9 +46,6 @@ export default function AudienceExperience({
   const liveState = smooth ? smoothed : state;
 
   // ── BPM beat signal ──────────────────────────────────────────────────────
-  // In manual mode the BPM hook fires a timed amplitude spike on every beat.
-  // The spike value replaces the static manualEnergy so every design pulses
-  // to the tempo set on the operator controller.
   const beatEnergy = useBpmBeat({
     bpm,
     energy: manualEnergy / 100,   // normalise 0–100 → 0–1
@@ -56,21 +53,28 @@ export default function AudienceExperience({
     manualMode,
   });
 
-  // ── Energy routing ───────────────────────────────────────────────────────
-  // When in manual mode: use beat-driven energy for both visual channels.
-  // When in live audio mode: use the normal audio-derived energy.
+  // ── Energy routing (Stereo Left + Right + Combined) ──────────────────────
   const baseEnergy = manualMode
-    ? beatEnergy * 100                       // beatEnergy is 0–1; state energy is 0–100
+    ? beatEnergy * 100
     : liveState.energy;
 
   const baseBass = manualMode
-    ? beatEnergy * 80                        // bass slightly lower than full energy
+    ? beatEnergy * 80
     : liveState.bassEnergy;
+
+  const leftChannelEnergy = manualMode
+    ? baseEnergy
+    : (liveState.leftEnergy ?? liveState.energy);
+
+  const rightChannelEnergy = manualMode
+    ? baseEnergy
+    : (liveState.rightEnergy ?? liveState.energy);
 
   const visualEnergy    = mapAudioToVisualEnergy(baseEnergy,       baseBass);
   const rawVisualEnergy = mapAudioToVisualEnergy(state.energy,     state.bassEnergy);
+  const leftVisualEnergy  = mapAudioToVisualEnergy(leftChannelEnergy,  baseBass);
+  const rightVisualEnergy = mapAudioToVisualEnergy(rightChannelEnergy, baseBass);
 
-  // Raw values for MusicalVisual's internal smoothing
   const rawBassEnergy = manualMode ? beatEnergy * 80 : state.bassEnergy;
 
   // ── Design CSS variables ─────────────────────────────────────────────────
@@ -111,6 +115,8 @@ export default function AudienceExperience({
             rawEnergy={rawVisualEnergy}
             bassEnergy={baseBass}
             rawBassEnergy={rawBassEnergy}
+            leftEnergy={leftVisualEnergy}
+            rightEnergy={rightVisualEnergy}
             pitchClass={pitchClass}
             pitchHeight={pitchHeight}
             active={liveState.active}
