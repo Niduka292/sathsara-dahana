@@ -298,7 +298,7 @@ function WireframeCorners() {
 }
 
 // Toggle to hide/lock the interactive Time Portal interface while it is still in the making
-const IS_PORTAL_LOCKED = true;
+const IS_PORTAL_LOCKED = false;
 
 export default function TimePortalExperience() {
   const [todayStr, setTodayStr] = useState<string>("2026-11-01");
