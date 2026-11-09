@@ -280,7 +280,7 @@ function BlueMatrixRain() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 opacity-30"
+      className="pointer-events-none fixed inset-0 z-0 opacity-40 sm:opacity-30"
     />
   );
 }
@@ -559,7 +559,7 @@ export default function TimePortalExperience() {
       {/* LOCKED / COMING SOON MATRIX VIEW (PUBLIC GATEWAY IN THE MAKING)       */}
       {/* ===================================================================== */}
       {IS_PORTAL_LOCKED && (
-        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-4 sm:px-6 flex flex-col justify-between overflow-hidden">
+        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-8 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
           {/* Blue Matrix Rain Background */}
           <BlueMatrixRain />
 
@@ -593,7 +593,7 @@ export default function TimePortalExperience() {
           />
 
           {/* Top Matrix Status Bar */}
-          <div className="relative z-20 mx-auto w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#7dd3fc]">
+          <div className="relative z-20 mx-auto w-[88%] sm:w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#7dd3fc]">
             <div className="flex items-center gap-3">
               <Link
                 href="/"
@@ -700,7 +700,7 @@ export default function TimePortalExperience() {
           </div>
 
           {/* Bottom Raw Prototype Footer */}
-          <div className="relative z-20 mx-auto w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
+          <div className="relative z-20 mx-auto w-[88%] sm:w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
             <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
             <span>PORTAL_INTERFACE_LOCKED // COMING_SOON</span>
           </div>
@@ -711,7 +711,7 @@ export default function TimePortalExperience() {
       {/* VIEW 1: BLUE MATRIX / UNFINISHED WIREFRAME PROTOTYPE INTERFACE        */}
       {/* ===================================================================== */}
       {!IS_PORTAL_LOCKED && !activeEra && (
-        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
+        <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-8 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
           {/* Blue Matrix Rain Background */}
           <BlueMatrixRain />
 
@@ -734,24 +734,24 @@ export default function TimePortalExperience() {
           />
 
           {/* Main Outer Prototype Blueprint Container */}
-          <div className="relative z-20 mx-auto w-full max-w-6xl space-y-3">
+          <div className="relative z-20 mx-auto w-[88%] sm:w-full max-w-6xl space-y-3">
             {/* Top Raw Metadata Strip (like "FIGMA ... KRONA" / "DITHERING ALGORITHMS ... DITHERTONE PRO" in reference) */}
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#7dd3fc]">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-1 text-[9px] sm:text-xs tracking-[0.18em] sm:tracking-[0.24em] uppercase text-[#7dd3fc]">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-1.5 border border-[#38bdf8]/50 bg-[#031024]/80 px-2.5 py-1 text-[#bae6fd] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors"
+                  className="inline-flex items-center gap-1.5 border border-[#38bdf8]/50 bg-[#031024]/80 px-2 sm:px-2.5 py-1 text-[#bae6fd] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors"
                 >
                   <ArrowLeft className="w-3 h-3" />
                   <span>EXIT_NODE</span>
                 </Link>
-                <span>{"SYS_BUILD // 0.42b-UNFINISHED"}</span>
+                <span className="truncate">{"SYS_BUILD // 0.42b"}</span>
               </div>
               <span className="hidden md:inline text-[#38bdf8]/70">
                 {"MATRIX_BLUE_WIREFRAME // EXPERIMENTAL_PORTAL"}
               </span>
-              <span className="text-[#38bdf8]">
-                ANCHOR_DATE: {travelledDate || todayStr}
+              <span className="text-[#38bdf8] text-[9px] sm:text-xs">
+                ANCHOR: {travelledDate || todayStr}
               </span>
             </div>
 
@@ -760,14 +760,14 @@ export default function TimePortalExperience() {
               <WireframeCorners />
 
               {/* Frame Header Row ("PROJECT #1406 /// TRENDS #2026" style) */}
-              <div className="grid grid-cols-12 border-b border-[#38bdf8]/65 text-[10px] sm:text-xs uppercase tracking-[0.2em]">
-                <div className="col-span-7 sm:col-span-5 px-3 py-2 border-r border-[#38bdf8]/65 flex items-center justify-between text-[#e0f2fe] font-bold">
-                  <span>PROJECT #2026-UA1</span>
-                  <span className="text-[9px] px-1.5 py-0.5 border border-[#38bdf8]/60 bg-[#38bdf8]/15 text-[#7dd3fc]">
+              <div className="grid grid-cols-12 border-b border-[#38bdf8]/65 text-[9px] sm:text-xs uppercase tracking-[0.14em] sm:tracking-[0.2em]">
+                <div className="col-span-7 sm:col-span-5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-r border-[#38bdf8]/65 flex items-center justify-between text-[#e0f2fe] font-bold">
+                  <span className="truncate">PROJECT #2026-UA1</span>
+                  <span className="text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 border border-[#38bdf8]/60 bg-[#38bdf8]/15 text-[#7dd3fc] shrink-0 ml-1">
                     WIP_PROTOTYPE
                   </span>
                 </div>
-                <div className="col-span-5 sm:col-span-4 px-3 py-2 sm:border-r border-[#38bdf8]/65 flex items-center justify-between text-[#38bdf8]">
+                <div className="col-span-5 sm:col-span-4 px-2 sm:px-3 py-1.5 sm:py-2 sm:border-r border-[#38bdf8]/65 flex items-center justify-between text-[#38bdf8]">
                   <span>{"///"}</span>
                   <span>SUBJECT A-34</span>
                 </div>
@@ -1082,7 +1082,7 @@ export default function TimePortalExperience() {
                     </div>
 
                     {/* Raw Hex/Numeric Dump Row */}
-                    <div className="mt-2 grid grid-cols-6 sm:grid-cols-10 gap-1 text-[8px] sm:text-[9px] tracking-[0.14em] text-[#38bdf8]/85 tabular-nums">
+                    <div className="mt-2 grid grid-cols-5 sm:grid-cols-10 gap-1 text-[7.5px] sm:text-[9px] tracking-[0.1em] sm:tracking-[0.14em] text-[#38bdf8]/85 tabular-nums">
                       {[
                         "48 69",
                         "00084",
@@ -1314,16 +1314,16 @@ export default function TimePortalExperience() {
                     <div className="p-4 border-t border-[#38bdf8]/65 bg-[#010612] space-y-2.5">
                       <button
                         type="submit"
-                        className="group relative w-full border-2 border-[#7dd3fc] bg-[#021024] hover:bg-[#38bdf8] text-[#e0f2fe] hover:text-[#01050c] py-3.5 px-5 transition-all shadow-[0_0_25px_rgba(56,189,248,0.35)] hover:shadow-[0_0_40px_rgba(56,189,248,0.75)] cursor-pointer"
+                        className="group relative w-full border-2 border-[#7dd3fc] bg-[#021024] hover:bg-[#38bdf8] text-[#e0f2fe] hover:text-[#01050c] py-2.5 sm:py-3.5 px-3 sm:px-5 transition-all shadow-[0_0_25px_rgba(56,189,248,0.35)] hover:shadow-[0_0_40px_rgba(56,189,248,0.75)] cursor-pointer"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] tracking-[0.25em] uppercase opacity-80">
+                          <span className="text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.25em] uppercase opacity-80">
                             [EXEC_WARP]
                           </span>
-                          <span className="text-lg sm:text-2xl font-black tracking-[0.28em] uppercase">
+                          <span className="text-base sm:text-2xl font-black tracking-[0.2em] sm:tracking-[0.28em] uppercase">
                             TIME JUMP
                           </span>
-                          <span className="text-xs tracking-[0.2em] font-bold">
+                          <span className="text-[10px] sm:text-xs tracking-[0.16em] sm:tracking-[0.2em] font-bold">
                             &gt;&gt;&gt;&gt;
                           </span>
                         </div>
@@ -1347,9 +1347,9 @@ export default function TimePortalExperience() {
             </div>
 
             {/* Bottom Raw Prototype Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
-              <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
-              <span>WARNING: UI_SHELL_INCOMPLETE [WIREFRAME_DEBUG_ENABLED]</span>
+            <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-1 text-[8px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#38bdf8]/75">
+              <span>{"2026 // SATHSARA_DAHANA"}</span>
+              <span className="truncate">WARNING: UI_SHELL_INCOMPLETE</span>
             </div>
           </div>
         </div>
@@ -1590,7 +1590,7 @@ function EraDestinationInterface({
   }, [travelledDate]);
 
   return (
-    <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-6 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
+    <div className="relative min-h-screen w-full bg-[#01050c] text-[#bae6fd] font-mono py-8 sm:py-10 px-3 sm:px-6 flex flex-col justify-between overflow-hidden">
       {/* Unified Blue Matrix Rain Background across ALL eras */}
       <BlueMatrixRain />
 
@@ -1613,24 +1613,24 @@ function EraDestinationInterface({
       />
 
       {/* Main Outer Prototype Blueprint Container */}
-      <div className="relative z-20 mx-auto w-full max-w-6xl space-y-3">
+      <div className="relative z-20 mx-auto w-[88%] sm:w-full max-w-6xl space-y-3">
         {/* Top Raw Metadata Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] sm:text-xs tracking-[0.22em] uppercase text-[#7dd3fc]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-1 text-[9px] sm:text-xs tracking-[0.18em] sm:tracking-[0.22em] uppercase text-[#7dd3fc]">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={onReturnToOrigin}
-              className="inline-flex items-center gap-1.5 border border-[#38bdf8]/60 bg-[#031024]/85 px-2.5 py-1 text-[#e0f2fe] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 border border-[#38bdf8]/60 bg-[#031024]/85 px-2 sm:px-2.5 py-1 text-[#e0f2fe] hover:bg-[#38bdf8] hover:text-[#01050c] transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3 h-3" />
-              <span>RETURN_TO_INPUT_MATRIX</span>
+              <span>RETURN</span>
             </button>
-            <span>{meta.buildVersion}</span>
+            <span className="truncate">{meta.buildVersion}</span>
           </div>
           <span className="hidden md:inline text-[#38bdf8]/80">
             {meta.designParadigm}
           </span>
-          <span className="text-[#e0f2fe] font-bold">
+          <span className="text-[#e0f2fe] font-bold text-[9px] sm:text-xs">
             {`ACTIVE_NODE: ${travelledDate}`}
           </span>
         </div>
@@ -2015,9 +2015,9 @@ function EraDestinationInterface({
         />
 
         {/* Bottom Raw Prototype Footer */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[#38bdf8]/75">
-          <span>{"2026 // SATHSARA_DAHANA_CHRONO_SUBSYSTEM"}</span>
-          <span>WARNING: UI_SHELL_INCOMPLETE [WIREFRAME_DEBUG_ENABLED]</span>
+        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 px-1 text-[8px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.22em] text-[#38bdf8]/75">
+          <span>{"2026 // SATHSARA_DAHANA"}</span>
+          <span className="truncate">WARNING: UI_SHELL_INCOMPLETE</span>
         </div>
       </div>
     </div>
