@@ -10,6 +10,7 @@ import type { LightshowDesign } from "@/lib/lightshow/types";
 interface BeatDetectorProps {
   enabled: boolean;
   design: LightshowDesign;
+  hexBloomColor?: string;
   manualEnergy: number;
   manualMode: boolean;
   active: boolean;
@@ -95,6 +96,7 @@ function estimatePitch(
 export default function BeatDetector({
   enabled,
   design,
+  hexBloomColor,
   manualEnergy,
   manualMode,
   active,
@@ -121,6 +123,7 @@ export default function BeatDetector({
   } = useBeatDetection({
     enabled,
     design,
+    hexBloomColor,
     manualEnergy,
     manualMode,
     active,

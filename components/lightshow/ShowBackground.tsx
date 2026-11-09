@@ -9,6 +9,7 @@ interface ShowBackgroundProps {
   energy: number;
   reducedMotion: boolean;
   active: boolean;
+  hexBloomColor?: string;
 }
 
 export default function ShowBackground({
@@ -16,6 +17,7 @@ export default function ShowBackground({
   energy,
   reducedMotion,
   active,
+  hexBloomColor,
 }: ShowBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previousDesignRef = useRef(design);
@@ -27,8 +29,16 @@ export default function ShowBackground({
     const fromDesign = previousDesignRef.current;
     const toDesign = design;
 
+    const getPalette = (d: LightshowDesign) => {
+      const p = { ...DESIGN_PALETTES[d] };
+      if (d === "grid" && hexBloomColor) {
+        p.primary = hexBloomColor;
+      }
+      return p;
+    };
+
     if (fromDesign === toDesign) {
-      applyDesignCssVariables(container, DESIGN_PALETTES[toDesign]);
+      applyDesignCssVariables(container, getPalette(toDesign));
       return;
     }
 
@@ -38,10 +48,11 @@ export default function ShowBackground({
 
     const animate = (timestamp: number) => {
       const progress = Math.min(1, (timestamp - start) / duration);
-      applyDesignCssVariables(
-        container,
-        interpolateDesignPalette(fromDesign, toDesign, progress),
-      );
+      const baseInterpolated = interpolateDesignPalette(fromDesign, toDesign, progress);
+      if (toDesign === "grid" && hexBloomColor) {
+        baseInterpolated.primary = hexBloomColor;
+      }
+      applyDesignCssVariables(container, baseInterpolated);
 
       if (progress < 1) {
         frame = requestAnimationFrame(animate);
@@ -52,7 +63,7 @@ export default function ShowBackground({
 
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [design, reducedMotion]);
+  }, [design, hexBloomColor, reducedMotion]);
 
   const wash = active ? Math.min(0.22, energy / 400) : 0;
 

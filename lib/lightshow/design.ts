@@ -1,8 +1,14 @@
 import { DESIGN_PALETTES, type DesignPalette, type LightshowDesign } from "./types";
 
 export function hexToRgb(hex: string): [number, number, number] {
-  const normalized = hex.replace("#", "");
+  let normalized = hex.replace("#", "");
+  if (normalized.length === 3) {
+    normalized = normalized.split("").map((c) => c + c).join("");
+  }
   const value = Number.parseInt(normalized, 16);
+  if (Number.isNaN(value)) {
+    return [255, 96, 16];
+  }
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
 }
 

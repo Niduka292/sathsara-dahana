@@ -14,6 +14,7 @@ export interface AudioInputDevice {
 interface BeatDetectionOptions {
   enabled: boolean;
   design: LightshowDesign;
+  hexBloomColor?: string;
   manualEnergy: number;
   manualMode: boolean;
   active: boolean;
@@ -275,6 +276,7 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
       beat: false,
       active,
       updatedAt: now,
+      ...(current.hexBloomColor ? { hexBloomColor: current.hexBloomColor } : {}),
     };
 
     void set(ref(getDb(), LIGHTSHOW_STATE_PATH), payload);
@@ -611,6 +613,7 @@ export async function writeLightshowState(partial: Partial<LightshowState>) {
     beat: false,
     active: partial.active ?? false,
     updatedAt: Date.now(),
+    ...(partial.hexBloomColor ? { hexBloomColor: partial.hexBloomColor } : {}),
   });
 }
 

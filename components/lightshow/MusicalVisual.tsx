@@ -6,6 +6,7 @@ import {
   liveAmplitude,
   normalizeVisualEnergy,
 } from "@/lib/lightshow/visualEnergy";
+import { hexToRgb } from "@/lib/lightshow/design";
 import type { LightshowDesign } from "@/lib/lightshow/types";
 
 interface MusicalVisualProps {
@@ -20,6 +21,7 @@ interface MusicalVisualProps {
   pitchHeight: number;
   active: boolean;
   reducedMotion: boolean;
+  hexBloomColor?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -91,9 +93,14 @@ function novaColor(pitchH: number, intensity: number, alpha: number): string {
   return `rgba(${r},${g},${b},${(al * dimmed).toFixed(3)})`;
 }
 
-// Hex color — quantized lookup table built once, never rebuilt per frame
+// Hex color — quantized lookup table built dynamically for the selected color
 const HEX_STEPS = 32;
-const hexColorTable: string[][] = (() => {
+
+function buildHexColorTable(colorHex = "#FF6010"): {
+  table: string[][];
+  dimStroke: string;
+} {
+  const [baseR, baseG, baseB] = hexToRgb(colorHex);
   const table: string[][] = [];
   for (let ei = 0; ei <= HEX_STEPS; ei++) {
     const energy = ei / HEX_STEPS;
@@ -104,25 +111,26 @@ const hexColorTable: string[][] = (() => {
       let r: number, g: number, b: number;
       if (bloom < 0.4) {
         const t = bloom / 0.4;
-        r = Math.round(lerp(20, 120, t)); g = 0; b = Math.round(lerp(40, 255, t));
+        r = Math.round(lerp(baseR * 0.15, baseR * 0.55, t));
+        g = Math.round(lerp(baseG * 0.15, baseG * 0.55, t));
+        b = Math.round(lerp(baseB * 0.15, baseB * 0.55, t));
       } else if (bloom < 0.75) {
         const t = (bloom - 0.4) / 0.35;
-        r = Math.round(lerp(120, 220, t)); g = 0; b = 255;
+        r = Math.round(lerp(baseR * 0.55, baseR, t));
+        g = Math.round(lerp(baseG * 0.55, baseG, t));
+        b = Math.round(lerp(baseB * 0.55, baseB, t));
       } else {
         const t = (bloom - 0.75) / 0.25;
-        r = Math.round(lerp(220, 255, t)); g = Math.round(lerp(0, 180, t)); b = 255;
+        r = Math.round(lerp(baseR, 255, t * 0.85));
+        g = Math.round(lerp(baseG, 255, t * 0.85));
+        b = Math.round(lerp(baseB, 255, t * 0.85));
       }
       row.push(`rgb(${r},${g},${b})`);
     }
     table.push(row);
   }
-  return table;
-})();
-
-function hexColor(dist: number, energy: number): string {
-  const ei = Math.round(clamp(energy, 0, 1) * HEX_STEPS);
-  const di = Math.round(clamp(dist, 0, 1) * HEX_STEPS);
-  return hexColorTable[ei][di];
+  const dimStroke = `rgba(${Math.round(baseR * 0.25)},${Math.round(baseG * 0.25)},${Math.round(baseB * 0.25)},0.35)`;
+  return { table, dimStroke };
 }
 
 // Vein color — quantized lookup table
@@ -264,6 +272,7 @@ export default function MusicalVisual({
   pitchHeight,
   active,
   reducedMotion,
+  hexBloomColor,
 }: MusicalVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const propsRef = useRef({
@@ -278,6 +287,7 @@ export default function MusicalVisual({
     pitchHeight,
     active,
     reducedMotion,
+    hexBloomColor: hexBloomColor ?? "#FF6010",
   });
   propsRef.current = {
     design,
@@ -291,6 +301,7 @@ export default function MusicalVisual({
     pitchHeight,
     active,
     reducedMotion,
+    hexBloomColor: hexBloomColor ?? "#FF6010",
   };
 
   useEffect(() => {
@@ -305,6 +316,19 @@ export default function MusicalVisual({
     let rootSegIndices: number[] = [];
     let segCharge = new Float32Array(0);
     let hexR = 0;
+
+    // ── hex bloom dynamic color cache ────────────────────────────────────────
+    let cachedHexColor = "";
+    let cachedHexTable: string[][] = [];
+    let cachedDimStroke = "rgba(40,0,80,0.35)";
+
+    const ensureHexColorTable = (colorHex: string) => {
+      if (colorHex === cachedHexColor && cachedHexTable.length > 0) return;
+      cachedHexColor = colorHex;
+      const built = buildHexColorTable(colorHex);
+      cachedHexTable = built.table;
+      cachedDimStroke = built.dimStroke;
+    };
 
     const rebuildGeometry = () => {
       const w = canvas.clientWidth;
@@ -459,12 +483,12 @@ export default function MusicalVisual({
       leftAmp: number,
       rightAmp: number,
     ) => {
+      ensureHexColorTable(propsRef.current.hexBloomColor);
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
       const breathe = Math.sin(time * 1.1) * 0.04;
       const outerR = hexR * 0.88;
-      const midX = w / 2;
 
       for (const cell of hexCells) {
         // Blend between Left channel energy and Right channel energy across screen width
@@ -477,13 +501,15 @@ export default function MusicalVisual({
         if (bloom < 0.01) {
           traceHex(cell.cx, cell.cy, outerR);
           ctx.globalAlpha = 1;
-          ctx.strokeStyle = cell.cx < midX ? "rgba(40,0,80,0.35)" : "rgba(40,0,80,0.35)";
+          ctx.strokeStyle = cachedDimStroke;
           ctx.lineWidth = 0.5;
           ctx.stroke();
           continue;
         }
 
-        const col = hexColor(cell.dist, totalEnergy);
+        const ei = Math.round(clamp(totalEnergy, 0, 1) * HEX_STEPS);
+        const di = Math.round(clamp(cell.dist, 0, 1) * HEX_STEPS);
+        const col = cachedHexTable[ei]?.[di] || "#FF6010";
 
         // Fill
         traceHex(cell.cx, cell.cy, outerR);

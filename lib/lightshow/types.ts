@@ -18,6 +18,7 @@ export interface LightshowState {
   beat: boolean;
   active: boolean;
   updatedAt: number;
+  hexBloomColor?: string;
 }
 
 export interface LightshowMeta {
@@ -35,6 +36,7 @@ export const DEFAULT_LIGHTSHOW_STATE: LightshowState = {
   beat: false,
   active: false,
   updatedAt: 0,
+  hexBloomColor: "#FF6010",
 };
 
 export interface DesignPalette {

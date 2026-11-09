@@ -81,15 +81,19 @@ export default function AudienceExperience({
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      applyDesignCssVariables(container, DESIGN_PALETTES[liveState.design]);
+      const palette = { ...DESIGN_PALETTES[liveState.design] };
+      if (liveState.design === "grid" && liveState.hexBloomColor) {
+        palette.primary = liveState.hexBloomColor;
+      }
+      applyDesignCssVariables(container, palette);
     }
-  }, [liveState.design]);
+  }, [liveState.design, liveState.hexBloomColor]);
 
   const labelGlow =
     liveState.design === "radial"
       ? "0 0 18px rgba(157, 78, 221, 0.65)"
       : liveState.design === "grid"
-        ? "0 0 18px rgba(255, 96, 16, 0.55)"
+        ? `0 0 18px ${liveState.hexBloomColor || "#FF6010"}88`
         : "0 0 18px rgba(29, 158, 117, 0.55)";
 
   return (
@@ -105,6 +109,7 @@ export default function AudienceExperience({
         energy={visualEnergy}
         reducedMotion={reducedMotion}
         active={liveState.active}
+        hexBloomColor={liveState.hexBloomColor}
       />
 
       <div className="absolute inset-0 flex items-center justify-center">
@@ -121,6 +126,7 @@ export default function AudienceExperience({
             pitchHeight={pitchHeight}
             active={liveState.active}
             reducedMotion={reducedMotion}
+            hexBloomColor={liveState.hexBloomColor}
           />
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AudienceExperience from "@/components/lightshow/AudienceExperience";
 import BeatDetector from "@/components/lightshow/BeatDetector";
 import OperatorControls from "@/components/lightshow/OperatorControls";
@@ -39,6 +39,13 @@ export default function LightshowOperatorPage() {
   const [pitchHeight, setPitchHeight] = useState(0.5);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [bpm, setBpm] = useState(120);
+  const [hexBloomColor, setHexBloomColor] = useState<string>(state.hexBloomColor ?? "#FF6010");
+
+  useEffect(() => {
+    if (state.hexBloomColor) {
+      setHexBloomColor(state.hexBloomColor);
+    }
+  }, [state.hexBloomColor]);
 
   // Audio Input / Line-In state
   const [devices, setDevices] = useState<AudioInputDevice[]>([]);
@@ -87,14 +94,17 @@ export default function LightshowOperatorPage() {
     async (partial: {
       design?: LightshowDesign;
       active?: boolean;
+      hexBloomColor?: string;
     }) => {
       const nextDesign = partial.design ?? design;
       const nextActive = partial.active ?? active;
+      const nextColor = partial.hexBloomColor ?? hexBloomColor;
       const currentEnergy = manualMode ? manualEnergy : audioEnergy;
 
       await writeLightshowState({
         design: nextDesign,
         active: nextActive,
+        hexBloomColor: nextColor,
         effect: nextActive ? "portal" : "idle",
         energy: currentEnergy,
         bassEnergy,
@@ -103,7 +113,7 @@ export default function LightshowOperatorPage() {
         stereoChannels: 2,
       });
     },
-    [active, audioEnergy, bassEnergy, design, leftEnergy, manualEnergy, manualMode, rightEnergy],
+    [active, audioEnergy, bassEnergy, design, hexBloomColor, leftEnergy, manualEnergy, manualMode, rightEnergy],
   );
 
   if (!authenticated) {
@@ -157,6 +167,7 @@ export default function LightshowOperatorPage() {
     ...state,
     design,
     active,
+    hexBloomColor,
     energy: manualMode ? manualEnergy : audioEnergy,
     bassEnergy,
     leftEnergy: manualMode ? manualEnergy : leftEnergy,
@@ -187,6 +198,11 @@ export default function LightshowOperatorPage() {
             activeDeviceLabel={activeDeviceLabel}
             inputGain={inputGain}
             noiseGate={noiseGate}
+            hexBloomColor={hexBloomColor}
+            onHexBloomColorChange={(nextColor) => {
+              setHexBloomColor(nextColor);
+              void syncState({ hexBloomColor: nextColor });
+            }}
             onDesignChange={(nextDesign) => {
               setDesign(nextDesign);
               void syncState({ design: nextDesign });
@@ -241,6 +257,7 @@ export default function LightshowOperatorPage() {
       <BeatDetector
         enabled={authenticated}
         design={design}
+        hexBloomColor={hexBloomColor}
         manualEnergy={manualEnergy}
         manualMode={manualMode}
         active={active}

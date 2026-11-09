@@ -27,6 +27,8 @@ interface OperatorControlsProps {
   activeDeviceLabel?: string | null;
   inputGain?: number;
   noiseGate?: number;
+  hexBloomColor?: string;
+  onHexBloomColorChange?: (color: string) => void;
   onDesignChange: (design: LightshowDesign) => void;
   onActiveChange: (active: boolean) => void;
   onManualEnergyChange: (value: number) => void;
@@ -47,6 +49,17 @@ const DESIGN_DESCRIPTIONS: Record<OperatorDesignLabel, string> = {
   "Hex Bloom": "Honeycomb grid blooms from center outward on each beat pulse.",
   "Plasma Veins": "Electric charge travels along branching veins, surging on every beat.",
 };
+
+const HEX_BLOOM_PRESETS = [
+  { name: "Flame", hex: "#FF6010" },
+  { name: "Violet", hex: "#A855F7" },
+  { name: "Cyan", hex: "#00F0FF" },
+  { name: "Magenta", hex: "#EC4899" },
+  { name: "Emerald", hex: "#10B981" },
+  { name: "Gold", hex: "#F59E0B" },
+  { name: "Electric Blue", hex: "#3B82F6" },
+  { name: "Ruby", hex: "#EF4444" },
+];
 
 function bpmLabel(bpm: number): string {
   if (bpm < 70)  return "Ambient";
@@ -104,6 +117,8 @@ export default function OperatorControls({
   activeDeviceLabel = null,
   inputGain = 2.4,
   noiseGate = 10,
+  hexBloomColor = "#FF6010",
+  onHexBloomColorChange,
   onDesignChange,
   onActiveChange,
   onManualEnergyChange,
@@ -145,6 +160,108 @@ export default function OperatorControls({
                 <p className="pl-1 text-[9px] leading-4 text-white/30">
                   {DESIGN_DESCRIPTIONS[label]}
                 </p>
+              )}
+              {selectedLabel === label && label === "Hex Bloom" && (
+                <div className="mt-2.5 space-y-2.5 rounded-lg border border-blue-500/30 bg-blue-950/25 p-3">
+                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.22em]">
+                    <span className="flex items-center gap-1.5 text-blue-200">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{
+                          backgroundColor: hexBloomColor,
+                          boxShadow: `0 0 8px ${hexBloomColor}`,
+                        }}
+                      />
+                      Bloom Color
+                    </span>
+                    <span className="font-mono text-xs font-bold text-white/90">
+                      {hexBloomColor.toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Interactive Color Input Bar */}
+                  <div className="relative flex items-center gap-2 rounded border border-white/15 bg-black/60 p-1.5">
+                    {/* Visual Color Preview Swatch */}
+                    <div className="relative h-7 w-8 shrink-0 overflow-hidden rounded border border-white/25">
+                      <input
+                        type="color"
+                        value={hexBloomColor}
+                        onChange={(e) => onHexBloomColorChange?.(e.target.value)}
+                        className="absolute -inset-2 h-12 w-12 cursor-pointer opacity-0"
+                        title="Pick custom color"
+                      />
+                      <div
+                        className="h-full w-full"
+                        style={{ backgroundColor: hexBloomColor }}
+                      />
+                    </div>
+
+                    {/* Gradient Bar - Interactive Color Input Bar */}
+                    <div className="relative flex-1 h-7">
+                      <div
+                        className="h-full w-full rounded border border-white/10"
+                        style={{
+                          background: `linear-gradient(to right, #000000 0%, ${hexBloomColor} 60%, #FFFFFF 100%)`,
+                        }}
+                      />
+                      <input
+                        type="color"
+                        value={hexBloomColor}
+                        onChange={(e) => onHexBloomColorChange?.(e.target.value)}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        title="Click color bar to change color"
+                      />
+                    </div>
+
+                    {/* Direct Hex code input */}
+                    <input
+                      type="text"
+                      value={hexBloomColor}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
+                          onHexBloomColorChange?.(val);
+                        }
+                      }}
+                      placeholder="#FF6010"
+                      maxLength={7}
+                      className="w-18 rounded border border-white/15 bg-black px-1.5 py-1 text-center font-mono text-[10px] text-white uppercase outline-none focus:border-blue-400"
+                    />
+                  </div>
+
+                  {/* Quick Palette Chips */}
+                  <div className="space-y-1">
+                    <p className="text-[8px] uppercase tracking-[0.2em] text-white/35">
+                      Quick Presets
+                    </p>
+                    <div className="grid grid-cols-4 gap-1">
+                      {HEX_BLOOM_PRESETS.map((p) => {
+                        const active = hexBloomColor.toLowerCase() === p.hex.toLowerCase();
+                        return (
+                          <button
+                            key={p.hex}
+                            type="button"
+                            onClick={() => onHexBloomColorChange?.(p.hex)}
+                            className={`flex items-center gap-1 rounded px-1.5 py-1 text-[8.5px] uppercase tracking-wider transition cursor-pointer ${
+                              active
+                                ? "border border-white/60 bg-white/20 text-white shadow-[0_0_8px_rgba(255,255,255,0.25)]"
+                                : "border border-white/10 bg-black/40 text-white/60 hover:border-white/30 hover:text-white"
+                            }`}
+                          >
+                            <span
+                              className="h-1.5 w-1.5 shrink-0 rounded-full"
+                              style={{
+                                backgroundColor: p.hex,
+                                boxShadow: active ? `0 0 5px ${p.hex}` : undefined,
+                              }}
+                            />
+                            <span className="truncate">{p.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           ))}
