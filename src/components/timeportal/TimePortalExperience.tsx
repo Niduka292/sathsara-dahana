@@ -309,13 +309,11 @@ export default function TimePortalExperience() {
   // 3. Time Jump Year - Destination Year
   // 4. Time Jump Month - Destination Month
   // 5. Time Jump Date - Destination Day
-  // 6. Model selection - Temporal Direction
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [jumpYear, setJumpYear] = useState<string>("");
   const [jumpMonth, setJumpMonth] = useState<string>("");
   const [jumpDay, setJumpDay] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>(TEMPORAL_MODELS[0].id);
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -367,9 +365,8 @@ export default function TimePortalExperience() {
   const validation = useMemo(() => {
     const usernameValid = username.trim().length >= 2;
     const passwordValid = password.trim().length >= 2;
-    const modelValid = TEMPORAL_MODELS.some((m) => m.id === selectedModel);
     const { yearValid, monthValid, dayValid, dateValid, formatted } = composedDateResult;
-    const allValid = usernameValid && passwordValid && dateValid && modelValid;
+    const allValid = usernameValid && passwordValid && dateValid;
 
     const validCount = [
       usernameValid,
@@ -377,7 +374,6 @@ export default function TimePortalExperience() {
       yearValid,
       monthValid,
       dayValid,
-      modelValid,
     ].filter(Boolean).length;
 
     return {
@@ -387,22 +383,23 @@ export default function TimePortalExperience() {
       monthValid,
       dayValid,
       dateValid,
-      modelValid,
       allValid,
       validCount,
       targetDate: formatted,
     };
-  }, [username, password, selectedModel, composedDateResult]);
+  }, [username, password, composedDateResult]);
 
   const previewEra = useMemo(() => {
     if (!validation.dateValid || !validation.targetDate) return null;
     return resolveEraFromDate(validation.targetDate, todayStr);
   }, [validation.dateValid, validation.targetDate, todayStr]);
 
-  const currentModelMeta = useMemo(
-    () => TEMPORAL_MODELS.find((m) => m.id === selectedModel) ?? TEMPORAL_MODELS[0],
-    [selectedModel]
-  );
+  const currentModelMeta = useMemo(() => {
+    if (!validation.targetDate || !todayStr) return TEMPORAL_MODELS[0];
+    if (validation.targetDate < todayStr) return TEMPORAL_MODELS[0];
+    if (validation.targetDate > todayStr) return TEMPORAL_MODELS[1];
+    return TEMPORAL_MODELS[2];
+  }, [validation.targetDate, todayStr]);
 
   const applyPresetDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-");
@@ -775,7 +772,7 @@ export default function TimePortalExperience() {
                   <span>SUBJECT A-34</span>
                 </div>
                 <div className="hidden sm:flex sm:col-span-3 px-3 py-2 items-center justify-between text-[#7dd3fc]">
-                  <span>MEM_LOCK: {validation.validCount}/6</span>
+                  <span>MEM_LOCK: {validation.validCount}/5</span>
                   <span className="inline-flex gap-1">
                     <span className="px-1 border border-[#38bdf8] text-[9px]">M</span>
                     <span className="px-1 border border-[#38bdf8] bg-[#38bdf8] text-[#01050c] text-[9px] font-bold">
@@ -1107,7 +1104,7 @@ export default function TimePortalExperience() {
                 </div>
 
                 {/* ========================================================= */}
-                {/* RIGHT COLUMN: 6 TABULAR WIREFRAME INPUTS + EXECUTION      */}
+                {/* RIGHT COLUMN: 5 TABULAR WIREFRAME INPUTS + EXECUTION      */}
                 {/* ========================================================= */}
                 <div className="lg:col-span-6 flex flex-col justify-between bg-[#020917]">
                   <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full justify-between">
@@ -1122,7 +1119,7 @@ export default function TimePortalExperience() {
                         </span>
                       </div>
 
-                      {/* 6 Tabular Input Rows styled after "// DESIGNER_ ... VASILCHENKO OLGA" */}
+                      {/* 5 Tabular Input Rows styled after "// DESIGNER_ ... VASILCHENKO OLGA" */}
                       <div className="divide-y divide-[#38bdf8]/55">
                         {/* 1. Username - Temporal Identity / User ID */}
                         <div className="grid grid-cols-1 sm:grid-cols-12 items-center px-4 py-2.5 gap-1.5 sm:gap-3 hover:bg-[#38bdf8]/[0.05] transition-colors">
@@ -1287,60 +1284,6 @@ export default function TimePortalExperience() {
                           </div>
                         </div>
 
-                        {/* 6. Model selection - Temporal Direction (Fictional Models) */}
-                        <div className="px-4 py-3 space-y-2 hover:bg-[#38bdf8]/[0.05] transition-colors">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <label
-                              htmlFor="tp-model"
-                              className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-[#7dd3fc]"
-                            >
-                              <span className="font-bold text-[#e0f2fe]">
-                                {"// MODEL_SELECTION_"}
-                              </span>{" "}
-                              <span className="text-[9px] text-[#38bdf8]/75">
-                                (Temporal Direction)
-                              </span>
-                            </label>
-                            <span className="text-[9px] uppercase tracking-[0.16em] text-[#38bdf8]">
-                              {currentModelMeta.direction}
-                            </span>
-                          </div>
-
-                          <select
-                            id="tp-model"
-                            value={selectedModel}
-                            onChange={(e) => setSelectedModel(e.target.value)}
-                            className="w-full border border-[#38bdf8]/70 bg-[#01050d] px-3 py-2 text-xs uppercase tracking-[0.14em] text-[#e0f2fe] focus:border-[#e0f2fe] focus:outline-none cursor-pointer"
-                          >
-                            {TEMPORAL_MODELS.map((m) => (
-                              <option key={m.id} value={m.id} className="bg-[#01050d] text-[#e0f2fe]">
-                                {`${m.code} — ${m.direction}`}
-                              </option>
-                            ))}
-                          </select>
-
-                          {/* Wireframe Quick Model Matrix Pills */}
-                          <div className="grid grid-cols-2 gap-1.5 pt-1">
-                            {TEMPORAL_MODELS.map((m) => {
-                              const active = selectedModel === m.id;
-                              return (
-                                <button
-                                  key={m.id}
-                                  type="button"
-                                  onClick={() => setSelectedModel(m.id)}
-                                  className={`px-2 py-1 text-left border text-[9px] uppercase tracking-[0.12em] transition-colors cursor-pointer truncate ${
-                                    active
-                                      ? "border-[#e0f2fe] bg-[#38bdf8]/25 text-[#e0f2fe] font-bold shadow-[0_0_10px_rgba(56,189,248,0.35)]"
-                                      : "border-[#38bdf8]/35 bg-[#01050d]/80 text-[#7dd3fc]/70 hover:border-[#38bdf8]"
-                                  }`}
-                                >
-                                  {active ? "■ " : "□ "}
-                                  {m.id}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
 
                         {/* Live Diagnostic Readout Rows (Matching Panel 1 & Panel 3 telemetry rows) */}
                         <div className="grid grid-cols-12 items-center px-4 py-2 text-[10px] uppercase tracking-[0.18em]">
@@ -1357,35 +1300,6 @@ export default function TimePortalExperience() {
                           </span>
                         </div>
 
-                        {/* Debug Quick Era Coordinate Presets */}
-                        <div className="px-4 py-2.5 bg-[#010612]">
-                          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.18em] text-[#7dd3fc]/80 mb-1.5">
-                            <span>{"// QUICK_TEST_COORDINATES [DEBUG]:"}</span>
-                            <span>{validation.targetDate || "----"}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {[
-                              { label: "PAST [1999]", date: "1999-12-31" },
-                              { label: "NEAR_PAST [2024]", date: "2024-06-15" },
-                              { label: "PRESENT [TODAY]", date: todayStr },
-                              { label: "NEAR_FUT [2027]", date: "2027-08-20" },
-                              { label: "FAR_FUT [2035]", date: "2035-01-01" },
-                            ].map((preset) => (
-                              <button
-                                key={preset.label}
-                                type="button"
-                                onClick={() => applyPresetDate(preset.date)}
-                                className={`px-2 py-1 border text-[9px] uppercase tracking-[0.14em] transition-colors cursor-pointer ${
-                                  validation.targetDate === preset.date
-                                    ? "border-[#e0f2fe] bg-[#38bdf8] text-[#01050c] font-bold"
-                                    : "border-[#38bdf8]/45 bg-[#020a18] text-[#7dd3fc] hover:border-[#38bdf8] hover:text-[#e0f2fe]"
-                                }`}
-                              >
-                                {preset.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     </div>
 

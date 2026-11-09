@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { onValue, ref } from "firebase/database";
 import { getDb, LIGHTSHOW_STATE_PATH } from "@/lib/firebase";
 import {
@@ -44,7 +44,8 @@ function parseLightshowState(value: Record<string, unknown> | null): LightshowSt
   } as LightshowState;
 }
 
-export function useLightshowState() {
+export function useLightshowState(options?: { includeAudienceCount?: boolean }) {
+  const includeAudienceCount = options?.includeAudienceCount ?? false;
   const [state, setState] = useState<LightshowState>(DEFAULT_LIGHTSHOW_STATE);
   const [meta, setMeta] = useState<LightshowMeta>({ audienceCount: 0 });
   const [connected, setConnected] = useState(false);
@@ -52,7 +53,6 @@ export function useLightshowState() {
   useEffect(() => {
     const db = getDb();
     const stateRef = ref(db, LIGHTSHOW_STATE_PATH);
-    const sessionsRef = ref(db, SESSIONS_PATH);
 
     const unsubscribeState = onValue(
       stateRef,
@@ -63,17 +63,21 @@ export function useLightshowState() {
       () => setConnected(false),
     );
 
-    const unsubscribeSessions = onValue(sessionsRef, (snapshot) => {
-      setMeta({
-        audienceCount: countSessionChildren(snapshot),
+    let unsubscribeSessions: (() => void) | undefined;
+    if (includeAudienceCount) {
+      const sessionsRef = ref(db, SESSIONS_PATH);
+      unsubscribeSessions = onValue(sessionsRef, (snapshot) => {
+        setMeta({
+          audienceCount: countSessionChildren(snapshot),
+        });
       });
-    });
+    }
 
     return () => {
       unsubscribeState();
-      unsubscribeSessions();
+      unsubscribeSessions?.();
     };
-  }, []);
+  }, [includeAudienceCount]);
 
   return { state, meta, connected };
 }

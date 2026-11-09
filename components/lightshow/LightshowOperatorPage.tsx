@@ -20,9 +20,9 @@ const OPERATOR_PIN = process.env.NEXT_PUBLIC_OPERATOR_PIN ?? "4242";
 
 export default function LightshowOperatorPage() {
   const hasMounted = useHasMounted();
-  const { state, meta } = useLightshowState();
-  const { reducedMotion } = useReducedMotion();
   const [authenticated, setAuthenticated] = useState(false);
+  const { state, meta } = useLightshowState({ includeAudienceCount: authenticated });
+  const { reducedMotion } = useReducedMotion();
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState<string | null>(null);
   const [design, setDesign] = useState<LightshowDesign>("radial");

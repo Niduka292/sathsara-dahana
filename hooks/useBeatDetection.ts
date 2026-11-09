@@ -41,6 +41,7 @@ interface BeatDetectionResult {
 }
 
 const WRITE_INTERVAL_MS = 33;
+const NETWORK_WRITE_INTERVAL_MS = 85;
 export const DEFAULT_INPUT_GAIN = 2.4;
 export const DEFAULT_NOISE_GATE = 10;
 
@@ -145,6 +146,16 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
+  const lastWrittenRef = useRef<{
+    design: LightshowDesign;
+    effect: LightshowEffect;
+    active: boolean;
+    energy: number;
+    bassEnergy: number;
+    leftEnergy: number;
+    rightEnergy: number;
+    timestamp: number;
+  } | null>(null);
 
   optionsRef.current = options;
 
@@ -208,18 +219,62 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
   const writeState = useCallback((partial: Partial<LightshowState>) => {
     const current = optionsRef.current;
     const fallbackEnergy = current.manualMode ? current.manualEnergy : 0;
-    const energy = partial.energy ?? fallbackEnergy;
-    const payload: LightshowState = {
-      design: current.design,
-      effect: partial.effect ?? resolveEffect(current.active),
+    const rawEnergy = partial.energy ?? fallbackEnergy;
+    const energy = Math.round(rawEnergy * 10) / 10;
+    const bassEnergy = Math.round((partial.bassEnergy ?? 0) * 10) / 10;
+    const leftEnergy = Math.round((partial.leftEnergy ?? rawEnergy) * 10) / 10;
+    const rightEnergy = Math.round((partial.rightEnergy ?? rawEnergy) * 10) / 10;
+    const active = partial.active ?? current.active;
+    const effect = partial.effect ?? resolveEffect(active);
+    const design = current.design;
+    const now = Date.now();
+    const prev = lastWrittenRef.current;
+
+    if (prev) {
+      const sameCoreState =
+        prev.active === active &&
+        prev.design === design &&
+        prev.effect === effect &&
+        prev.energy === energy &&
+        prev.bassEnergy === bassEnergy &&
+        prev.leftEnergy === leftEnergy &&
+        prev.rightEnergy === rightEnergy;
+
+      // Skip redundant writes when stopped, in manual mode, or during silence
+      if (sameCoreState) {
+        return;
+      }
+
+      // Throttle live audio network writes to ~12 Hz unless active/design/effect changed
+      const stateTransition =
+        prev.active !== active || prev.design !== design || prev.effect !== effect;
+      if (!stateTransition && now - prev.timestamp < NETWORK_WRITE_INTERVAL_MS) {
+        return;
+      }
+    }
+
+    lastWrittenRef.current = {
+      design,
+      effect,
+      active,
       energy,
-      bassEnergy: partial.bassEnergy ?? 0,
-      leftEnergy: partial.leftEnergy ?? energy,
-      rightEnergy: partial.rightEnergy ?? energy,
+      bassEnergy,
+      leftEnergy,
+      rightEnergy,
+      timestamp: now,
+    };
+
+    const payload: LightshowState = {
+      design,
+      effect,
+      energy,
+      bassEnergy,
+      leftEnergy,
+      rightEnergy,
       stereoChannels: partial.stereoChannels ?? 2,
       beat: false,
-      active: partial.active ?? current.active,
-      updatedAt: Date.now(),
+      active,
+      updatedAt: now,
     };
 
     void set(ref(getDb(), LIGHTSHOW_STATE_PATH), payload);
