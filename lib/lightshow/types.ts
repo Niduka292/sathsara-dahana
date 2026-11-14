@@ -15,6 +15,8 @@ export interface LightshowState {
   leftEnergy?: number;
   rightEnergy?: number;
   stereoChannels?: number;
+  pitchClass?: number;
+  pitchHeight?: number;
   beat: boolean;
   active: boolean;
   updatedAt: number;
@@ -33,6 +35,8 @@ export const DEFAULT_LIGHTSHOW_STATE: LightshowState = {
   leftEnergy: 0,
   rightEnergy: 0,
   stereoChannels: 2,
+  pitchClass: -1,
+  pitchHeight: 0.5,
   beat: false,
   active: false,
   updatedAt: 0,

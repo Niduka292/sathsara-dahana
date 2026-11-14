@@ -51,6 +51,8 @@ export function useSmoothedLightshowState(state: LightshowState) {
             targetRight,
             targetRight >= currentRight ? rising : falling,
           ),
+          pitchClass: target.pitchClass ?? -1,
+          pitchHeight: target.pitchHeight ?? 0.5,
           beat: false,
           effect: target.effect,
           design: target.design,

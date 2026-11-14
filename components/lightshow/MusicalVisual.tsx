@@ -248,9 +248,17 @@ function buildVeinSegments(width: number, height: number, seed: number): VeinSeg
   return segs;
 }
 
-function armChargeFactor(armIndex: number, pitchClass: number): number {
-  if (pitchClass < 0) return 1;
-  const targetArm = (pitchClass * ROOT_ARMS) / 12;
+function armChargeFactor(armIndex: number, pitchClass: number, fallbackTime?: number): number {
+  let effectivePitch = pitchClass;
+  if (effectivePitch < 0) {
+    if (typeof fallbackTime === "number") {
+      // Smooth dynamic sweep if pitch has not yet been detected
+      effectivePitch = (fallbackTime * 0.5) % 12;
+    } else {
+      return 1;
+    }
+  }
+  const targetArm = (effectivePitch * ROOT_ARMS) / 12;
   let dist = Math.abs(armIndex - targetArm);
   if (dist > ROOT_ARMS / 2) dist = ROOT_ARMS - dist;
   return Math.pow(1 - dist / (ROOT_ARMS / 2), 1.8) * 0.9 + 0.1;
@@ -548,7 +556,7 @@ export default function MusicalVisual({
         const isRightSide = seg.x2 >= seg.x1;
         const sideBoost = isRightSide ? rightCharge : leftCharge;
         const blendedRoot = rootCharge * 0.5 + sideBoost * 0.5;
-        segCharge[idx] = blendedRoot * armChargeFactor(seg.armIndex, pc);
+        segCharge[idx] = blendedRoot * armChargeFactor(seg.armIndex, pc, time);
       }
       for (let i = 0; i < veinSegs.length; i++) {
         if (segCharge[i] < 0.01) continue;
@@ -586,7 +594,7 @@ export default function MusicalVisual({
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      // Pass 1 — core lines
+      // Core vein lines — branch intensity varies with musical charge
       for (let i = 0; i < veinSegs.length; i++) {
         const charge = segCharge[i];
         if (charge < 0.01) continue;
@@ -597,20 +605,6 @@ export default function MusicalVisual({
         ctx.strokeStyle = veinColor(charge, pH);
         ctx.globalAlpha = 0.5 + charge * 0.5;
         ctx.lineWidth = clamp(2.8 - seg.depth * 0.32, 0.5, 2.8);
-        ctx.stroke();
-      }
-
-      // Pass 2 — glow halos
-      for (let i = 0; i < veinSegs.length; i++) {
-        const charge = segCharge[i];
-        if (charge < 0.15) continue;
-        const seg = veinSegs[i];
-        ctx.beginPath();
-        ctx.moveTo(seg.x1, seg.y1);
-        ctx.lineTo(seg.x2, seg.y2);
-        ctx.strokeStyle = veinColor(charge, pH);
-        ctx.globalAlpha = charge * charge * 0.5;
-        ctx.lineWidth = clamp(charge * charge * 18, 1, 18);
         ctx.stroke();
       }
 

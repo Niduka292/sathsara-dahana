@@ -77,6 +77,12 @@ export default function AudienceExperience({
 
   const rawBassEnergy = manualMode ? beatEnergy * 80 : state.bassEnergy;
 
+  // Use explicit pitch props if passed (e.g. preview), otherwise use live synced pitch from state
+  const effectivePitchClass =
+    pitchClass !== -1 ? pitchClass : (liveState.pitchClass ?? -1);
+  const effectivePitchHeight =
+    pitchClass !== -1 ? pitchHeight : (liveState.pitchHeight ?? 0.5);
+
   // ── Design CSS variables ─────────────────────────────────────────────────
   useEffect(() => {
     const container = containerRef.current;
@@ -122,8 +128,8 @@ export default function AudienceExperience({
             rawBassEnergy={rawBassEnergy}
             leftEnergy={leftVisualEnergy}
             rightEnergy={rightVisualEnergy}
-            pitchClass={pitchClass}
-            pitchHeight={pitchHeight}
+            pitchClass={effectivePitchClass}
+            pitchHeight={effectivePitchHeight}
             active={liveState.active}
             reducedMotion={reducedMotion}
             hexBloomColor={liveState.hexBloomColor}

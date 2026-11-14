@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ref, set } from "firebase/database";
 import { getDb, LIGHTSHOW_STATE_PATH } from "@/lib/firebase";
+import { estimatePitch } from "@/lib/lightshow/pitch";
 import type { LightshowDesign, LightshowEffect, LightshowState } from "@/lib/lightshow/types";
 
 export interface AudioInputDevice {
@@ -33,6 +34,8 @@ interface BeatDetectionResult {
   lastBassEnergy: number;
   lastLeftEnergy: number;
   lastRightEnergy: number;
+  lastPitchClass: number;
+  lastPitchHeight: number;
   channelCount: number;
   analyserNode: AnalyserNode | null;
   sampleRate: number | null;
@@ -132,6 +135,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
   const [lastBassEnergy, setLastBassEnergy] = useState(0);
   const [lastLeftEnergy, setLastLeftEnergy] = useState(0);
   const [lastRightEnergy, setLastRightEnergy] = useState(0);
+  const [lastPitchClass, setLastPitchClass] = useState(-1);
+  const [lastPitchHeight, setLastPitchHeight] = useState(0.5);
   const [channelCount, setChannelCount] = useState(2);
   const [devices, setDevices] = useState<AudioInputDevice[]>([]);
   const [activeDeviceLabel, setActiveDeviceLabel] = useState<string | null>(null);
@@ -147,6 +152,7 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<number | null>(null);
   const optionsRef = useRef(options);
+  const pitchRef = useRef({ pitchClass: -1, pitchHeight: 0.5 });
   const lastWrittenRef = useRef<{
     design: LightshowDesign;
     effect: LightshowEffect;
@@ -155,6 +161,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     bassEnergy: number;
     leftEnergy: number;
     rightEnergy: number;
+    pitchClass: number;
+    pitchHeight: number;
     timestamp: number;
   } | null>(null);
 
@@ -225,6 +233,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     const bassEnergy = Math.round((partial.bassEnergy ?? 0) * 10) / 10;
     const leftEnergy = Math.round((partial.leftEnergy ?? rawEnergy) * 10) / 10;
     const rightEnergy = Math.round((partial.rightEnergy ?? rawEnergy) * 10) / 10;
+    const pitchClass = partial.pitchClass ?? -1;
+    const pitchHeight = Math.round((partial.pitchHeight ?? 0.5) * 100) / 100;
     const active = partial.active ?? current.active;
     const effect = partial.effect ?? resolveEffect(active);
     const design = current.design;
@@ -239,7 +249,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
         prev.energy === energy &&
         prev.bassEnergy === bassEnergy &&
         prev.leftEnergy === leftEnergy &&
-        prev.rightEnergy === rightEnergy;
+        prev.rightEnergy === rightEnergy &&
+        prev.pitchClass === pitchClass;
 
       // Skip redundant writes when stopped, in manual mode, or during silence
       if (sameCoreState) {
@@ -262,6 +273,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
       bassEnergy,
       leftEnergy,
       rightEnergy,
+      pitchClass,
+      pitchHeight,
       timestamp: now,
     };
 
@@ -273,6 +286,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
       leftEnergy,
       rightEnergy,
       stereoChannels: partial.stereoChannels ?? 2,
+      pitchClass,
+      pitchHeight,
       beat: false,
       active,
       updatedAt: now,
@@ -296,6 +311,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
         bassEnergy: 0,
         leftEnergy: 0,
         rightEnergy: 0,
+        pitchClass: -1,
+        pitchHeight: 0.5,
       });
       return;
     }
@@ -303,6 +320,7 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     if (current.manualMode) {
       const energy = current.manualEnergy;
       const bassEnergy = clamp(energy * 0.42, 0, 100);
+      const manualPitchClass = Math.floor((Date.now() / 1500) % 12);
       void writeState({
         active: true,
         effect,
@@ -311,11 +329,15 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
         leftEnergy: energy,
         rightEnergy: energy,
         stereoChannels: 2,
+        pitchClass: manualPitchClass,
+        pitchHeight: 0.5,
       });
       setLastEnergy(energy);
       setLastBassEnergy(bassEnergy);
       setLastLeftEnergy(energy);
       setLastRightEnergy(energy);
+      setLastPitchClass(manualPitchClass);
+      setLastPitchHeight(0.5);
       return;
     }
 
@@ -327,11 +349,15 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
         bassEnergy: 0,
         leftEnergy: 0,
         rightEnergy: 0,
+        pitchClass: -1,
+        pitchHeight: 0.5,
       });
       setLastEnergy(0);
       setLastBassEnergy(0);
       setLastLeftEnergy(0);
       setLastRightEnergy(0);
+      setLastPitchClass(-1);
+      setLastPitchHeight(0.5);
       return;
     }
 
@@ -378,10 +404,28 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     const rightBass = applyNoiseGate(effectiveRawRightBass, gate * 0.85);
     const bassEnergy = clamp(Math.max(leftBass, rightBass), 0, 100);
 
+    // Estimate musical pitch from frequency spectrum for directional visuals
+    const pitchResult = estimatePitch(leftFreq, sr, leftAnalyser.fftSize);
+    if (pitchResult) {
+      const prev = pitchRef.current.pitchHeight;
+      const alpha = pitchResult.pitchHeight > prev ? 0.25 : 0.10;
+      pitchRef.current = {
+        pitchClass: pitchResult.pitchClass,
+        pitchHeight: prev + (pitchResult.pitchHeight - prev) * alpha,
+      };
+    } else {
+      pitchRef.current = {
+        pitchClass: pitchRef.current.pitchClass,
+        pitchHeight: pitchRef.current.pitchHeight * 0.95,
+      };
+    }
+
     setLastEnergy(energy);
     setLastBassEnergy(bassEnergy);
     setLastLeftEnergy(leftEnergy);
     setLastRightEnergy(rightEnergy);
+    setLastPitchClass(pitchRef.current.pitchClass);
+    setLastPitchHeight(pitchRef.current.pitchHeight);
 
     void writeState({
       active: true,
@@ -391,6 +435,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
       leftEnergy,
       rightEnergy,
       stereoChannels: 2,
+      pitchClass: pitchRef.current.pitchClass,
+      pitchHeight: pitchRef.current.pitchHeight,
     });
   }, [writeState]);
 
@@ -591,6 +637,8 @@ export function useBeatDetection(options: BeatDetectionOptions): BeatDetectionRe
     lastBassEnergy,
     lastLeftEnergy,
     lastRightEnergy,
+    lastPitchClass,
+    lastPitchHeight,
     channelCount,
     analyserNode: analyserRef.current,
     sampleRate: audioContextRef.current?.sampleRate ?? null,
@@ -610,6 +658,8 @@ export async function writeLightshowState(partial: Partial<LightshowState>) {
     leftEnergy: partial.leftEnergy ?? energy,
     rightEnergy: partial.rightEnergy ?? energy,
     stereoChannels: partial.stereoChannels ?? 2,
+    pitchClass: partial.pitchClass ?? -1,
+    pitchHeight: partial.pitchHeight ?? 0.5,
     beat: false,
     active: partial.active ?? false,
     updatedAt: Date.now(),
@@ -626,6 +676,8 @@ export async function emergencyStopLightshow() {
     leftEnergy: 0,
     rightEnergy: 0,
     stereoChannels: 2,
+    pitchClass: -1,
+    pitchHeight: 0.5,
     beat: false,
     updatedAt: Date.now(),
   });

@@ -111,9 +111,11 @@ export default function LightshowOperatorPage() {
         leftEnergy: manualMode ? manualEnergy : leftEnergy,
         rightEnergy: manualMode ? manualEnergy : rightEnergy,
         stereoChannels: 2,
+        pitchClass,
+        pitchHeight,
       });
     },
-    [active, audioEnergy, bassEnergy, design, hexBloomColor, leftEnergy, manualEnergy, manualMode, rightEnergy],
+    [active, audioEnergy, bassEnergy, design, hexBloomColor, leftEnergy, manualEnergy, manualMode, pitchClass, pitchHeight, rightEnergy],
   );
 
   if (!authenticated) {
@@ -173,6 +175,8 @@ export default function LightshowOperatorPage() {
     leftEnergy: manualMode ? manualEnergy : leftEnergy,
     rightEnergy: manualMode ? manualEnergy : rightEnergy,
     stereoChannels: 2,
+    pitchClass,
+    pitchHeight,
   };
 
   return (
