@@ -54,7 +54,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "ABOUT", href: "/#introduction", id: "introduction" },
     { name: "TIMELINE", href: "/#timeline", id: "timeline" },
-    { name: "RESULTS", href: "/results", id: "results" },
+    { name: "TIME PORTAL", href: "/timeportal", id: "timeportal" },
   ];
 
   return (
@@ -80,17 +80,23 @@ export default function Navbar() {
 
         {/* Center Links (Desktop) */}
         <div className="hidden lg:flex gap-10 text-[11px] uppercase tracking-[0.3em] font-cinzel">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              aria-current={pathname === "/results" && link.id === "results" ? "page" : undefined}
-              className={`transition-all duration-500 ease-[0.16,1,0.3,1] relative group ${(activeSection === link.id || (pathname === "/results" && link.id === "results")) ? "text-blue-400" : "text-white/70 hover:text-white"}`}
-            >
-              {link.name}
-              <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-500 ease-[0.16,1,0.3,1] ${(activeSection === link.id || (pathname === "/results" && link.id === "results")) ? "w-full" : "w-0 group-hover:w-full"}`} />
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = link.href.startsWith("/#")
+              ? activeSection === link.id
+              : pathname === link.href;
+
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`transition-all duration-500 ease-[0.16,1,0.3,1] relative group ${isActive ? "text-blue-400" : "text-white/70 hover:text-white"}`}
+              >
+                {link.name}
+                <span className={`absolute -bottom-1 left-0 h-[1px] bg-blue-400 transition-all duration-500 ease-[0.16,1,0.3,1] ${isActive ? "w-full" : "w-0 group-hover:w-full"}`} />
+              </Link>
+            );
+          })}
         </div>
 
         {/* Right Glow Accent / Mobile Toggle */}
@@ -119,23 +125,29 @@ export default function Navbar() {
             className="fixed inset-0 z-[90] bg-[#02040d]/90 lg:hidden flex flex-col items-center justify-center transform-gpu"
           >
             <div className="flex flex-col gap-8 text-center">
-              {navLinks.map((link, i) => (
-                <motion.div
-                  key={link.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ delay: i * 0.08 + 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={closeMenu}
-                    className="text-2xl font-cinzel tracking-[0.3em] text-white/80 hover:text-blue-400 transition-colors duration-500 block py-2"
+              {navLinks.map((link, i) => {
+                const isActive = link.href.startsWith("/#")
+                  ? activeSection === link.id
+                  : pathname === link.href;
+
+                return (
+                  <motion.div
+                    key={link.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ delay: i * 0.08 + 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    {link.name}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={link.href}
+                      onClick={closeMenu}
+                      className={`text-2xl font-cinzel tracking-[0.3em] transition-colors duration-500 block py-2 ${isActive ? "text-blue-400" : "text-white/80 hover:text-blue-400"}`}
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Decorative background element for mobile menu */}
