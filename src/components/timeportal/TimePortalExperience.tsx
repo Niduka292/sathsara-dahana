@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, Lock, RotateCcw } from "lucide-react";
 
 export type TimeEra = "past" | "near-past" | "present" | "near-future" | "future";
@@ -297,10 +298,47 @@ function WireframeCorners() {
   );
 }
 
+/** Web Audio API synth sweep for the lightshow warp transition (safe/non-blocking) */
+function playLightshowWarpSound() {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(140, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(960, ctx.currentTime + 2.2);
+
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(350, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(7000, ctx.currentTime + 2.1);
+
+    gain.gain.setValueAtTime(0.01, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 1.8);
+    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 2.45);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 2.5);
+  } catch {
+    // Audio autoplay restrictions or unsupported Web Audio safely ignored
+  }
+}
+
 // Toggle to hide/lock the interactive Time Portal interface while it is still in the making
 const IS_PORTAL_LOCKED = false;
 
 export default function TimePortalExperience() {
+  const router = useRouter();
   const [todayStr, setTodayStr] = useState<string>("2026-11-01");
 
   // 6 Interface Inputs from Reference Specification (cleared of default/placeholder values):
@@ -319,6 +357,7 @@ export default function TimePortalExperience() {
 
   // Transition & Active Era state
   const [isWarping, setIsWarping] = useState(false);
+  const [isLightshowWarping, setIsLightshowWarping] = useState(false);
   const [warpDisplayYear, setWarpDisplayYear] = useState<string>("2026");
   const [warpDisplayDate, setWarpDisplayDate] = useState<string>("2026-11-01");
   const [warpFromDate, setWarpFromDate] = useState<string>("2026-11-01");
@@ -326,6 +365,7 @@ export default function TimePortalExperience() {
   const [activeEra, setActiveEra] = useState<TimeEra | null>(null);
   const [travelledDate, setTravelledDate] = useState<string>("");
   const warpIntervalRef = useRef<number | null>(null);
+  const lightshowTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -336,9 +376,25 @@ export default function TimePortalExperience() {
   }, []);
 
   useEffect(() => {
+    router.prefetch("/lightshow");
+  }, [router]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setIsLightshowWarping(false);
+      setIsWarping(false);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (warpIntervalRef.current !== null) {
         window.clearInterval(warpIntervalRef.current);
+      }
+      if (lightshowTimeoutRef.current !== null) {
+        window.clearTimeout(lightshowTimeoutRef.current);
       }
     };
   }, []);
@@ -457,11 +513,43 @@ export default function TimePortalExperience() {
     }, 2300);
   };
 
+  const isSpecialPortalAccess = useMemo(() => {
+    const isUserMatch = username.trim().toLowerCase() === "rakitha01";
+    const isPassMatch =
+      password.trim() === "Dahana26" || password.trim() === "dahana26";
+    const isDateMatch =
+      composedDateResult.dateValid &&
+      composedDateResult.formatted === "2024-04-18";
+
+    return isUserMatch && isPassMatch && isDateMatch;
+  }, [username, password, composedDateResult]);
+
+  const triggerLightshowTransition = () => {
+    setIsLightshowWarping(true);
+    playLightshowWarpSound();
+
+    if (lightshowTimeoutRef.current !== null) {
+      window.clearTimeout(lightshowTimeoutRef.current);
+    }
+
+    lightshowTimeoutRef.current = window.setTimeout(() => {
+      router.push("/lightshow");
+      window.setTimeout(() => {
+        setIsLightshowWarping(false);
+      }, 500);
+    }, 2500);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
 
     if (!validation.allValid || !validation.targetDate) {
+      return;
+    }
+
+    if (isSpecialPortalAccess) {
+      triggerLightshowTransition();
       return;
     }
 
@@ -551,6 +639,186 @@ export default function TimePortalExperience() {
                 </div>
               </motion.div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ===================================================================== */}
+      {/* SPECIAL LIGHTSHOW WARP TRANSITION OVERLAY                             */}
+      {/* ===================================================================== */}
+      <AnimatePresence>
+        {isLightshowWarping && (
+          <motion.div
+            key="lightshow-warp-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[400] flex flex-col items-center justify-center overflow-hidden bg-[#020512] font-mono select-none px-4"
+          >
+            {/* Dynamic pulsating concert lights background */}
+            <motion.div
+              animate={{
+                opacity: [0.3, 0.75, 0.4, 0.85],
+                scale: [1, 1.25, 1.05, 1.4],
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.45) 0%, rgba(192, 38, 211, 0.35) 40%, rgba(2, 6, 23, 0.96) 80%)",
+              }}
+            />
+
+            {/* Rotating concert laser beams */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle, i) => (
+                <motion.div
+                  key={`laser-${angle}`}
+                  initial={{ rotate: angle, opacity: 0.15 }}
+                  animate={{
+                    rotate: [angle, angle + (i % 2 === 0 ? 180 : -180)],
+                    opacity: [0.15, 0.85, 0.25, 0.95, 0.15],
+                  }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.05,
+                  }}
+                  className="absolute h-[250vh] w-[2px] origin-center"
+                  style={{
+                    background:
+                      i % 3 === 0
+                        ? "linear-gradient(180deg, transparent, #38bdf8, #e0f2fe, #38bdf8, transparent)"
+                        : i % 3 === 1
+                        ? "linear-gradient(180deg, transparent, #e879f9, #ffffff, #c026d3, transparent)"
+                        : "linear-gradient(180deg, transparent, #34d399, #ecfdf5, #059669, transparent)",
+                    boxShadow:
+                      i % 3 === 0
+                        ? "0 0 25px #38bdf8, 0 0 50px #0284c7"
+                        : i % 3 === 1
+                        ? "0 0 25px #e879f9, 0 0 50px #a21caf"
+                        : "0 0 25px #34d399, 0 0 50px #047857",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Expanding sonic/laser shockwave rings */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <motion.div
+                  key={`shockwave-${i}`}
+                  initial={{ scale: 0.15, opacity: 0 }}
+                  animate={{
+                    scale: [0.15, 1.4, 4.2],
+                    opacity: [0, 0.9, 0],
+                  }}
+                  transition={{
+                    duration: 1.8,
+                    delay: i * 0.22,
+                    repeat: Infinity,
+                    ease: "easeOut",
+                  }}
+                  className="absolute rounded-full border pointer-events-none"
+                  style={{
+                    width: "240px",
+                    height: "240px",
+                    borderColor: i % 2 === 0 ? "#38bdf8" : "#f43f5e",
+                    boxShadow:
+                      i % 2 === 0
+                        ? "0 0 40px rgba(56, 189, 248, 0.7), inset 0 0 25px rgba(56, 189, 248, 0.4)"
+                        : "0 0 40px rgba(244, 63, 94, 0.7), inset 0 0 25px rgba(244, 63, 94, 0.4)",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Central Holographic Gateway Breach HUD */}
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="relative z-20 flex flex-col items-center text-center max-w-lg w-full px-6 py-6 sm:px-8 sm:py-8 bg-[#020a1c]/95 border-2 border-[#38bdf8] shadow-[0_0_90px_rgba(56,189,248,0.6),inset_0_0_35px_rgba(14,165,233,0.3)] backdrop-blur-md"
+            >
+              <WireframeCorners />
+
+              {/* Top Security Banner */}
+              <div className="flex items-center gap-2 border border-[#38bdf8]/70 bg-[#38bdf8]/20 px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.28em] text-[#bae6fd] mb-3">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>{"SPECIAL CLEARANCE GRANTED // 2024.04.18"}</span>
+              </div>
+
+              {/* Sub-status */}
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#7dd3fc] mb-1">
+                {"// USER: Rakitha01 • KEY: Dahana26 //"}
+              </p>
+
+              <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-[0.18em] sm:tracking-[0.24em] text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-300 to-fuchsia-300 drop-shadow-[0_0_25px_rgba(56,189,248,0.9)]">
+                LIGHT SYNC BREACH
+              </h2>
+
+              <p className="mt-2 text-xs sm:text-sm tracking-[0.16em] text-sky-200/90 font-sans">
+                Harmonic resonance phase-lock achieved. Diverting temporal trajectory to Live Light Show...
+              </p>
+
+              {/* Pulsing Audio EQ Visualizer Bars */}
+              <div className="my-5 flex items-end justify-center gap-1.5 h-10 w-full max-w-xs">
+                {[45, 80, 60, 95, 70, 100, 85, 65, 90, 75, 55, 90, 70, 85].map((h, idx) => (
+                  <motion.div
+                    key={`bar-${idx}`}
+                    animate={{
+                      height: [`${h * 0.25}%`, `${h}%`, `${h * 0.4}%`],
+                    }}
+                    transition={{
+                      duration: 0.5 + (idx % 4) * 0.12,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                      ease: "easeInOut",
+                    }}
+                    className="w-2 rounded-t"
+                    style={{
+                      background:
+                        idx % 3 === 0
+                          ? "linear-gradient(180deg, #38bdf8, #0284c7)"
+                          : idx % 3 === 1
+                          ? "linear-gradient(180deg, #f472b6, #c026d3)"
+                          : "linear-gradient(180deg, #34d399, #059669)",
+                      boxShadow: "0 0 8px rgba(56, 189, 248, 0.6)",
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Photon Accelerator Progress Bar */}
+              <div className="w-full border border-[#38bdf8]/70 bg-[#010612] p-1">
+                <div className="flex items-center justify-between text-[8px] sm:text-[9px] uppercase tracking-[0.25em] text-[#7dd3fc] px-1 mb-1">
+                  <span>WARPING TO LIGHT SHOW</span>
+                  <span>SYNC_ACTIVE</span>
+                </div>
+                <div className="h-2.5 w-full bg-[#020d20] overflow-hidden">
+                  <motion.div
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2.3, ease: "easeInOut" }}
+                    className="h-full bg-gradient-to-r from-sky-400 via-cyan-300 to-fuchsia-400 shadow-[0_0_18px_#38bdf8]"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3 text-[9px] sm:text-[10px] tracking-[0.22em] text-[#bae6fd]/70 uppercase">
+                [ ENGAGING AUDIENCE LIGHT MATRIX ]
+              </div>
+            </motion.div>
+
+            {/* Final Climax Blinding Whiteout Flash that smoothly delivers user into /lightshow */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0, 0.35, 1] }}
+              transition={{ duration: 2.5, times: [0, 0.65, 0.85, 1], ease: "easeIn" }}
+              className="absolute inset-0 bg-white pointer-events-none z-50"
+            />
           </motion.div>
         )}
       </AnimatePresence>
